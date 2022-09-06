@@ -1,0 +1,32 @@
+##### FILES
+# macOS
+.DS_Store
+
+##### FOLDERS
+# docs
+doc/**
+!doc/Doxyfile
+
+# materials
+others/
+
+# ide
+.idea/
+
+# local caches
+.cache/
+
+# project dependencies
+venv/
+
+# python caches
+__pycache__/
+
+# logs
+logs/
+
+# package code
+*.egg-info/
+
+# others
+*.zip
