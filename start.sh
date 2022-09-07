@@ -1,19 +1,15 @@
 #!/bin/bash
-
-###############################################################################
-# BUG: ---------------------- NOT MAINTAINED ANYMORE --------------------------
-###############################################################################
-
-#set -x # debug
-
-complete -c timedatectl -s h -l help -d 'Print a short help text and exit'
+#set -x # log
 
 RM="rm -rfd"
 RED='\033[0;31m'
 NC='\033[0m'
 GREEN='\033[0;32m'
-PROJECT_NAME="diagram-editor"
-ZIP_NAME="xlapes02"
+
+AUTHOR='Zdenek Lapes'
+EMAIL='lapes.zdenek@gmail.com'
+
+PROJECT_NAME='pawnshop'
 
 ##### FUNCTIONS
 function error_exit() {
@@ -22,42 +18,57 @@ function error_exit() {
     exit 1
 }
 
-function install() {
-    python3 -m venv venv || error_exit "venv creating"
-    source venv/bin/activate || error_exit "venv activation"
-    pip3 install -r requirements.txt
-    pip3 install -e .
-    deactivate
-}
-
 function clean() {
     ${RM} *.zip
-    find * -type d -iname "venv" | xargs ${RM}
-    find * -type d -iname "__pycache__" | xargs ${RM}
-    find * -type f -iname ".DS_Store" | xargs ${RM}
-    ${RM} tags
-    #    echo "${RM} .idea"
-    #    echo "${RM} .cache"
+
+	# Folders
+    for folder in "venv" "__pycache__" "migrations"; do
+		find . -type d -iname "${folder}" | xargs "${RM}"
+	done
+
+	# Files
+    for file in ".DS_Store" "*.log"; do
+		find . -type f -iname "${file}" | xargs "${RM}"
+	done
 }
 
-function zip_project() {
-    zip -r ${ZIP_NAME}.zip src/* requirements.txt start.sh SUR_projekt2021-2022 .gitmodules *.ipynb dataset/* debug/*
+function install_docker() {
+	docker-compose up --build -d
 }
 
-function ssh() {
-    zip_project
-    scp "$(pwd)/${ZIP_NAME}.zip" $1@eva.fit.vutbr.cz:/homes/eva/xl/$1
+
+function create_env_samples() {
+    cd env || error_exit "cd"
+
+    # Clean all samples
+    find . -type f -iname "sample*" | xargs "${RM}"
+
+    # Create new samples
+    for f in $(find . -type f -iname ".env*" | cut -d/ -f2);do
+        cat "${f}" | cut -d "=" -f1 > "sample${f}"
+    done
+
+    cd .. || error_exit "cd"
 }
 
-function line_of_codes() {
-    if [[ "$(uname -s)" == "Darwin" ]]; then
-        (brew list | grep "cloc") && cloc src/** # cloc src/**/*.{py,yaml}
-    elif [[ "$(uname -s)" == "Linux" ]]; then
-        echo "$(uname -s)"
-    else
-        echo "$(uname -s)"
-    fi
+function install_docker_deploy() {
+	docker-compose up --build -d -f docker-compose-build.yml
+}
 
+function docker_show_ipaddress() {
+	for docker_container in $(docker ps -aq); do
+		CMD1="$(docker ps -a | grep "$docker_container" | grep --invert-match "Exited\|Created" | awk '{print $2}'): "
+		if [ "$CMD1" != ": " ]; then
+			printf "$CMD1"
+			printf "$(docker inspect  ${docker_container} | grep "IPAddress" | tail -n 1)\n"
+		fi
+	done
+}
+
+function clean_docker() {
+	docker stop $(docker ps -aq)
+    docker system prune -a -f
+    docker volume prune -f
 }
 
 function tags() {
@@ -76,22 +87,18 @@ function usage() {
     '-h' | '--help' | *) usage ;;"
 }
 
-function run() {
-    source venv/bin/activate || error_exit "venv"
-    cd src || error_exit "cd cmd..."
-    python3 main.py -hp hyperparams.yaml -s
-    cd .. || error_exit "cd cmd..."
-}
-
 ##### PARSE CLI-ARGS
 [[ "$#" -eq 0 ]] && usage && exit 0
 while [ "$#" -gt 0 ]; do
     case "$1" in
-#    '-r' | '--run') run ;;
-    '-i' | '--install') install ;;
     '-c' | '--clean') clean ;;
-    '-rs' | '--run-stock') run ;;
-    '-h' | '--help' | *) usage ;;
+    '-cd' | '--clean-docker') clean_docker ;;
+    '-id' | '--install-docker') install_docker ;;
+    '-idd' | '--install-docker-deploy') install_docker_deploy ;;
+    '-dsip' | '--install-docker-deploy') docker_show_ipaddress ;;
+    '--create-samples-env') create_env_samples;;
+    '--tags') tags ;;
+    '-h' | '--help') usage ;;
     esac
     shift
 done

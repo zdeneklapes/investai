@@ -2,6 +2,10 @@
 # macOS
 .DS_Store
 
+# .env
+*.env*
+!sample.env*
+
 ##### FOLDERS
 # docs
 doc/**
