@@ -2,7 +2,7 @@
 # TODO: Start here
 ###############################################################################
 
-import ml.main as ml_main
+from ml.main import main as ml_main
 
 if __name__ == '__main__':
-    ml_main()
+    ml_main(args={'stock': False})

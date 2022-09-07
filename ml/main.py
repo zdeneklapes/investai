@@ -44,9 +44,11 @@ import sys
 
 from dotenv import load_dotenv
 
-from shared.types import param_type
-from shared.utils import parse_yaml
-from stock import main as stock_main
+from .shared.types import param_type
+from .shared.utils import parse_yaml
+from .stock import main as stock_main
+
+from ml.shared.exitcode import ExitCode
 
 load_dotenv()
 
@@ -66,20 +68,19 @@ def parse_cli_argument() -> dict:
     return args
 
 
-def main(*, hyperparams: param_type, args: param_type):
+def main(args: param_type):
     """
     Based on cli arguments run modules
 
     Args:
-        hyperparams: File with paths to all necessary folders need for run all modules
         args: all cli arguments
     """
 
     if args['stock']:
-        stock_main(hyperparams=hyperparams, args=args)
+        stock_main(hyperparams={}, args=args)
 
 
 if __name__ == '__main__':
     cli_args = parse_cli_argument()
-    main(hyperparams=parse_yaml(filename=cli_args['hyperparams']), args=cli_args)
+    main(args=cli_args)
     sys.exit()

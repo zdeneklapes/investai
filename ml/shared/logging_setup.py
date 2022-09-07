@@ -9,7 +9,7 @@ import logging
 import colorama
 from colorama import Fore
 
-from settings import ROOT_DIR, SRC_DIR, AI_ROOT_DIR
+from ml.core.settings import ROOT_DIR, SRC_DIR, AI_ROOT_DIR
 
 ##########################################################
 if 0:

@@ -1,7 +1,7 @@
 from os import path
 import sys
 from typing import Dict
-from shared.logging_setup import LOGGER_STREAM
+from ml.shared.logging_setup import LOGGER_STREAM
 
 
 class ExitCode:

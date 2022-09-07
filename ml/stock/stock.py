@@ -8,9 +8,9 @@ import pandas as pd
 import finnhub
 from tqdm import tqdm
 
-from shared.types import param_type
-from stock.stockDataset import StockDataset
-from stock.stockAnalyses import StockAnalyses
+from ml.shared.types import param_type
+from ml.stock.stockDataset import StockDataset
+from ml.stock.stockAnalyses import StockAnalyses
 
 
 class MyInterests:
