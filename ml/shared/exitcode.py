@@ -1,7 +1,6 @@
 from os import path
 import sys
 from typing import Dict
-from ml.shared.logging_setup import LOGGER_STREAM
 
 
 class ExitCode:
@@ -14,5 +13,6 @@ class ExitCode:
         for key, val in params.items():
             if key.find('dir') != -1:
                 if not path.isdir(str(val)):
-                    LOGGER_STREAM.error(f'Bad directory|{key}: {val}')
+                    # TODO: LOGGER_STREAM.error(f'Bad directory|{key}: {val}')
+                    print(f'Bad directory|{key}: {val}')  # TODO: Remove this
                     sys.exit(ExitCode.BAD_PARAMS)

@@ -44,10 +44,7 @@ import sys
 
 from dotenv import load_dotenv
 
-from .shared.types import param_type
-from .shared.utils import parse_yaml
-from .stock import main as stock_main
-
+from ml.shared.types import param_type
 from ml.shared.exitcode import ExitCode
 
 load_dotenv()
@@ -77,7 +74,7 @@ def main(args: param_type):
     """
 
     if args['stock']:
-        stock_main(hyperparams={}, args=args)
+        print(f"{args['stock']=}")
 
 
 if __name__ == '__main__':
