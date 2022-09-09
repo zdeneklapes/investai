@@ -1,0 +1,3 @@
+[submodule "ai-investing-materials"]
+	path = ai-investing-materials
+	url = git@github.com:zlapik/ai-investing-materials.git
