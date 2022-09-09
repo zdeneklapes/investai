@@ -34,3 +34,9 @@ logs/
 
 # others
 *.zip
+
+# images
+*.jpg
+*.jpeg
+*.png
+
