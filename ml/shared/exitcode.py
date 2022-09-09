@@ -1,5 +1,5 @@
-from os import path
 import sys
+from os import path
 from typing import Dict
 
 

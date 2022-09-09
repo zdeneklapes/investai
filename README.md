@@ -1,14 +1,16 @@
-# AI-INVESTING
+# AI-INVESTING: Bachelor Thesis
+
+---
 
 ## AUTHORS:
 
-- Zdeněk Lapeš <lapes.zdenek@gmail.com>
-
-## TODOS:
-
-- Start project
+- **Student**: Zdeněk Lapeš <lapes.zdenek@gmail.com>
+- **Superviser**: Milan Češka <ceskam@fit.vut.cz>
 
 ## BUGS:
 
-## LINKS:
-- All Stock symbols in the world <https://levelup.gitconnected.com/how-to-get-all-stock-symbols-a73925c16a1b>
+## [IDEAS / TODO](./IDEAS_TODO.md)
+
+## [MATERIALS](./MATERIALS.md)
+
+

@@ -1,0 +1,19 @@
+name: Foo
+
+on:
+  push:
+    branches: [main, prod, new_feature]
+
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "14"
+      - name: Setup Symfony
+        working-directory: ./frontend
+        run: |
+          npm install
+          npm test
