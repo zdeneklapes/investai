@@ -11,6 +11,6 @@
 
 ## [IDEAS / TODO](./IDEAS_TODO.md)
 
-## [MATERIALS](https://github.com/zlapik/ai-investing-materials/blob/main/README.md)
+## [MATERIALS](./MATERIALS.md)
 
 # ai-investing-materials
