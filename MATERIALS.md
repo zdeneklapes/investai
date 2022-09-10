@@ -2,7 +2,7 @@
 
 ---
 
-# MATERIALS:
+# MATERIALS-AI + INVESTING:
 
 ## WEBSITES:
 
@@ -36,10 +36,24 @@
 ## CODE:
 
 - [x] All Stock symbols in the world <https://levelup.gitconnected.com/how-to-get-all-stock-symbols-a73925c16a1b>
-- [ ] RL <https://github.com/AI4Finance-Foundation>
+- [ ] FinRL <https://github.com/AI4Finance-Foundation>
 - [ ] Book codes: Machine Learning in Finance: From Theory to Practice (Matthew F.Dixon) <https://github.com/mfrdixon>
 - [ ] Book codes: Advances in Financial Machine Learning, Machine Learning (Marcos Lopez de
   Prado)  <https://github.com/jjakimoto>
+
+
+## FROM FinRL:
+- [ ] FinRL-Meta: A Universe of Near-Real Market Environments for Data-Driven Deep Reinforcement Learning in Quantitative Finance
+ <https://arxiv.org/abs/2112.06753>
+- [ ]Explainable Deep Reinforcement Learning for Portfolio Management: An Empirical Approach <https://arxiv.org/abs/2111.03995>
+- [ ] FinRL-Podracer: High Performance and Scalable Deep Reinforcement Learning for Quantitative Finance <https://arxiv.org/abs/2111.05188>
+- [ ] FinRL: Deep Reinforcement Learning Framework to Automate Trading in Quantitative Finance
+ <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3955949>
+- [ ] FinRL: A Deep Reinforcement Learning Library for Automated Stock Trading in Quantitative Finance <https://arxiv.org/abs/2011.09607>
+- [ ] Deep Reinforcement Learning for Automated Stock Trading: An Ensemble Strategy <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3690996>
+- [ ] Multi-Agent Deep Reinforcement Learning for Liquidation Strategy Analysis
+ <https://arxiv.org/abs/1906.11046>
+- [ ] Practical Deep Reinforcement Learning Approach for Stock Trading <https://arxiv.org/abs/1811.07522>
 
 ## MACHINE LEARNING
 
@@ -48,3 +62,12 @@
   Problem <https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.474.1879&rep=rep1&type=pdf>
 - [ ] Deep ML <https://d2l.ai/d2l-en.pdf>
 
+---
+
+# MATERIALS-ONLY-INVESTING:
+
+## PEOPLE:
+
+- [ ] Modem portfolio theory (Harry M. Markowitz) \<todo link>
+- [ ] FOUNDATIONS OF PORTFOLIO THEORY (Harry M.
+  Markowitz) <https://www.nobelprize.org/uploads/2018/06/markowitz-lecture.pdf>

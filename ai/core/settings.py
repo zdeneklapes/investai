@@ -1,4 +1,3 @@
-AI_ROOT_DIR = "backend/ai-root"
 ROOT_DIR = ".."
 SRC_DIR = "."
 DEBUG_DIR = "../logs"

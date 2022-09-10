@@ -5,15 +5,14 @@ __license__ = "TODO"
 __version__ = "TODO"
 __maintainer__ = "Zdeněk Lapeš"
 __email__ = ["lapes.zdenek@gmail.com"]
-__status__ = "Production"
-
+__status__ = "Development"
 
 import argparse
 import sys
 
 from dotenv import load_dotenv
 
-from ml.shared.types import param_type
+from ai.shared.types import param_type
 
 load_dotenv()
 
