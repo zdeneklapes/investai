@@ -1,6 +1,6 @@
 ROOT_DIR = ".."
 SRC_DIR = "."
-DEBUG_DIR = "../logs"
+DEBUG_DIR = "../../logs"
 DATESET_IN_PROJECT_DIR = "../dataset"
 EXCHANGES_CSV = "~/datasets/server/stock/all_world_stocks.csv"
 ETF_DIR = "~/datasets/server/etf"

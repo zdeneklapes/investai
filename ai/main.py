@@ -9,27 +9,29 @@ __status__ = "Development"
 
 import argparse
 import sys
+from pathlib import Path
 
 from dotenv import load_dotenv
 
-from ai.shared.types import param_type
+# Append root path, because importing from root directory
+sys.path.append(str(Path(__file__).parent.parent))
 
+# Load environment variables
 load_dotenv()
 
 
 def parse_cli_argument() -> dict:
     parser = argparse.ArgumentParser()
-    parser.add_argument('-hp', '--hyperparams', nargs='?', dest='hyperparams', type=str, required=True)
+    parser.add_argument('-hp', '--hyperparams', nargs='?', dest='hyperparams', type=str, required=False)
     parser.add_argument('-s', '--stock', dest='stock', action='store_true', required=False)
-    args = vars(parser.parse_args())
-    return args
+    return vars(parser.parse_args())
 
 
-def main(args: param_type):
+# main
+if __name__ == '__main__':
+    args = parse_cli_argument()
+
     if args['stock']:
         print(f"{args['stock']=}")
 
-
-if __name__ == '__main__':
-    main(args=parse_cli_argument())
     sys.exit()

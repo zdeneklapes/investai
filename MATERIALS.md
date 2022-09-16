@@ -18,24 +18,6 @@
 - [x] Using Quantitative Investment Strategies (This method is not safe, based on the
   article) <https://www.investopedia.com/articles/trading/09/quant-strategies.asp>
 
-## BOOKS:
-
-- [ ] Machine Learning in Finance: From Theory to Practice (Matthew F.Dixon) \<todo link>
-- [ ] Foundations of Reinforcement Learning with Applications in Finance (Ashwin Rao, Tikhon
-  Jelvis) <https://stanford.edu/~ashlearn/RLForFinanceBook/book.pdf>
-
-## Machine Learning for Algorithmic Trading (Stefan Jansen)
-
-### BOOK:
-
-- [ ] Machine Learning for Algorithmic Trading: Predictive models to extract signals from market and alternative data
-  for systematic trading strategies with Python, 2nd
-  Edition <https://www.amazon.com/Machine-Learning-Algorithmic-Trading-alternative/dp/1839217715?pf_rd_r=GZH2XZ35GB3BET09PCCA&pf_rd_p=c5b6893a-24f2-4a59-9d4b-aff5065c90ec&pd_rd_r=91a679c7-f069-4a6e-bdbb-a2b3f548f0c8&pd_rd_w=2B0Q0&pd_rd_wg=GMY5S&ref_=pd_gw_ci_mcx_mr_hp_d>
-
-### CODE:
-
-- [ ] ML for Trading - 2nd Edition <https://github.com/stefan-jansen/machine-learning-for-trading>
-
 ## PAPERS:
 
 - [x] Artificial Intelligence Applied to Stock Market Trading: A
@@ -50,6 +32,108 @@
   useful) <http://home.zcu.cz/~smrcek/www-kma/publikace/eng/HedonicPriceModel.pdf>
 - [ ] The application of artificial intelligence in stock
   investment <https://www.researchgate.net/publication/339687941_The_application_of_artificial_intelligence_in_stock_investment>
+
+## MASTER THESIS:
+
+- [ ] Portfolio Trading System Using Maximum Sharpe Ratio Criterion <https://core.ac.uk/download/48544724.pdf>
+
+---
+
+# BOOKS:
+
+## Machine Learning in Finance: From Theory to Practice (Matthew F.Dixon)
+
+### BOOK:
+
+- [ ] TODO
+
+### CODE:
+
+- [ ] <https://github.com/TikhonJelvis/RL-book>
+
+## Foundations of Reinforcement Learning with Applications in Finance (Ashwin Rao, Tikhon Jelvis)
+
+### BOOK:
+
+- [ ] <https://stanford.edu/~ashlearn/RLForFinanceBook/book.pdf>
+
+### CODE:
+
+- [ ] <https://github.com/TikhonJelvis/RL-book>
+
+## Machine Learning for Algorithmic Trading: Predictive models to extract signals from market and alternative data for systematic trading strategies with Python, 2nd Edition
+
+### BOOK:
+
+- [ ] <https://www.amazon.com/Machine-Learning-Algorithmic-Trading-alternative/dp/1839217715?pf_rd_r=GZH2XZ35GB3BET09PCCA&pf_rd_p=c5b6893a-24f2-4a59-9d4b-aff5065c90ec&pd_rd_r=91a679c7-f069-4a6e-bdbb-a2b3f548f0c8&pd_rd_w=2B0Q0&pd_rd_wg=GMY5S&ref_=pd_gw_ci_mcx_mr_hp_d>
+
+### CODE:
+
+- [ ] <https://github.com/stefan-jansen/machine-learning-for-trading>
+
+## Machine-Learning-for-Finance
+
+### BOOK:
+
+- [ ] TODO
+
+### CODE:
+
+- [ ] <https://github.com/PacktPublishing/Machine-Learning-for-Finance>
+
+## OTHERS:
+
+### CODE:
+
+- [x] All Stock symbols in the world <https://levelup.gitconnected.com/how-to-get-all-stock-symbols-a73925c16a1b>
+- [ ] Quantitative finance <https://github.com/quantopian>
+- [ ] Spinning Up in Deep RL (OpenAI) <https://spinningup.openai.com/en/latest/user/introduction.html>
+- [ ] RLzoo <https://github.com/tensorlayer/RLzoo>
+
+### WEBSITES:
+
+- <https://ml4trading.io/outline>
+
+## Advances in Financial Machine Learning Exercises (Marcos Lopez De Prado)
+
+### BOOK:
+
+- [ ] TODO
+
+### CODE:
+
+- [ ] Advances in Financial Machine Learning, Machine Learning (Marcos Lopez de Prado)  <https://github.com/jjakimoto>
+- [ ] Advances in Financial Machine Learning Exercises <https://github.com/BlackArbsCEO/Adv_Fin_ML_Exercises>
+
+---
+
+## ML:
+
+### BOOK:
+
+- [ ] A Class of Competitive Learning Models which Avoids Neuron Underutilization
+  Problem <https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.474.1879&rep=rep1&type=pdf>
+- [ ] Deep ML <https://d2l.ai/d2l-en.pdf>
+- [ ] An Introduction to Deep Reinforcement Learning <https://arxiv.org/pdf/1811.12560.pdf>
+
+### CODE:
+
+- [ ] TODO
+
+---
+
+# MATERIALS: INVESTING:
+
+## PEOPLE:
+
+### PAPERS:
+
+- [ ] Modem portfolio theory (Harry M. Markowitz) \<todo link>
+- [ ] FOUNDATIONS OF PORTFOLIO THEORY (Harry M.
+  Markowitz) <https://www.nobelprize.org/uploads/2018/06/markowitz-lecture.pdf>
+- [ ] The Sharpe Ratio <http://web.stanford.edu/~wfsharpe/art/sr/sr.htm>
+
+---
 
 ## AI4Finance-Foundation
 
@@ -79,55 +163,8 @@
 - [ ] AI4Finance-Foundation <https://github.com/AI4Finance-Foundation>
 - [ ] Awesome AI4Finance "This is BIG source of information and
   libraries" <https://github.com/AI4Finance-Foundation/Awesome_AI4Finance>
-
-## MASTER THESIS:
-
-- [ ] Portfolio Trading System Using Maximum Sharpe Ratio Criterion <https://core.ac.uk/download/48544724.pdf>
-
-## OTHERS:
-
-### CODE:
-
-- [x] All Stock symbols in the world <https://levelup.gitconnected.com/how-to-get-all-stock-symbols-a73925c16a1b>
-- [ ] Book codes: Machine Learning in Finance: From Theory to Practice (Matthew F.Dixon) <https://github.com/mfrdixon>
-- [ ] Quantitative finance <https://github.com/quantopian>
-- [ ] Machine-Learning-for-Finance (PacktPublishing) <https://github.com/PacktPublishing/Machine-Learning-for-Finance>
-- [ ] Spinning Up in Deep RL (OpenAI) <https://spinningup.openai.com/en/latest/user/introduction.html>
-- [ ] RLzoo <https://github.com/tensorlayer/RLzoo>
-
-## Advances in Financial Machine Learning Exercises (Marcos Lopez De Prado)
-
-### CODE:
-
-- [ ] Book codes: Advances in Financial Machine Learning, Machine Learning (Marcos Lopez de
-  Prado)  <https://github.com/jjakimoto>
-- [ ] Advances in Financial Machine Learning Exercises <https://github.com/BlackArbsCEO/Adv_Fin_ML_Exercises>
-
-### BOOK:
-
-- [ ] Advances in Financial Machine Learning (Marcos López de Prado) \<todo link>
-
-## ML:
-
-### BOOKS:
-
-- [ ] A Class of Competitive Learning Models which
-  Avoids Neuron Underutilization
-  Problem <https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.474.1879&rep=rep1&type=pdf>
-- [ ] Deep ML <https://d2l.ai/d2l-en.pdf>
-- [ ] An Introduction to Deep Reinforcement Learning <https://arxiv.org/pdf/1811.12560.pdf>
-
----
-
-# MATERIALS: INVESTING:
-
-## PEOPLE:
-
-### PAPERS:
-
-- [ ] Modem portfolio theory (Harry M. Markowitz) \<todo link>
-- [ ] FOUNDATIONS OF PORTFOLIO THEORY (Harry M.
-  Markowitz) <https://www.nobelprize.org/uploads/2018/06/markowitz-lecture.pdf>
+- [ ] Multi-Agent Reinforcement Learning for Liquidation Strategy
+  Analysis <https://github.com/AI4Finance-Foundation/Liquidation-Analysis-using-Multi-Agent-Reinforcement-Learning-ICML-2019>
 
 ---
 
