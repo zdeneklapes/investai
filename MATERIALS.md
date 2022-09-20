@@ -166,6 +166,27 @@
 - [ ] Multi-Agent Reinforcement Learning for Liquidation Strategy
   Analysis <https://github.com/AI4Finance-Foundation/Liquidation-Analysis-using-Multi-Agent-Reinforcement-Learning-ICML-2019>
 
+# MATH:
+
+## VGE:
+
+### BOOK:
+
+- <http://www.jaapsuter.com/geometric-algebra.pdf>
+
+### WEBSITES:
+
+- Course <http://cgm.cs.mcgill.ca/~godfried/teaching/cg-web.html>
+- Computational Geometry <https://staff.fnwi.uva.nl/l.dorst/clifford/>
+
+### CODES:
+
+- <https://github.com/Sciumo>
+
+## MDP:
+### BOOK:
+- [ ]  \<todo>
+
 ---
 
 # TYPES of PREDICTIONS:
@@ -174,3 +195,6 @@
 - [ ] stock trading
 - [ ] stock high frequency trading
 - [ ] predict trend (bear/bull) for some amount of time
+
+# Bibliography
+- [ ] https://app.bibguru.com/

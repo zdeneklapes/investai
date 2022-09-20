@@ -13,4 +13,6 @@
 
 ## [MATERIALS](./MATERIALS.md)
 
-# ai-investing-materials
+# POKYNY BP:
+- Harmonogram <https://www.fit.vut.cz/study/theses/schedule/.cs>
+- Podminky <https://www.fei.vsb.cz/export/sites/fei/cs/studium/informace-pokyny/files/pokyny_pro_vypracovani_praci.pdf>
