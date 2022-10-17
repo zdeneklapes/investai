@@ -1,3 +1,3 @@
-[submodule "libs/RL-book"]
-	path = src/third_party/RL-book
+[submodule "third_party/RL_book"]
+	path = third_party/RL_book
 	url = https://github.com/TikhonJelvis/RL-book
