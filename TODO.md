@@ -1,5 +1,7 @@
 # AI-INVESTING: Bachelor Thesis
 
+# TODO
+
 ---
 
 ```
@@ -54,5 +56,6 @@ output:
 - combination of financial series classification and portfolio optimization surpasses each of the single approaches
 
 ## RL
+
 - HJB Equation
-  - <https://youtu.be/-hO-AnFYm6M?list=PLMrJAkhIeNNQe1JXNvaFvURxGY4gE9k74&t=641>
+    - <https://youtu.be/-hO-AnFYm6M?list=PLMrJAkhIeNNQe1JXNvaFvURxGY4gE9k74&t=641>

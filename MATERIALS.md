@@ -1,5 +1,14 @@
 # AI-INVESTING: Bachelor Thesis
 
+# MATERIALS
+
+---
+
+## POKYNY BP:
+
+- Harmonogram <https://www.fit.vut.cz/study/theses/schedule/.cs>
+- Podminky <https://www.fei.vsb.cz/export/sites/fei/cs/studium/informace-pokyny/files/pokyny_pro_vypracovani_praci.pdf>
+
 ---
 
 ## LEGEND:
@@ -184,7 +193,9 @@
 - <https://github.com/Sciumo>
 
 ## MDP:
+
 ### BOOK:
+
 - [ ]  \<todo>
 
 ---
@@ -197,4 +208,5 @@
 - [ ] predict trend (bear/bull) for some amount of time
 
 # Bibliography
+
 - [ ] https://app.bibguru.com/
