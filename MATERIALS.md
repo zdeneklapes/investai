@@ -181,6 +181,7 @@
 
 ### BOOK:
 
+
 - <http://www.jaapsuter.com/geometric-algebra.pdf>
 
 ### WEBSITES:
@@ -210,3 +211,11 @@
 # Bibliography
 
 - [ ] https://app.bibguru.com/
+
+---
+
+## RL:
+
+### BOOK:
+
+- [ ] RL Book <http://incompleteideas.net/book/>
