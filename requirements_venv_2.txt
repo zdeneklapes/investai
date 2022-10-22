@@ -1,0 +1,16 @@
+aiohttp-cors
+ale-py
+autorom
+autorom.accept-rom-license
+colorful
+finrl
+gpustat
+opencensus
+pip-chill
+prometheus-client
+py-spy
+pydantic
+rich
+smart-open
+tabulate
+tensorboard
