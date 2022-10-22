@@ -4,3 +4,6 @@
 [submodule "third_party/FinRL"]
 	path = third_party/FinRL
 	url = git@github.com:AI4Finance-Foundation/FinRL
+[submodule "third_party/FinRL-Tutorials"]
+	path = third_party/FinRL-Tutorials
+	url = https://github.com/AI4Finance-Foundation/FinRL-Tutorials
