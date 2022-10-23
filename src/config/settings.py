@@ -1,9 +1,5 @@
-ROOT_DIR = ".."
-SRC_DIR = "."
-DEBUG_DIR = "../../logs"
-DATESET_IN_PROJECT_DIR = "../dataset"
-EXCHANGES_CSV = "~/datasets/server/stock/all_world_stocks.csv"
-ETF_DIR = "~/datasets/server/etf"
-FOREX_DIR = "~/datasets/server/forex"
-STOCK_DIR = "~/datasets/server/stock"
-FINNHUB_DIR = "~/datasets/server/finnhub"
+from pathlib import Path
+
+ROOT_DIR = Path(__file__).parent.parent.parent
+BASE_DIR = Path(__file__).parent.parent
+DATA_DIR = Path().home().joinpath("my-drive-zdenda-lapes/datasets/ai-investing")

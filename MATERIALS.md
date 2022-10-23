@@ -219,3 +219,9 @@
 ### BOOK:
 
 - [ ] RL Book <http://incompleteideas.net/book/>
+-
+## Optimizations:
+
+### PAPERS:
+
+- [ ] FB AI <https://web.stanford.edu/~boyd/papers/pdf/diff_cvxpy.pdf>
