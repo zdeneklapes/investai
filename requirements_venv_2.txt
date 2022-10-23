@@ -5,11 +5,12 @@ autorom.accept-rom-license
 colorful
 finrl
 gpustat
+jupyter
 opencensus
 pip-chill
-prometheus-client
 py-spy
 pydantic
+pyfolio
 rich
 smart-open
 tabulate

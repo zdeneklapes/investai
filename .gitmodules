@@ -7,3 +7,6 @@
 [submodule "third_party/FinRL-Tutorials"]
 	path = third_party/FinRL-Tutorials
 	url = https://github.com/AI4Finance-Foundation/FinRL-Tutorials
+[submodule "third_party/FinRL-Meta"]
+	path = third_party/FinRL-Meta
+	url = https://github.com/AI4Finance-Foundation/FinRL-Meta
