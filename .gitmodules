@@ -1,12 +1,15 @@
 [submodule "third_party/RL_book"]
-	path = third_party/RL_book
+	path = src/third_party/RL_book
 	url = https://github.com/TikhonJelvis/RL-book
 [submodule "third_party/FinRL"]
-	path = third_party/FinRL
+	path = src/third_party/FinRL
 	url = git@github.com:AI4Finance-Foundation/FinRL
 [submodule "third_party/FinRL-Tutorials"]
-	path = third_party/FinRL-Tutorials
+	path = src/third_party/FinRL-Tutorials
 	url = https://github.com/AI4Finance-Foundation/FinRL-Tutorials
 [submodule "third_party/FinRL-Meta"]
-	path = third_party/FinRL-Meta
+	path = src/third_party/FinRL-Meta
 	url = https://github.com/AI4Finance-Foundation/FinRL-Meta
+[submodule "src/third_party/FinRL-Meta"]
+	path = src/third_party/FinRL-Meta
+	url = git@github.com:zlapik/FinRL-Meta.git

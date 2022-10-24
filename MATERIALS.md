@@ -13,215 +13,219 @@
 
 ## LEGEND:
 
-- [x] : I have read it
-- [ ] : I haven't read it yet
+- : I have read it
+- : I haven't read it yet
 
 ---
 
-# MATERIALS: AI + INVESTING:
+## MATERIALS: AI + INVESTING:
 
-## WEBSITES:
+#### WEBSITES:
 
-- [ ] How “backtest overfitting” in finance leads to false
+- How “backtest overfitting” in finance leads to false
   discoveries <https://rss.onlinelibrary.wiley.com/doi/10.1111/1740-9713.01588>
-- [x] Using Quantitative Investment Strategies (This method is not safe, based on the
+- Using Quantitative Investment Strategies (This method is not safe, based on the
   article) <https://www.investopedia.com/articles/trading/09/quant-strategies.asp>
 
-## PAPERS:
+#### PAPERS:
 
-- [x] Artificial Intelligence Applied to Stock Market Trading: A
+- Artificial Intelligence Applied to Stock Market Trading: A
   Review <https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9350582>
-- [x] Stock Trading Bot Using Deep Reinforcement
+- Stock Trading Bot Using Deep Reinforcement
   Learning <https://www.researchgate.net/profile/Akhil-Azhikodan/publication/325385951_Stock_Trading_Bot_Using_Deep_Reinforcement_Learning/links/5bf4457c299bf1124fe0819a/Stock-Trading-Bot-Using-Deep-Reinforcement-Learning.pdf>
-- [ ] Deep Learning for Market by Order Data <https://arxiv.org/pdf/2102.08811.pdf>
-- [ ] Machine Learning Methods in Finance:
+- Deep Learning for Market by Order Data <https://arxiv.org/pdf/2102.08811.pdf>
+- Machine Learning Methods in Finance:
   Recent Applications and
   Prospects <https://finance.fbv.kit.edu/rd_download/Machine%20Learning%20Methods%20in%20Finance.pdf>
-- [x] Application of Hedonic Price Model in the Prague Property Market (Method could be
+- Application of Hedonic Price Model in the Prague Property Market (Method could be
   useful) <http://home.zcu.cz/~smrcek/www-kma/publikace/eng/HedonicPriceModel.pdf>
-- [ ] The application of artificial intelligence in stock
+- The application of artificial intelligence in stock
   investment <https://www.researchgate.net/publication/339687941_The_application_of_artificial_intelligence_in_stock_investment>
 
-## MASTER THESIS:
+#### MASTER THESIS:
 
-- [ ] Portfolio Trading System Using Maximum Sharpe Ratio Criterion <https://core.ac.uk/download/48544724.pdf>
+- Portfolio Trading System Using Maximum Sharpe Ratio Criterion <https://core.ac.uk/download/48544724.pdf>
 
 ---
 
-# BOOKS:
+## BOOKS:
 
-## Machine Learning in Finance: From Theory to Practice (Matthew F.Dixon)
+### Machine Learning in Finance: From Theory to Practice (Matthew F.Dixon)
 
-### BOOK:
+#### BOOK:
 
-- [ ] TODO
+- TODO
 
-### CODE:
+#### CODE:
 
-- [ ] <https://github.com/TikhonJelvis/RL-book>
+- <https://github.com/TikhonJelvis/RL-book>
 
-## Foundations of Reinforcement Learning with Applications in Finance (Ashwin Rao, Tikhon Jelvis)
+### Foundations of Reinforcement Learning with Applications in Finance (Ashwin Rao, Tikhon Jelvis)
 
-### BOOK:
+#### BOOK:
 
-- [ ] <https://stanford.edu/~ashlearn/RLForFinanceBook/book.pdf>
+- <https://stanford.edu/~ashlearn/RLForFinanceBook/book.pdf>
 
-### CODE:
+#### CODE:
 
-- [ ] <https://github.com/TikhonJelvis/RL-book>
+- <https://github.com/TikhonJelvis/RL-book>
 
-## Machine Learning for Algorithmic Trading: Predictive models to extract signals from market and alternative data for systematic trading strategies with Python, 2nd Edition
+### Machine Learning for Algorithmic Trading: Predictive models to extract signals from market and alternative data for systematic trading strategies with Python, 2nd Edition
 
-### BOOK:
+#### BOOK:
 
-- [ ] <https://www.amazon.com/Machine-Learning-Algorithmic-Trading-alternative/dp/1839217715?pf_rd_r=GZH2XZ35GB3BET09PCCA&pf_rd_p=c5b6893a-24f2-4a59-9d4b-aff5065c90ec&pd_rd_r=91a679c7-f069-4a6e-bdbb-a2b3f548f0c8&pd_rd_w=2B0Q0&pd_rd_wg=GMY5S&ref_=pd_gw_ci_mcx_mr_hp_d>
+- <https://www.amazon.com/Machine-Learning-Algorithmic-Trading-alternative/dp/1839217715?pf_rd_r=GZH2XZ35GB3BET09PCCA&pf_rd_p=c5b6893a-24f2-4a59-9d4b-aff5065c90ec&pd_rd_r=91a679c7-f069-4a6e-bdbb-a2b3f548f0c8&pd_rd_w=2B0Q0&pd_rd_wg=GMY5S&ref_=pd_gw_ci_mcx_mr_hp_d>
 
-### CODE:
+#### CODE:
 
-- [ ] <https://github.com/stefan-jansen/machine-learning-for-trading>
+- <https://github.com/stefan-jansen/machine-learning-for-trading>
 
-## Machine-Learning-for-Finance
+### Machine-Learning-for-Finance
 
-### BOOK:
+#### BOOK:
 
-- [ ] TODO
+- TODO
 
-### CODE:
+#### CODE:
 
-- [ ] <https://github.com/PacktPublishing/Machine-Learning-for-Finance>
+- <https://github.com/PacktPublishing/Machine-Learning-for-Finance>
 
-## OTHERS:
+#### OTHERS:
 
-### CODE:
+#### CODE:
 
-- [x] All Stock symbols in the world <https://levelup.gitconnected.com/how-to-get-all-stock-symbols-a73925c16a1b>
-- [ ] Quantitative finance <https://github.com/quantopian>
-- [ ] Spinning Up in Deep RL (OpenAI) <https://spinningup.openai.com/en/latest/user/introduction.html>
-- [ ] RLzoo <https://github.com/tensorlayer/RLzoo>
+- All Stock symbols in the world <https://levelup.gitconnected.com/how-to-get-all-stock-symbols-a73925c16a1b>
+- Quantitative finance <https://github.com/quantopian>
+- Spinning Up in Deep RL (OpenAI) <https://spinningup.openai.com/en/latest/user/introduction.html>
+- RLzoo <https://github.com/tensorlayer/RLzoo>
 
-### WEBSITES:
+#### WEBSITES:
 
 - <https://ml4trading.io/outline>
 
-## Advances in Financial Machine Learning Exercises (Marcos Lopez De Prado)
+### Advances in Financial Machine Learning Exercises (Marcos Lopez De Prado)
 
-### BOOK:
+#### BOOK:
 
-- [ ] TODO
+- TODO
 
-### CODE:
+#### CODE:
 
-- [ ] Advances in Financial Machine Learning, Machine Learning (Marcos Lopez de Prado)  <https://github.com/jjakimoto>
-- [ ] Advances in Financial Machine Learning Exercises <https://github.com/BlackArbsCEO/Adv_Fin_ML_Exercises>
+- Advances in Financial Machine Learning, Machine Learning (Marcos Lopez de Prado)  <https://github.com/jjakimoto>
+- Advances in Financial Machine Learning Exercises <https://github.com/BlackArbsCEO/Adv_Fin_ML_Exercises>
 
 ---
 
 ## ML:
 
-### BOOK:
+#### BOOK:
 
-- [ ] A Class of Competitive Learning Models which Avoids Neuron Underutilization
+- A Class of Competitive Learning Models which Avoids Neuron Underutilization
   Problem <https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.474.1879&rep=rep1&type=pdf>
-- [ ] Deep ML <https://d2l.ai/d2l-en.pdf>
-- [ ] An Introduction to Deep Reinforcement Learning <https://arxiv.org/pdf/1811.12560.pdf>
+- Deep ML <https://d2l.ai/d2l-en.pdf>
+- An Introduction to Deep Reinforcement Learning <https://arxiv.org/pdf/1811.12560.pdf>
 
-### CODE:
+#### CODE:
 
-- [ ] TODO
+- TODO
 
 ---
 
-# MATERIALS: INVESTING:
+## MATERIALS: INVESTING:
 
-## PEOPLE:
+### PEOPLE:
 
-### PAPERS:
+#### PAPERS:
 
-- [ ] Modem portfolio theory (Harry M. Markowitz) \<todo link>
-- [ ] FOUNDATIONS OF PORTFOLIO THEORY (Harry M.
+- Modem portfolio theory (Harry M. Markowitz) \<todo link>
+- FOUNDATIONS OF PORTFOLIO THEORY (Harry M.
   Markowitz) <https://www.nobelprize.org/uploads/2018/06/markowitz-lecture.pdf>
-- [ ] The Sharpe Ratio <http://web.stanford.edu/~wfsharpe/art/sr/sr.htm>
+- The Sharpe Ratio <http://web.stanford.edu/~wfsharpe/art/sr/sr.htm>
 
 ---
 
 ## AI4Finance-Foundation
 
-### PAPERS:
+#### PAPERS:
 
-- [x] FinRL-Meta: A Universe of Near-Real Market Environments for Data-Driven Deep Reinforcement Learning in
+- FinRL-Meta: A Universe of Near-Real Market Environments for Data-Driven Deep Reinforcement Learning in
   Quantitative Finance
   <https://arxiv.org/abs/2112.06753>
-- [x] Explainable Deep Reinforcement Learning for Portfolio Management: An Empirical
+- Explainable Deep Reinforcement Learning for Portfolio Management: An Empirical
   Approach <https://arxiv.org/abs/2111.03995>
-- [x] FinRL-Podracer: High Performance and Scalable Deep Reinforcement Learning for Quantitative
+- FinRL-Podracer: High Performance and Scalable Deep Reinforcement Learning for Quantitative
   Finance <https://arxiv.org/abs/2111.05188>
-- [x] FinRL: Deep Reinforcement Learning Framework to Automate Trading in Quantitative Finance
+- FinRL: Deep Reinforcement Learning Framework to Automate Trading in Quantitative Finance
   <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3955949>
-- [x] FinRL: A Deep Reinforcement Learning Library for Automated Stock Trading in Quantitative
+- FinRL: A Deep Reinforcement Learning Library for Automated Stock Trading in Quantitative
   Finance <https://arxiv.org/abs/2011.09607>
-- [x] Deep Reinforcement Learning for Automated Stock Trading: An Ensemble
+- Deep Reinforcement Learning for Automated Stock Trading: An Ensemble
   Strategy <https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3690996>
-- [x] Multi-Agent Deep Reinforcement Learning for Liquidation Strategy Analysis
+- Multi-Agent Deep Reinforcement Learning for Liquidation Strategy Analysis
   <https://arxiv.org/abs/1906.11046>
-- [x] Practical Deep Reinforcement Learning Approach for Stock Trading <https://arxiv.org/abs/1811.07522>
-- [ ] Quantum Tensor Networks for Variational Reinforcement
+- Practical Deep Reinforcement Learning Approach for Stock Trading <https://arxiv.org/abs/1811.07522>
+- Quantum Tensor Networks for Variational Reinforcement
   Learning <https://tensorworkshop.github.io/NeurIPS2020/accepted_papers/NIPS_2020_Workshop_Yiming%20(2).pdf>
 
-### CODE:
+#### CODE:
 
-- [ ] AI4Finance-Foundation <https://github.com/AI4Finance-Foundation>
-- [ ] Awesome AI4Finance "This is BIG source of information and
+- AI4Finance-Foundation <https://github.com/AI4Finance-Foundation>
+- Awesome AI4Finance "This is BIG source of information and
   libraries" <https://github.com/AI4Finance-Foundation/Awesome_AI4Finance>
-- [ ] Multi-Agent Reinforcement Learning for Liquidation Strategy
+- Multi-Agent Reinforcement Learning for Liquidation Strategy
   Analysis <https://github.com/AI4Finance-Foundation/Liquidation-Analysis-using-Multi-Agent-Reinforcement-Learning-ICML-2019>
 
-# MATH:
+---
 
-## VGE:
+## MATH:
 
-### BOOK:
+### VGE:
 
+#### BOOK:
 
 - <http://www.jaapsuter.com/geometric-algebra.pdf>
 
-### WEBSITES:
+#### WEBSITES:
 
 - Course <http://cgm.cs.mcgill.ca/~godfried/teaching/cg-web.html>
 - Computational Geometry <https://staff.fnwi.uva.nl/l.dorst/clifford/>
 
-### CODES:
+#### CODES:
 
 - <https://github.com/Sciumo>
 
-## MDP:
+### MDP:
 
-### BOOK:
+#### BOOK:
 
-- [ ]  \<todo>
+- \<todo>
 
 ---
 
-# TYPES of PREDICTIONS:
+## TYPES of PREDICTIONS:
 
-- [ ] portfolio allocation
-- [ ] stock trading
-- [ ] stock high frequency trading
-- [ ] predict trend (bear/bull) for some amount of time
+- portfolio allocation
+- stock trading
+- stock high frequency trading
+- predict trend (bear/bull) for some amount of time
 
-# Bibliography
+---
 
-- [ ] https://app.bibguru.com/
+## Bibliography
+
+- https://app.bibguru.com/
 
 ---
 
 ## RL:
 
-### BOOK:
+#### BOOK:
 
-- [ ] RL Book <http://incompleteideas.net/book/>
--
-## Optimizations:
+- RL Book <http://incompleteideas.net/book/>
+- HJB Equation - <https://youtu.be/-hO-AnFYm6M?list=PLMrJAkhIeNNQe1JXNvaFvURxGY4gE9k74&t=641>
 
-### PAPERS:
+### Optimizations:
 
-- [ ] FB AI <https://web.stanford.edu/~boyd/papers/pdf/diff_cvxpy.pdf>
+#### PAPERS:
+
+- FB AI <https://web.stanford.edu/~boyd/papers/pdf/diff_cvxpy.pdf>

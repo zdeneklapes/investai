@@ -4,19 +4,12 @@
 
 ---
 
-```
+- Ceska: Where to train models (cloud)?
+- Ceska: Where to store datasets (cloud)?
+
 ---
-output:
-  pdf_document:
-    latex_engine: xelatex
----
-```
 
-# IDEAS / TODO
-
-- Start project
-
-## IDEAS (MAIN)
+### IDEAS
 
 - Build (Neural network | ...)
 - which will (train NN | ...)
@@ -27,13 +20,12 @@ output:
 - Finite/infinite automatically building state machine consists in probabilities
 - Find correlation between some features (indicators | ...) and result ±1-5% (Gaussian Distribution)
 
-## STOCK'S DIVISION
+##### DIVERSIFICATION
 
-- By:
--
-    - sector
+- Using:
+    - Investing into different sectors
 
-## FEATURES_1: SORT BY
+##### RL: Features
 
 - Which companies have the most amount of cash available relative to amount of debt?
 - Which companies have the most biggest profit relative to amount of debt?
@@ -45,17 +37,8 @@ output:
 - Which companies are the oldest?
 - Which companies are the youngest?
 
-> Result: (make the union on the top most companies | train NN | ...)
-
-## FEATURES_2
+###### HINTS:
 
 - The company exist a long time so the growth can be slower than in the young company
-
-## ALREADY TESTED
-
+- Result: (make the union on the top most companies | train NN | ...)
 - combination of financial series classification and portfolio optimization surpasses each of the single approaches
-
-## RL
-
-- HJB Equation
-    - <https://youtu.be/-hO-AnFYm6M?list=PLMrJAkhIeNNQe1JXNvaFvURxGY4gE9k74&t=641>
