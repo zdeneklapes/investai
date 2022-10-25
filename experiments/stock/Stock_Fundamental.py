@@ -44,6 +44,10 @@
 # The data of the single stock that we will use for this case study is obtained from Yahoo
 # Finance API. The data contains Open-High-Low-Close prices and volume.
 
+###############################################################################
+# TODO
+###############################################################################
+# TODO: Add argument parser
 
 # %%
 ###############################################################################
@@ -98,6 +102,8 @@ TRAIN_START_DATE = "2009-01-01"
 TRAIN_END_DATE = "2021-07-01"
 TEST_START_DATE = "2021-07-01"
 TEST_END_DATE = "2022-07-01"
+
+now = datetime.datetime.now().strftime("%Y%m%d-%Hh%M")
 
 
 # %%
@@ -468,7 +474,6 @@ def get_env(train_data: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv, dic
 ################################################################################
 # ## Part 6.1: Saving helper
 def save_trained_model(model: tp.Any, name: str) -> str:
-    now = datetime.datetime.now().strftime("%Y%m%d-%Hh%M")
     model_filename = path.join(TRAINED_MODEL_DIR, f"{name}_{now}")
     model.save(model_filename)
     return model_filename
@@ -542,7 +547,9 @@ def train_using_td3(agent: DRLAgent):
     save_trained_model(trained_td3, name="trained_td3")
 
 
-def train_using_sac(agent: DRLAgent):
+def train_using_sac() -> str:
+    #
+    agent, _, _ = get_env(train_data)
     SAC_PARAMS = {
         "batch_size": 128,
         "buffer_size": 1000000,
@@ -551,6 +558,7 @@ def train_using_sac(agent: DRLAgent):
         "ent_coef": "auto_0.1",
     }
 
+    #
     model_sac = agent.get_model("sac", model_kwargs=SAC_PARAMS)
 
     # set up logger
@@ -560,7 +568,8 @@ def train_using_sac(agent: DRLAgent):
     model_sac.set_logger(new_logger_sac)
 
     trained_sac = agent.train_model(model=model_sac, tb_log_name="sac", total_timesteps=30000)
-    save_trained_model(trained_sac, name="trained_sac")
+    model_filename = save_trained_model(trained_sac, name="trained_sac")
+    return model_filename
 
 
 ################################################################################
@@ -578,28 +587,20 @@ def train_using_sac(agent: DRLAgent):
 # process and are usually determined by testing some variations.
 
 
-def test(model: tp.Any, env_gym):
-    DRLAgent.DRL_prediction(model=model, environment=env_gym)
-
-
-################################################################################
-# # Part 7: Backtest Our Strategy
-# Backtesting plays a key role in evaluating the performance of a trading strategy. Automated
-# backtesting tool is preferred because it reduces the human error. We usually use the Quantopian
-# pyfolio package to backtest our trading strategies. It is easy to use and consists of various individual
-# plots that provide a comprehensive image of the performance of a trading strategy.
-
-################################################################################
-# ## 7.1 BackTestStats
-# pass in df_account_value, this information is stored in env class
-
-
-def backtest(df_account_value: tp.Any):
+def test(model_filename: str) -> tp.Any:
     print("==============Get Backtest Results===========")
-    now = datetime.datetime.now().strftime("%Y%m%d-%Hh%M")
-    perf_stats_all_ppo = backtest_stats(account_value=df_account_value)
-    perf_stats_all_ppo = pd.DataFrame(perf_stats_all_ppo)
-    perf_stats_all_ppo.to_csv("./" + finrl_config.RESULTS_DIR + "/perf_stats_all_ppo_" + now + ".csv")
+
+    #
+    model = load_trained_model(model_filename)
+    agent, env_gym, env_kwargs = get_env(train_data)
+
+    #
+    account_value, actions = DRLAgent.DRL_prediction(model=model, environment=env_gym)
+    perf_stats_all = backtest_stats(account_value=account_value)
+    perf_stats_all = pd.DataFrame(perf_stats_all)
+    perf_stats_all.to_csv("./" + finrl_config.RESULTS_DIR + "/perf_stats_all_sac_" + now + ".csv")
+
+    return account_value, actions
 
 
 def backtest_baseline():
@@ -610,35 +611,31 @@ def backtest_baseline():
     # TODO: Save stats to log file
 
 
-#################################################################################
-# ## 7.2 BackTestPlot
-
-
-def custom_backtest_plot(df_account_value: tp.Any):
-    """
-    S&P 500: ^GSPC
-    Dow Jones Index: ^DJI
-    NASDAQ 100: ^NDX
-
-    :param df_account_value:
-    :return:
-    """
-
-    print("==============Compare to DJIA===========")
-    backtest_plot(df_account_value, baseline_ticker="^DJI", baseline_start=TEST_START_DATE, baseline_end=TEST_END_DATE)
-
-
 # %%
-
 if __name__ == "__main__":
     #
-    check_and_make_directories([DATA_SAVE_DIR, TRAINED_MODEL_DIR, TENSORBOARD_LOG_DIR, RESULTS_DIR])
+    using_a2c = False
+    using_ddpg = False
+    using_ppo = False
+    using_td3 = False
+    using_sac = True
 
     #
-    if_using_a2c = False
-    if_using_ddpg = False
-    if_using_ppo = False
-    if_using_td3 = False
-    if_using_sac = True
+    config()
+    check_and_make_directories([DATA_SAVE_DIR, TRAINED_MODEL_DIR, TENSORBOARD_LOG_DIR, RESULTS_DIR])
+    fundament_data = get_fundament_data()
+    ratios = get_ratios(fund_data=fundament_data)
+    full_data = get_processed_full_data(fundament_data, ratios)
+    train_data = get_train_data(full_data)
+    test_data = get_test_data(full_data)
+
+    #
+    if using_sac:
+        print("Training")
+        model_filename = train_using_sac()
+        print("Testing")
+        account_value, actions = test(model_filename)
+        backtest_plot(account_value, baseline_ticker="^DJI", baseline_start=TEST_START_DATE, baseline_end=TEST_END_DATE)
+        backtest_baseline()
 
     sys.exit(0)
