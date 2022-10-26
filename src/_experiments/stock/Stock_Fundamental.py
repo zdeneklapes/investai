@@ -40,12 +40,13 @@ from StockTraidingEnv import StockTradingEnv
 from finrl.agents.stablebaselines3.models import DRLAgent
 from finrl.plot import backtest_plot, backtest_stats, get_baseline
 from finrl.main import check_and_make_directories
-from finrl.config import (
-    DATA_SAVE_DIR,
-    TRAINED_MODEL_DIR,
-    TENSORBOARD_LOG_DIR,
-    RESULTS_DIR,
-)
+
+# from finrl.config import (
+#     DATA_SAVE_DIR,
+#     TRAINED_MODEL_DIR,
+#     TENSORBOARD_LOG_DIR,
+#     RESULTS_DIR,
+# )
 from finrl.config_tickers import DOW_30_TICKER
 
 from stable_baselines3.common.logger import configure, Logger
@@ -87,6 +88,14 @@ NOW = datetime.datetime.now().strftime("%Y%m%d-%Hh%M")
 def config():
     warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
     matplotlib.use("Agg")
+    check_and_make_directories(
+        [
+            finrl_config.DATA_SAVE_DIR,
+            finrl_config.TRAINED_MODEL_DIR,
+            finrl_config.TENSORBOARD_LOG_DIR,
+            finrl_config.RESULTS_DIR,
+        ]
+    )
 
 
 def prepare_data_from_yf() -> pd.DataFrame:
@@ -444,7 +453,7 @@ def get_env(df: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv, dict]:
 ################################################################################
 # ## Save/Load Helpers
 def save_trained_model(model: tp.Any, name: str) -> str:
-    model_filename = os.path.join(TRAINED_MODEL_DIR, f"{name}_{NOW}")
+    model_filename = os.path.join(finrl_config.TRAINED_MODEL_DIR, f"{name}_{NOW}")
     model.save(model_filename)
     return model_filename
 
@@ -462,8 +471,9 @@ def training_model(model_name: str, data: pd.DataFrame, total_timesteps: int, pa
     #
     agent: DRLAgent = get_env(data)[0]
     model: SAC = agent.get_model(model_name, model_kwargs=params)
-    tmp_path: str = RESULTS_DIR + model_name
-    new_logger: Logger = configure(tmp_path, ["stdout", "csv", "tensorboard"])
+    new_logger: Logger = configure(
+        folder=os.path.join(finrl_config.RESULTS_DIR, model_name), format_strings=["stdout", "csv", "tensorboard"]
+    )
     model.set_logger(new_logger)
 
     #
@@ -502,7 +512,6 @@ def backtest_baseline():
 def main():
     args = argument_parser()
     config()
-    check_and_make_directories([DATA_SAVE_DIR, TRAINED_MODEL_DIR, TENSORBOARD_LOG_DIR, RESULTS_DIR])
     prepared_dataset: pd.DataFrame()
     trained_models = args[ArgNames.MODEL]
 
