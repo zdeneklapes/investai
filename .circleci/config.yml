@@ -1,0 +1,17 @@
+version: 2.1
+
+jobs:
+  lint:
+    machine: true
+    steps:
+      - checkout
+      - run:
+          name:
+          command: |
+            sudo pip3 install pre-commit
+            pre-commit run --all-files
+
+workflows:
+  push:
+    jobs:
+      - lint
