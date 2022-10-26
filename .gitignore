@@ -5,12 +5,16 @@
 *.env*
 !sample.env*
 
+# Zip
+*.zip
+
 # Models
 datasets/
 results/
 tensorboard_log/
-!trained_models/*trained*
 
+# Include all trained models
+!**/trained_models/*
 
 # Documentation
 doc/**
@@ -44,9 +48,6 @@ logs/
 
 # Package code
 *.egg-info/
-
-# Others
-*.zip
 
 # Images
 *.jpg
