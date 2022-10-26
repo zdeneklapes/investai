@@ -1,42 +1,54 @@
-##### FILES
 # macOS
 .DS_Store
 
-# .env
+# Env variables
 *.env*
 !sample.env*
 
-##### FOLDERS
-# docs
+# Models
+datasets/
+results/
+tensorboard_log/
+!trained_models/*trained*
+
+
+# Documentation
 doc/**
 !doc/Doxyfile
+*.dvi
+*.log
+*.blg
+*.bbl
+*.toc
+*.aux
+*.out
+*.lof
+*.ptc
 
-# materials
+# Materials
 others/
 
-# ide
+# IDE
 .idea/
 
-# local caches
+# Caches
+__pycache__/
 .cache/
 
-# project dependencies
+# venv
 venv/
 venv_2/
 
-# python caches
-__pycache__/
-
-# logs
+# Logs
 logs/
 
-# package code
+# Package code
 *.egg-info/
 
-# others
+# Others
 *.zip
 
-# images
+# Images
 *.jpg
 *.jpeg
 *.png

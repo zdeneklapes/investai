@@ -58,6 +58,7 @@ import datetime
 
 from os import path
 import sys
+
 from pathlib import Path
 import itertools
 import typing as tp
@@ -69,7 +70,9 @@ import pandas as pd
 from finrl import config as finrl_config
 from finrl.meta.preprocessor.yahoodownloader import YahooDownloader
 from finrl.meta.preprocessor.preprocessors import data_split
-from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
+
+# from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
+from StockTraidingEnv import StockTradingEnv
 from finrl.agents.stablebaselines3.models import DRLAgent
 from finrl.plot import backtest_plot, backtest_stats, get_baseline
 from finrl.main import check_and_make_directories
@@ -81,12 +84,15 @@ from finrl.config import (
 )
 from finrl.config_tickers import DOW_30_TICKER
 
-from stable_baselines3.common.logger import configure
+from stable_baselines3.common.logger import configure, Logger
 from stable_baselines3.common.base_class import BaseAlgorithm
+from stable_baselines3 import SAC
 
-# from stable_baselines3.common import logger
+sys.path.append("../")
+sys.path.append("../../")
+sys.path.append("../../../")
 
-from src.config.settings import DATA_DIR
+from config.settings import DATA_DIR  # noqa: E402
 
 # %%
 ###############################################################################
@@ -193,6 +199,10 @@ def get_fundament_data() -> pd.DataFrame:
             "ltq": "tot_liabilities",  # Liabilities
         }
     )
+
+    fund_data["date"] = pd.to_datetime(fund_data["date"], format="%Y-%m-%d")
+    fund_data.sort_values(["date", "tic"], ignore_index=True).head()
+
     return fund_data
 
 
@@ -353,14 +363,15 @@ def get_ratios(fund_data: pd.DataFrame):
 # columns after merging the two dataframes. We deal with this by backfilling the ratios.
 
 
-def get_processed_full_data(df: pd.DataFrame, final_ratios: pd.DataFrame) -> pd.DataFrame:
+def get_processed_full_data(ratios: pd.DataFrame) -> pd.DataFrame:
+    df = prepare_data_from_yf()
     list_ticker = df["tic"].unique().tolist()
     list_date = list(pd.date_range(df["date"].min(), df["date"].max()))
     combination = list(itertools.product(list_date, list_ticker))
 
     # Merge stock price data and ratios into one dataframe
     processed_full = pd.DataFrame(combination, columns=["date", "tic"]).merge(df, on=["date", "tic"], how="left")
-    processed_full = processed_full.merge(final_ratios, how="left", on=["date", "tic"])
+    processed_full = processed_full.merge(ratios, how="left", on=["date", "tic"])
     processed_full = processed_full.sort_values(["tic", "date"])
 
     # Backfill the ratio data to make them daily
@@ -447,6 +458,7 @@ def get_env(train_data: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv, dic
         "tech_indicator_list": ratio_list,
         "action_space": stock_dimension,
         "reward_scaling": 1e-4,
+        # "num_stock_shares": 0,
     }
 
     # Establish the training environment using StockTradingEnv() class
@@ -548,8 +560,7 @@ def train_using_td3(agent: DRLAgent):
 
 
 def train_using_sac() -> str:
-    #
-    agent, _, _ = get_env(train_data)
+    agent: DRLAgent = get_env(train_data)[0]
     SAC_PARAMS = {
         "batch_size": 128,
         "buffer_size": 1000000,
@@ -559,17 +570,15 @@ def train_using_sac() -> str:
     }
 
     #
-    model_sac = agent.get_model("sac", model_kwargs=SAC_PARAMS)
+    model: SAC = agent.get_model("sac", model_kwargs=SAC_PARAMS)
+    tmp_path: str = RESULTS_DIR + "/sac"
+    new_logger: Logger = configure(tmp_path, ["stdout", "csv", "tensorboard"])
+    model.set_logger(new_logger)
 
-    # set up logger
-    tmp_path = RESULTS_DIR + "/sac"
-    new_logger_sac = configure(tmp_path, ["stdout", "csv", "tensorboard"])
-    # Set new logger
-    model_sac.set_logger(new_logger_sac)
-
-    trained_sac = agent.train_model(model=model_sac, tb_log_name="sac", total_timesteps=30000)
-    model_filename = save_trained_model(trained_sac, name="trained_sac")
-    return model_filename
+    #
+    trained_model = agent.train_model(model=model, tb_log_name="sac", total_timesteps=30000)
+    filename = save_trained_model(trained_model, name="trained_sac")
+    return filename
 
 
 ################################################################################
@@ -592,7 +601,7 @@ def test(model_filename: str) -> tp.Any:
 
     #
     model = load_trained_model(model_filename)
-    agent, env_gym, env_kwargs = get_env(train_data)
+    _, env_gym, _ = get_env(train_data)
 
     #
     account_value, actions = DRLAgent.DRL_prediction(model=model, environment=env_gym)
@@ -625,7 +634,7 @@ if __name__ == "__main__":
     check_and_make_directories([DATA_SAVE_DIR, TRAINED_MODEL_DIR, TENSORBOARD_LOG_DIR, RESULTS_DIR])
     fundament_data = get_fundament_data()
     ratios = get_ratios(fund_data=fundament_data)
-    full_data = get_processed_full_data(fundament_data, ratios)
+    full_data = get_processed_full_data(ratios)
     train_data = get_train_data(full_data)
     test_data = get_test_data(full_data)
 
