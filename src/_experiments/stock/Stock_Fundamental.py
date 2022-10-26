@@ -1,48 +1,12 @@
 # %%
 ################################################################################
-# coding: utf-8
-
 # # Stock trading with fundamentals
-#
+################################################################################
+
+################################################################################
 # * This notebook is based on the tutorial:
 # https://towardsdatascience.com/finrl-for-quantitative-finance-tutorial-for-multiple-stock-trading-7b00763b7530
 
-# * This project is a result of the almuni-mentored research project at Columbia
-# University, Application of Reinforcement Learning to Finance.
-# * For detailed explanation, please check out the
-# Medium article:
-# medium.com/@mariko.sawada1/automated-stock-trading-with-deep-reinforcement-learning-and-financial-data-a63286ccbe2b
-
-
-################################################################################
-# # Part 1. Task Description
-
-# We train a DRL agent for stock trading. The task is modeled as a Markov Decision Process (MDP),
-# and the objective function is maximizing (expected) cumulative return.
-#
-# We specify the state-action-reward as follows:
-#
-# * **State s**: The state space represents an agent's perception of the market environment.
-# Like a human trader analyzes various information, here our agent passively observes many features and
-# learn by interacting with the market environment (usually by replaying historical data).
-#
-# * **Action a**: The action space includes allowed actions that an agent can take
-# at each state. For example, a ∈ {−1, 0, 1}, where −1, 0, 1 represent
-# selling, holding, and buying. When an action operates multiple shares, a ∈{−k, ..., −1, 0, 1, ..., k}, e.g.. "Buy
-# 10 shares of AAPL" or "Sell 10 shares of AAPL" are 10 or −10, respectively
-#
-# * **Reward function r(s, a, s′)**: Reward is an incentive for an agent to learn
-# a better policy. For example, it can be the change of the portfolio value when taking a at state s and arriving
-# at new state s',  i.e., r(s, a, s′) = v′ − v, where v′ and v
-# represent the portfolio values at state s′ and s, respectively
-#
-#
-# **Market environment**: 30 consituent stocks of Dow Jones Industrial Average (DJIA) index. Accessed at
-# the starting date of the testing period.
-#
-#
-# The data of the single stock that we will use for this case study is obtained from Yahoo
-# Finance API. The data contains Open-High-Low-Close prices and volume.
 
 ###############################################################################
 # TODO
@@ -54,13 +18,13 @@
 # INCLUDES
 ###############################################################################
 
-import datetime
 
-from os import path
+import os
 import sys
-
+import warnings
 from pathlib import Path
 import itertools
+import datetime
 import typing as tp
 
 import matplotlib
@@ -93,6 +57,8 @@ sys.path.append("../../")
 sys.path.append("../../../")
 
 from config.settings import DATA_DIR  # noqa: E402
+from common.argument_parser import argument_parser, ArgNames  # noqa: E402
+import _experiments.stock.hyperparameters as hp  # noqa: E402
 
 # %%
 ###############################################################################
@@ -109,7 +75,7 @@ TRAIN_END_DATE = "2021-07-01"
 TEST_START_DATE = "2021-07-01"
 TEST_END_DATE = "2022-07-01"
 
-now = datetime.datetime.now().strftime("%Y%m%d-%Hh%M")
+NOW = datetime.datetime.now().strftime("%Y%m%d-%Hh%M")
 
 
 # %%
@@ -119,6 +85,7 @@ now = datetime.datetime.now().strftime("%Y%m%d-%Hh%M")
 
 
 def config():
+    warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
     matplotlib.use("Agg")
 
 
@@ -139,7 +106,7 @@ def prepare_data_from_yf() -> pd.DataFrame:
 ################################################################################
 # ## 4.1 Import the financial data
 def get_fundament_data() -> pd.DataFrame:
-    fundamenatal_data_filename = Path(path.join(DATA_DIR, "stock/ai4-finance/dji30_fundamental_data.csv"))
+    fundamenatal_data_filename = Path(os.path.join(DATA_DIR, "stock/ai4-finance/dji30_fundamental_data.csv"))
     fund = pd.read_csv(fundamenatal_data_filename, low_memory=False)  # dtype param make low_memory warning silent
 
     # ## 4.2 Specify items needed to calculate financial ratios
@@ -391,20 +358,18 @@ def get_processed_full_data(ratios: pd.DataFrame) -> pd.DataFrame:
     processed_full = processed_full.copy()
     processed_full = processed_full.fillna(0)
     processed_full = processed_full.replace(np.inf, 0)
-    print(processed_full.shape)
+
+    processed_full.to_csv(os.path.join(DATA_DIR, f"stock/ai4-finance/dataset_fundament_{NOW}.csv"))
 
     return processed_full
 
 
 ################################################################################
-# # Part 5. A Market Environment in OpenAI Gym-style
-# The training process involves observing stock price change, taking an action and reward's calculation. By interacting
-# with the market environment, the agent will eventually derive a trading strategy that may maximize (expected) rewards.
-#
-# Our market environment, based on OpenAI Gym, simulates stock markets with historical market data.
+# # A Market Environment in OpenAI Gym-style
+################################################################################
 
 ################################################################################
-# ## 5.1 Data Split
+# ## Data Split
 # - Training data period: 2009-01-01 to 2019-01-01
 # - Trade data period: 2019-01-01 to 2020-12-31
 
@@ -423,7 +388,7 @@ def get_test_data(processed_full: pd.DataFrame):
 # ## 5.2 Set up the training environment
 
 
-def get_env(train_data: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv, dict]:
+def get_env(df: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv, dict]:
     ratio_list = [
         "OPM",
         "NPM",
@@ -442,7 +407,7 @@ def get_env(train_data: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv, dic
         "Div_yield",
     ]
 
-    stock_dimension = len(train_data.tic.unique())
+    stock_dimension = len(df.tic.unique())
     state_space = 1 + 2 * stock_dimension + len(ratio_list) * stock_dimension  # TODO: Why?
     print(f"Stock Dimension: {stock_dimension}, State Space: {state_space}")
     print()
@@ -462,7 +427,7 @@ def get_env(train_data: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv, dic
     }
 
     # Establish the training environment using StockTradingEnv() class
-    e_train_gym = StockTradingEnv(df=train_data, **env_kwargs)
+    e_train_gym = StockTradingEnv(df=df, **env_kwargs)
 
     # Environment for Training
     env_train, _ = e_train_gym.get_sb_env()
@@ -473,20 +438,13 @@ def get_env(train_data: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv, dic
 
 
 ################################################################################
-# # Part 6: Train DRL Agents
-# * The DRL algorithms are from **Stable Baselines 3**. Users are also encouraged
-# to try **ElegantRL** and **Ray RLlib**.
-# * FinRL library includes fine-tuned standard DRL algorithms, such as DQN, DDPG,
-# Multi-Agent DDPG, PPO, SAC, A2C and TD3. We also allow users to
-# design their own DRL algorithms by adapting these DRL algorithms.
-#
-# Set up the agent using DRLAgent() class using the environment created in the previous part
-# ### Agent Training: 5 algorithms (A2C, DDPG, PPO, TD3, SAC)
+# # Train/Test
+################################################################################
 
 ################################################################################
-# ## Part 6.1: Saving helper
+# ## Save/Load Helpers
 def save_trained_model(model: tp.Any, name: str) -> str:
-    model_filename = path.join(TRAINED_MODEL_DIR, f"{name}_{now}")
+    model_filename = os.path.join(TRAINED_MODEL_DIR, f"{name}_{NOW}")
     model.save(model_filename)
     return model_filename
 
@@ -497,117 +455,37 @@ def load_trained_model(name: str):
 
 
 ################################################################################
-# ## Part 6.2: Models
-def train_using_a2c(agent: DRLAgent):
-    model_a2c = agent.get_model("a2c")
-
-    # set up logger
-    tmp_path = RESULTS_DIR + "/a2c"
-    new_logger_a2c = configure(tmp_path, ["stdout", "csv", "tensorboard"])
-    # Set new logger
-    model_a2c.set_logger(new_logger_a2c)
-
-    trained_a2c = agent.train_model(model=model_a2c, tb_log_name="a2c", total_timesteps=50000)
-    save_trained_model(trained_a2c, name="trained_a2c")
-
-
-def train_using_ddpg(env_train: DRLAgent):
-    agent = DRLAgent(env=env_train)
-    model_ddpg = agent.get_model("ddpg")
-
-    # set up logger
-    tmp_path = RESULTS_DIR + "/ddpg"
-    new_logger_ddpg = configure(tmp_path, ["stdout", "csv", "tensorboard"])
-    # Set new logger
-    model_ddpg.set_logger(new_logger_ddpg)
-
-    trained_ddpg = agent.train_model(model=model_ddpg, tb_log_name="ddpg", total_timesteps=50000)
-    save_trained_model(trained_ddpg, name="trained_ddpg")
-
-
-def train_using_ppo(agent: DRLAgent):
-    PPO_PARAMS = {
-        "n_steps": 2048,
-        "ent_coef": 0.01,
-        "learning_rate": 0.00025,
-        "batch_size": 128,
-    }
-    model_ppo = agent.get_model("ppo", model_kwargs=PPO_PARAMS)
-
-    # set up logger
-    tmp_path = RESULTS_DIR + "/ppo"
-    new_logger_ppo = configure(tmp_path, ["stdout", "csv", "tensorboard"])
-    # Set new logger
-    model_ppo.set_logger(new_logger_ppo)
-
-    trained_ppo = agent.train_model(model=model_ppo, tb_log_name="ppo", total_timesteps=50000)
-    save_trained_model(trained_ppo, name="trained_ppo")
-
-
-def train_using_td3(agent: DRLAgent):
-    TD3_PARAMS = {"batch_size": 100, "buffer_size": 1000000, "learning_rate": 0.001}
-
-    model_td3 = agent.get_model("td3", model_kwargs=TD3_PARAMS)
-
-    # set up logger
-    tmp_path = RESULTS_DIR + "/td3"
-    new_logger_td3 = configure(tmp_path, ["stdout", "csv", "tensorboard"])
-    # Set new logger
-    model_td3.set_logger(new_logger_td3)
-
-    trained_td3 = agent.train_model(model=model_td3, tb_log_name="td3", total_timesteps=30000)
-    save_trained_model(trained_td3, name="trained_td3")
-
-
-def train_using_sac() -> str:
-    agent: DRLAgent = get_env(train_data)[0]
-    SAC_PARAMS = {
-        "batch_size": 128,
-        "buffer_size": 1000000,
-        "learning_rate": 0.0001,
-        "learning_starts": 100,
-        "ent_coef": "auto_0.1",
-    }
+# ## Train Models
+def training_model(model_name: str, data: pd.DataFrame, total_timesteps: int, params: dict = None) -> str:
+    print("=== Training ===")
 
     #
-    model: SAC = agent.get_model("sac", model_kwargs=SAC_PARAMS)
-    tmp_path: str = RESULTS_DIR + "/sac"
+    agent: DRLAgent = get_env(data)[0]
+    model: SAC = agent.get_model(model_name, model_kwargs=params)
+    tmp_path: str = RESULTS_DIR + model_name
     new_logger: Logger = configure(tmp_path, ["stdout", "csv", "tensorboard"])
     model.set_logger(new_logger)
 
     #
-    trained_model = agent.train_model(model=model, tb_log_name="sac", total_timesteps=30000)
-    filename = save_trained_model(trained_model, name="trained_sac")
+    trained_model = agent.train_model(model=model, tb_log_name=model_name, total_timesteps=total_timesteps)
+    filename = save_trained_model(trained_model, name=f"trained_{model_name}")
     return filename
 
 
 ################################################################################
-# ## 7 Trading
-# Assume that we have $1,000,000 initial capital at TEST_START_DATE. We use the DDPG model to trade Dow jones 30 stocks.
-
-# ### 7.1 Trade
-#
-# DRL model needs to update periodically in order to take full
-# advantage of the data, ideally we need to retrain our model yearly, quarterly, or monthly. We also need
-# to tune the parameters along the way, in this notebook I only use the in-sample data from
-# 2009-01 to 2018-12 to tune the parameters once, so there is some alpha decay here as the length of trade date extends.
-#
-# Numerous hyperparameters – e.g. the learning rate, the total number of samples to train on – influence the learning
-# process and are usually determined by testing some variations.
-
-
-def test(model_filename: str) -> tp.Any:
+# ### Trade
+def test(model_filename: str, test_data: pd.DataFrame) -> tp.Any:
     print("==============Get Backtest Results===========")
 
     #
     model = load_trained_model(model_filename)
-    _, env_gym, _ = get_env(train_data)
+    _, env_gym, _ = get_env(test_data)
 
     #
     account_value, actions = DRLAgent.DRL_prediction(model=model, environment=env_gym)
     perf_stats_all = backtest_stats(account_value=account_value)
     perf_stats_all = pd.DataFrame(perf_stats_all)
-    perf_stats_all.to_csv("./" + finrl_config.RESULTS_DIR + "/perf_stats_all_sac_" + now + ".csv")
+    perf_stats_all.to_csv("./" + finrl_config.RESULTS_DIR + "/perf_stats_all_sac_" + NOW + ".csv")
 
     return account_value, actions
 
@@ -621,30 +499,45 @@ def backtest_baseline():
 
 
 # %%
-if __name__ == "__main__":
-    #
-    using_a2c = False
-    using_ddpg = False
-    using_ppo = False
-    using_td3 = False
-    using_sac = True
-
-    #
+def main():
+    args = argument_parser()
     config()
     check_and_make_directories([DATA_SAVE_DIR, TRAINED_MODEL_DIR, TENSORBOARD_LOG_DIR, RESULTS_DIR])
-    fundament_data = get_fundament_data()
-    ratios = get_ratios(fund_data=fundament_data)
-    full_data = get_processed_full_data(ratios)
-    train_data = get_train_data(full_data)
-    test_data = get_test_data(full_data)
+    prepared_dataset: pd.DataFrame()
+    trained_models = args[ArgNames.MODEL]
 
-    #
-    if using_sac:
-        print("Training")
-        model_filename = train_using_sac()
-        print("Testing")
-        account_value, actions = test(model_filename)
-        backtest_plot(account_value, baseline_ticker="^DJI", baseline_start=TEST_START_DATE, baseline_end=TEST_END_DATE)
-        backtest_baseline()
+    if args[ArgNames.CREATE_DATASET]:
+        fundament_data = get_fundament_data()
+        ratios = get_ratios(fund_data=fundament_data)
+        prepared_dataset = get_processed_full_data(ratios)
+    elif args[ArgNames.DATASET]:
+        prepared_dataset = pd.read_csv(args["dataset"])
+        print(prepared_dataset.shape)
 
+    if args[ArgNames.TRAIN]:
+        train_data = get_train_data(prepared_dataset)
+        for is_run_training, model_name, model_params, time_steps in [
+            hp.A2C_PARAMS,
+            hp.DDPG_PARAMS,
+            hp.PPO_PARAMS,
+            hp.TD3_PARAMS,
+            hp.SAC_HYPERPARAMS,
+        ]:
+            if is_run_training:
+                filename = training_model(model_name, train_data, time_steps, model_params)
+                trained_models.append(filename)
+
+    if args[ArgNames.TEST]:
+        test_data = get_test_data(prepared_dataset)
+        for model in trained_models:
+            account_value, _ = test(model, test_data)
+            backtest_plot(
+                account_value, baseline_ticker="^DJI", baseline_start=TEST_START_DATE, baseline_end=TEST_END_DATE
+            )
+            backtest_baseline()
+
+
+# %%
+if __name__ == "__main__":
+    main()
     sys.exit(0)
