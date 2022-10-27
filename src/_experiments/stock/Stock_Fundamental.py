@@ -8,15 +8,15 @@
 # https://towardsdatascience.com/finrl-for-quantitative-finance-tutorial-for-multiple-stock-trading-7b00763b7530
 
 
-###############################################################################
+################################################################################
 # TODO
-###############################################################################
+################################################################################
 # TODO: Add argument parser
 
 # %%
-###############################################################################
+################################################################################
 # INCLUDES
-###############################################################################
+################################################################################
 
 
 import os
@@ -36,58 +36,57 @@ from finrl.meta.preprocessor.yahoodownloader import YahooDownloader
 from finrl.meta.preprocessor.preprocessors import data_split
 
 # from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
-from StockTraidingEnv import StockTradingEnv
 from finrl.agents.stablebaselines3.models import DRLAgent
 from finrl.plot import backtest_plot, backtest_stats, get_baseline
 from finrl.main import check_and_make_directories
-
-# from finrl.config import (
-#     DATA_SAVE_DIR,
-#     TRAINED_MODEL_DIR,
-#     TENSORBOARD_LOG_DIR,
-#     RESULTS_DIR,
-# )
 from finrl.config_tickers import DOW_30_TICKER
 
 from stable_baselines3.common.logger import configure, Logger
-from stable_baselines3.common.base_class import BaseAlgorithm
-from stable_baselines3 import SAC
+import stable_baselines3 as sb3
 
 sys.path.append("../")
 sys.path.append("../../")
 sys.path.append("../../../")
 
+from StockTraidingEnv import StockTradingEnv  # noqa: E402
 from config.settings import DATA_DIR  # noqa: E402
 from common.argument_parser import argument_parser, ArgNames  # noqa: E402
 import _experiments.stock.hyperparameters as hp  # noqa: E402
 
 # %%
-###############################################################################
+################################################################################
 # GLOBAL VARS
 ################################################################################
-# # Part 3. Download Stock Data from Yahoo Finance
-# Yahoo Finance provides stock data, financial news, financial reports, etc. Yahoo Finance is free.
-# * FinRL uses a class **YahooDownloader** in FinRL-Meta to fetch data via Yahoo Finance API
-# * Call Limit: Using the Public API (without authentication), you are limited to 2,000 requests per hour per IP
-# (or up to a total of 48,000 requests a day).
-
 TRAIN_START_DATE = "2009-01-01"
-TRAIN_END_DATE = "2021-07-01"
-TEST_START_DATE = "2021-07-01"
-TEST_END_DATE = "2022-07-01"
+TRAIN_END_DATE = "2021-01-01"
+TEST_START_DATE = TRAIN_END_DATE
+TEST_END_DATE = "2022-10-01"
 
 NOW = datetime.datetime.now().strftime("%Y%m%d-%Hh%M")
 
+MODELS_MAP = {
+    "a2c": sb3.A2C,
+    "ddpg": sb3.DDPG,
+    "td3": sb3.TD3,
+    "ppo": sb3.PPO,
+    "sac": sb3.SAC,
+}
+
 
 # %%
-###############################################################################
+################################################################################
 # FUNCTIONS
 ################################################################################
-
-
 def config():
+    #
     warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
+    warnings.filterwarnings("ignore", category=FutureWarning)  # TODO: ?
+    warnings.filterwarnings("ignore", category=RuntimeWarning)  # TODO: ?
+
+    #
     matplotlib.use("Agg")
+
+    #
     check_and_make_directories(
         [
             finrl_config.DATA_SAVE_DIR,
@@ -98,7 +97,7 @@ def config():
     )
 
 
-def prepare_data_from_yf() -> pd.DataFrame:
+def get_price_data() -> pd.DataFrame:
     df = YahooDownloader(start_date=TRAIN_START_DATE, end_date=TEST_END_DATE, ticker_list=DOW_30_TICKER).fetch_data()
     df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
     df.sort_values(["date", "tic"], ignore_index=True).head()
@@ -106,94 +105,55 @@ def prepare_data_from_yf() -> pd.DataFrame:
 
 
 ################################################################################
-# # Part 4: Preprocess fundamental data
-# - Import finanical data downloaded from Compustat via WRDS(Wharton Research Data Service)
-# - Preprocess the dataset and calculate financial ratios
-# - Add those ratios to the price data preprocessed in Part 3
-# - Calculate price-related ratios such as P/E and P/B
+# # Preprocess fundamental data
 
-################################################################################
-# ## 4.1 Import the financial data
-def get_fundament_data() -> pd.DataFrame:
+
+def get_fundament_data_from_csv() -> pd.DataFrame:
     fundamenatal_data_filename = Path(os.path.join(DATA_DIR, "stock/ai4-finance/dji30_fundamental_data.csv"))
-    fund = pd.read_csv(fundamenatal_data_filename, low_memory=False)  # dtype param make low_memory warning silent
-
-    # ## 4.2 Specify items needed to calculate financial ratios
-    # - To learn more about the data description of the dataset, please check WRDS's
-    # website(https://wrds-www.wharton.upenn.edu/). Login will be required.
-
-    # List items that are used to calculate financial ratios
-    items = [
-        "datadate",  # Date
-        "tic",  # Ticker
-        "oiadpq",  # Quarterly operating income
-        "revtq",  # Quartely revenue
-        "niq",  # Quartely net income
-        "atq",  # Total asset
-        "teqq",  # Shareholder's equity
-        "epspiy",  # EPS(Basic) incl. Extraordinary items
-        "ceqq",  # Common Equity
-        "cshoq",  # Common Shares Outstanding
-        "dvpspq",  # Dividends per share
-        "actq",  # Current assets
-        "lctq",  # Current liabilities
-        "cheq",  # Cash & Equivalent
-        "rectq",  # Recievalbles
-        "cogsq",  # Cost of  Goods Sold
-        "invtq",  # Inventories
-        "apq",  # Account payable
-        "dlttq",  # Long term debt
-        "dlcq",  # Debt in current liabilites
-        "ltq",  # Liabilities
-    ]
+    fundamental_all_data = pd.read_csv(
+        fundamenatal_data_filename, low_memory=False, index_col=0
+    )  # dtype param make low_memory warning silent
+    items_naming = {
+        "datadate": "date",  # Date
+        "tic": "tic",  # Ticker
+        "oiadpq": "op_inc_q",  # Quarterly operating income
+        "revtq": "rev_q",  # Quartely revenue
+        "niq": "net_inc_q",  # Quartely net income
+        "atq": "tot_assets",  # Assets
+        "teqq": "sh_equity",  # Shareholder's equity
+        "epspiy": "eps_incl_ex",  # EPS(Basic) incl. Extraordinary items
+        "ceqq": "com_eq",  # Common Equity
+        "cshoq": "sh_outstanding",  # Common Shares Outstanding
+        "dvpspq": "div_per_sh",  # Dividends per share
+        "actq": "cur_assets",  # Current assets
+        "lctq": "cur_liabilities",  # Current liabilities
+        "cheq": "cash_eq",  # Cash & Equivalent
+        "rectq": "receivables",  # Receivalbles
+        "cogsq": "cogs_q",  # Cost of  Goods Sold
+        "invtq": "inventories",  # Inventories
+        "apq": "payables",  # Account payable
+        "dlttq": "long_debt",  # Long term debt
+        "dlcq": "short_debt",  # Debt in current liabilites
+        "ltq": "tot_liabilities",  # Liabilities
+    }
 
     # Omit items that will not be used
-    fund_data = fund[items]
+    fundamental_specified_data = fundamental_all_data[items_naming.keys()]
 
     # Rename column names for the sake of readability
-    fund_data = fund_data.rename(
-        columns={
-            "datadate": "date",  # Date
-            "oiadpq": "op_inc_q",  # Quarterly operating income
-            "revtq": "rev_q",  # Quartely revenue
-            "niq": "net_inc_q",  # Quartely net income
-            "atq": "tot_assets",  # Assets
-            "teqq": "sh_equity",  # Shareholder's equity
-            "epspiy": "eps_incl_ex",  # EPS(Basic) incl. Extraordinary items
-            "ceqq": "com_eq",  # Common Equity
-            "cshoq": "sh_outstanding",  # Common Shares Outstanding
-            "dvpspq": "div_per_sh",  # Dividends per share
-            "actq": "cur_assets",  # Current assets
-            "lctq": "cur_liabilities",  # Current liabilities
-            "cheq": "cash_eq",  # Cash & Equivalent
-            "rectq": "receivables",  # Receivalbles
-            "cogsq": "cogs_q",  # Cost of  Goods Sold
-            "invtq": "inventories",  # Inventories
-            "apq": "payables",  # Account payable
-            "dlttq": "long_debt",  # Long term debt
-            "dlcq": "short_debt",  # Debt in current liabilites
-            "ltq": "tot_liabilities",  # Liabilities
-        }
-    )
-
-    fund_data["date"] = pd.to_datetime(fund_data["date"], format="%Y-%m-%d")
-    fund_data.sort_values(["date", "tic"], ignore_index=True).head()
-
-    return fund_data
+    fundamental_specified_data = fundamental_specified_data.rename(columns=items_naming)
+    fundamental_specified_data["date"] = pd.to_datetime(fundamental_specified_data["date"], format="%Y%m%d")
+    # fund_data.sort_values(["date", "tic"], ignore_index=True)
+    return fundamental_specified_data
 
 
 ################################################################################
-# ## 4.3 Calculate financial ratios
-# - For items from Profit/Loss statements, we calculate LTM (Last Twelve Months) and use them to derive profitability
-# related ratios such as Operating Maring and ROE. For items from balance sheets, we use the numbers on the day.
-# - To check the definitions of the financial ratios calculated here, please refer to
-# CFI's website: https://corporatefinanceinstitute.com/resources/knowledge/finance/financial-ratios/
+# ## Calculate financial ratios
+def get_ratios():
+    fund_data = get_fundament_data_from_csv()
 
-
-def get_ratios(fund_data: pd.DataFrame):
     # Calculate financial ratios
     date = pd.to_datetime(fund_data["date"], format="%Y%m%d")
-
     tic = fund_data["tic"].to_frame("tic")
 
     # Profitability ratios
@@ -333,36 +293,15 @@ def get_ratios(fund_data: pd.DataFrame):
 
 
 ################################################################################
-# ## 4.5 Merge stock price data and ratios into one dataframe
-# - Merge the price dataframe preprocessed in Part 3 and the ratio dataframe created in this part
-# - Since the prices are daily and ratios are quartely, we have NAs in the ratio
-# columns after merging the two dataframes. We deal with this by backfilling the ratios.
-
-
-def get_processed_full_data(ratios: pd.DataFrame) -> pd.DataFrame:
-    df = prepare_data_from_yf()
-    list_ticker = df["tic"].unique().tolist()
-    list_date = list(pd.date_range(df["date"].min(), df["date"].max()))
-    combination = list(itertools.product(list_date, list_ticker))
-
-    # Merge stock price data and ratios into one dataframe
-    processed_full = pd.DataFrame(combination, columns=["date", "tic"]).merge(df, on=["date", "tic"], how="left")
-    processed_full = processed_full.merge(ratios, how="left", on=["date", "tic"])
-    processed_full = processed_full.sort_values(["tic", "date"])
-
-    # Backfill the ratio data to make them daily
-    processed_full = processed_full.bfill(axis="rows")
-    print(processed_full.shape)
-
-    # ## 4.6 Calculate market valuation ratios using daily stock price data
-
+# ## Merge stock price data and ratios into one dataframe
+def get_processed_full_data_done(processed_full: pd.DataFrame) -> pd.DataFrame:
     # Calculate P/E, P/B and dividend yield using daily closing price
     processed_full["PE"] = processed_full["close"] / processed_full["EPS"]
     processed_full["PB"] = processed_full["close"] / processed_full["BPS"]
     processed_full["Div_yield"] = processed_full["DPS"] / processed_full["close"]
 
     # Drop per share items used for the above calculation
-    processed_full = processed_full.drop(columns=["day", "EPS", "BPS", "DPS"])
+    processed_full = processed_full.drop(columns=["day", "EPS", "BPS", "DPS"])  # TODO: Try to remove it
     # Replace NAs infinite values with zero
     processed_full = processed_full.copy()
     processed_full = processed_full.fillna(0)
@@ -371,6 +310,27 @@ def get_processed_full_data(ratios: pd.DataFrame) -> pd.DataFrame:
     processed_full.to_csv(os.path.join(DATA_DIR, f"stock/ai4-finance/dataset_fundament_{NOW}.csv"))
 
     return processed_full
+
+
+def get_processed_full_data() -> pd.DataFrame:
+    price_data = get_price_data()
+    ratios_fundament_data = get_ratios()
+
+    list_ticker = price_data["tic"].unique().tolist()
+    list_date = list(pd.date_range(price_data["date"].min(), price_data["date"].max()))
+    combination = list(itertools.product(list_date, list_ticker))
+
+    # Merge stock price data and ratios into one dataframe
+    processed_full = pd.DataFrame(combination, columns=["date", "tic"]).merge(
+        price_data, on=["date", "tic"], how="left"
+    )
+    processed_full = processed_full.merge(ratios_fundament_data, how="left", on=["date", "tic"])
+    processed_full = processed_full.sort_values(["tic", "date"])
+
+    # Backfill the ratio data to make them daily
+    processed_full = processed_full.bfill(axis="rows")
+    print(processed_full.shape)
+    return get_processed_full_data_done(processed_full)
 
 
 ################################################################################
@@ -394,56 +354,11 @@ def get_test_data(processed_full: pd.DataFrame):
 
 
 ################################################################################
-# ## 5.2 Set up the training environment
-
-
-def get_env(df: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv, dict]:
-    ratio_list = [
-        "OPM",
-        "NPM",
-        "ROA",
-        "ROE",
-        "cur_ratio",
-        "quick_ratio",
-        "cash_ratio",
-        "inv_turnover",
-        "acc_rec_turnover",
-        "acc_pay_turnover",
-        "debt_ratio",
-        "debt_to_equity",
-        "PE",
-        "PB",
-        "Div_yield",
-    ]
-
-    stock_dimension = len(df.tic.unique())
-    state_space = 1 + 2 * stock_dimension + len(ratio_list) * stock_dimension  # TODO: Why?
-    print(f"Stock Dimension: {stock_dimension}, State Space: {state_space}")
-    print()
-
-    # Parameters for the environment
-    env_kwargs = {
-        "hmax": 100,
-        "initial_amount": 1000000,
-        "buy_cost_pct": 0.001,
-        "sell_cost_pct": 0.001,
-        "state_space": state_space,
-        "stock_dim": stock_dimension,
-        "tech_indicator_list": ratio_list,
-        "action_space": stock_dimension,
-        "reward_scaling": 1e-4,
-        # "num_stock_shares": 0,
-    }
-
-    # Establish the training environment using StockTradingEnv() class
-    e_train_gym = StockTradingEnv(df=df, **env_kwargs)
-
-    # Environment for Training
-    env_train, _ = e_train_gym.get_sb_env()
-
-    # Agent
-    agent = DRLAgent(env=env_train)
-    return agent, e_train_gym, env_kwargs
+# ## Set up the training environment
+def get_stock_env(df: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv]:
+    env_stock_train = StockTradingEnv(df=df, **hp.get_env_kwargs(df))
+    agent = DRLAgent(env=env_stock_train.get_sb_env()[0])
+    return agent, env_stock_train
 
 
 ################################################################################
@@ -452,56 +367,60 @@ def get_env(df: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv, dict]:
 
 ################################################################################
 # ## Save/Load Helpers
-def save_trained_model(model: tp.Any, name: str) -> str:
-    model_filename = os.path.join(finrl_config.TRAINED_MODEL_DIR, f"{name}_{NOW}")
-    model.save(model_filename)
+def save_trained_model(trained_model: tp.Any, type_model: str) -> str:
+    model_filename = os.path.join(finrl_config.TRAINED_MODEL_DIR, type_model, f"{NOW}")
+    trained_model.save(model_filename)
     return model_filename
 
 
-def load_trained_model(name: str):
-    model = BaseAlgorithm.load(name)
-    return model
+def load_trained_model(filepath: str):
+    filepath_split = filepath.split(sep="/")
+    for type_, model_ in MODELS_MAP.items():
+        if type_ in filepath_split:
+            return model_.load(filepath)
 
 
 ################################################################################
 # ## Train Models
-def training_model(model_name: str, data: pd.DataFrame, total_timesteps: int, params: dict = None) -> str:
+def training_model(model_type: str, train_data: pd.DataFrame, total_timesteps: int, params: dict = None) -> str:
     print("=== Training ===")
 
     #
-    agent: DRLAgent = get_env(data)[0]
-    model: SAC = agent.get_model(model_name, model_kwargs=params)
+    env_stock_train = StockTradingEnv(df=train_data, **hp.get_env_kwargs(train_data))
+    agent = DRLAgent(env=env_stock_train.get_sb_env()[0])
+    model: sb3.SAC = agent.get_model(model_type, model_kwargs=params)
     new_logger: Logger = configure(
-        folder=os.path.join(finrl_config.RESULTS_DIR, model_name), format_strings=["stdout", "csv", "tensorboard"]
+        folder=os.path.join(finrl_config.RESULTS_DIR, model_type), format_strings=["stdout", "csv", "tensorboard"]
     )
     model.set_logger(new_logger)
 
     #
-    trained_model = agent.train_model(model=model, tb_log_name=model_name, total_timesteps=total_timesteps)
-    filename = save_trained_model(trained_model, name=f"trained_{model_name}")
+    trained_model = agent.train_model(model=model, tb_log_name=model_type, total_timesteps=total_timesteps)
+    filename = save_trained_model(trained_model, type_model=model_type)
     return filename
 
 
 ################################################################################
 # ### Trade
-def test(model_filename: str, test_data: pd.DataFrame) -> tp.Any:
-    print("==============Get Backtest Results===========")
+def test(filepath: str, test_data: pd.DataFrame) -> tp.Any:
+    print("==============Test Results===========")
 
-    #
-    model = load_trained_model(model_filename)
-    _, env_gym, _ = get_env(test_data)
-
-    #
-    account_value, actions = DRLAgent.DRL_prediction(model=model, environment=env_gym)
+    env_stock_train = StockTradingEnv(df=test_data, **hp.get_env_kwargs(test_data))
+    account_value, actions = DRLAgent.DRL_prediction(model=load_trained_model(filepath), environment=env_stock_train)
     perf_stats_all = backtest_stats(account_value=account_value)
     perf_stats_all = pd.DataFrame(perf_stats_all)
-    perf_stats_all.to_csv("./" + finrl_config.RESULTS_DIR + "/perf_stats_all_sac_" + NOW + ".csv")
+
+    for type_, _ in MODELS_MAP.items():
+        if type_ in filepath.split(sep="/"):
+            perf_stats_all.to_csv(os.path.join(finrl_config.RESULTS_DIR, type_, f"perf_stats_all{NOW}.csv"))
+
+    print(perf_stats_all)
 
     return account_value, actions
 
 
 def backtest_baseline():
-    print("==============Get Baseline Stats===========")
+    print("==============Baseline Stats===========")
     baseline_df = get_baseline(ticker="^DJI", start=TEST_START_DATE, end=TEST_END_DATE)
     stats = backtest_stats(baseline_df, value_col_name="close")
     print(stats)
@@ -512,16 +431,13 @@ def backtest_baseline():
 def main():
     args = argument_parser()
     config()
-    prepared_dataset: pd.DataFrame()
+    prepared_dataset: pd.DataFrame
     trained_models = args[ArgNames.MODEL]
 
-    if args[ArgNames.CREATE_DATASET]:
-        fundament_data = get_fundament_data()
-        ratios = get_ratios(fund_data=fundament_data)
-        prepared_dataset = get_processed_full_data(ratios)
-    elif args[ArgNames.DATASET]:
-        prepared_dataset = pd.read_csv(args["dataset"])
-        print(prepared_dataset.shape)
+    if not args[ArgNames.DATASET]:
+        prepared_dataset = get_processed_full_data()
+    else:
+        prepared_dataset = pd.read_csv(args["dataset"], index_col=0)
 
     if args[ArgNames.TRAIN]:
         train_data = get_train_data(prepared_dataset)
@@ -530,7 +446,7 @@ def main():
             hp.DDPG_PARAMS,
             hp.PPO_PARAMS,
             hp.TD3_PARAMS,
-            hp.SAC_HYPERPARAMS,
+            hp.SAC_PARAMS,
         ]:
             if is_run_training:
                 filename = training_model(model_name, train_data, time_steps, model_params)

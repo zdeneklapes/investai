@@ -1,8 +1,18 @@
 import os
+from operator import itemgetter
 from typing import Dict, Any
 import argparse
 
 from config.settings import DATA_DIR
+
+
+class ArgNames:
+    TRAIN = "train"
+    TEST = "test"
+    CREATE_DATASET = "create-dataset"
+    DATASET = "dataset"
+    MODEL = "model"
+    FROM_FILE = "from-file"
 
 
 class LoadFromFile(argparse.Action):
@@ -21,7 +31,7 @@ def argument_validator(args: vars):
         parser.error("No argument provided")
 
     # All
-    if not args["train"] and not args["test"] and not args["dataset"] and not args["create_dataset"]:
+    if not any(itemgetter(ArgNames.TRAIN, ArgNames.TEST, ArgNames.DATASET, ArgNames.CREATE_DATASET)(args)):
         parser.error("Please choose at least one action to do.")
 
     # model
@@ -33,15 +43,6 @@ def argument_validator(args: vars):
     if args["dataset"] is not None:
         if not os.path.exists(args["dataset"]):
             parser.error("Dataset not found")
-
-
-class ArgNames:
-    TRAIN = "train"
-    TEST = "test"
-    CREATE_DATASET = "create-dataset"
-    DATASET = "dataset"
-    MODEL = "model"
-    FROM_FILE = "from-file"
 
 
 def argument_parser() -> Dict[str, Any]:

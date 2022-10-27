@@ -14,7 +14,7 @@ results/
 tensorboard_log/
 
 # Include all trained models
-!**/trained_models/*
+!**/trained_models/**
 
 # Documentation
 doc/**

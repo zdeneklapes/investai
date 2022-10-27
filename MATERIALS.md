@@ -189,6 +189,7 @@
 
 - Course <http://cgm.cs.mcgill.ca/~godfried/teaching/cg-web.html>
 - Computational Geometry <https://staff.fnwi.uva.nl/l.dorst/clifford/>
+- Probabilsitic <https://blog.christianperone.com/2019/01/>
 
 #### CODES:
 
