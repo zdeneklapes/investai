@@ -97,7 +97,7 @@ def config():
     )
 
 
-def get_price_data() -> pd.DataFrame:
+def get_price_data_dji30() -> pd.DataFrame:
     df = YahooDownloader(start_date=TRAIN_START_DATE, end_date=TEST_END_DATE, ticker_list=DOW_30_TICKER).fetch_data()
     df["date"] = pd.to_datetime(df["date"], format="%Y-%m-%d")
     df.sort_values(["date", "tic"], ignore_index=True).head()
@@ -313,7 +313,7 @@ def get_processed_full_data_done(processed_full: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_processed_full_data() -> pd.DataFrame:
-    price_data = get_price_data()
+    price_data = get_price_data_dji30()
     ratios_fundament_data = get_ratios()
 
     list_ticker = price_data["tic"].unique().tolist()
@@ -388,7 +388,7 @@ def training_model(model_type: str, train_data: pd.DataFrame, total_timesteps: i
     #
     env_stock_train = StockTradingEnv(df=train_data, **hp.get_env_kwargs(train_data))
     agent = DRLAgent(env=env_stock_train.get_sb_env()[0])
-    model: sb3.SAC = agent.get_model(model_type, model_kwargs=params)
+    model = agent.get_model(model_type, model_kwargs=params)
     new_logger: Logger = configure(
         folder=os.path.join(finrl_config.RESULTS_DIR, model_type), format_strings=["stdout", "csv", "tensorboard"]
     )
@@ -441,16 +441,15 @@ def main():
 
     if args[ArgNames.TRAIN]:
         train_data = get_train_data(prepared_dataset)
-        for is_run_training, model_name, model_params, time_steps in [
+        for model_name, model_params, time_steps in [
             hp.A2C_PARAMS,
-            hp.DDPG_PARAMS,
-            hp.PPO_PARAMS,
-            hp.TD3_PARAMS,
-            hp.SAC_PARAMS,
+            # hp.DDPG_PARAMS,
+            # hp.PPO_PARAMS,
+            # hp.TD3_PARAMS,
+            # hp.SAC_PARAMS,
         ]:
-            if is_run_training:
-                filename = training_model(model_name, train_data, time_steps, model_params)
-                trained_models.append(filename)
+            filename = training_model(model_name, train_data, time_steps, model_params)
+            trained_models.append(filename)
 
     if args[ArgNames.TEST]:
         test_data = get_test_data(prepared_dataset)

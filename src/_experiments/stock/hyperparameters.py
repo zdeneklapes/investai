@@ -1,11 +1,10 @@
 import pandas as pd
 from typing import Dict
 
-A2C_PARAMS = (False, "a2c", None, 50_000)
+A2C_PARAMS = ("a2c", None, 50_000)
 
-DDPG_PARAMS = (False, "ddpg", None, 50_000)
+DDPG_PARAMS = ("ddpg", None, 50_000)
 PPO_PARAMS = (
-    False,
     "ppo",
     {
         "n_steps": 2048,
@@ -16,19 +15,18 @@ PPO_PARAMS = (
     30_000,
 )
 
-TD3_PARAMS = (False, "sac", {"batch_size": 100, "buffer_size": 1000000, "learning_rate": 0.001}, 30_000)
+TD3_PARAMS = ("sac", {"batch_size": 100, "buffer_size": 1000000, "learning_rate": 0.001}, 30_000)
 
 SAC_PARAMS = (
-    True,
-    "sac",
-    {
+    "sac",  # name
+    {  # params
         "batch_size": 128,
         "buffer_size": 1000000,
         "learning_rate": 0.0001,
         "learning_starts": 100,
         "ent_coef": "auto_0.1",
     },
-    30_000,
+    30_000,  # time_steps
 )
 
 
