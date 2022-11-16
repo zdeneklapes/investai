@@ -1,3 +1,0 @@
---test
---dataset /Users/zlapik/my-drive-zdenda-lapes/datasets/ai-investing/stock/ai4-finance/dataset_fundament_20221026-18h53.csv
---model ./trained_models/sac/20221027-00h23.zip

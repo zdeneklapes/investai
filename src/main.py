@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 __author__ = "Zdeněk Lapeš"
 __copyright__ = "Copyright 2022, The NameProject"
 __credits__ = ["TODO"]
@@ -32,7 +33,7 @@ def parse_cli_argument() -> dict:
 if __name__ == "__main__":
     args = parse_cli_argument()
 
-    if args["stock"]:
-        print(f"{args['stock']=}")
+    # if args["stock"]:
+    #     print(f"{args['stock']=}")
 
     sys.exit()

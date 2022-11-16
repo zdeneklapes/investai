@@ -26,6 +26,5 @@ selenium
 smart-open
 statsmodels
 tabulate
-tenacity
 tensorboard
 webdriver-manager
