@@ -3,6 +3,7 @@ ale-py
 autorom
 autorom.accept-rom-license
 colorful
+finrl
 finrl-meta
 gpustat
 gym-notices
