@@ -49,8 +49,8 @@ sys.path.append("../../../")
 
 from _experiments.stock.training_env.StockTraidingEnv import StockTradingEnv  # noqa: E402
 from config.settings import DATA_DIR  # noqa: E402
+from _experiments.stock.hyperparameter import HyperParameter, get_env_kwargs  # noqas: E402
 from common.argumentparser import argument_parser, ArgNames  # noqa: E402
-import _experiments.stock.hyperparameter as hp  # noqa: E402
 from common.baseexitcode import BaseExitCode  # noqa: E402
 
 
@@ -360,7 +360,7 @@ def get_test_data(processed_full: pd.DataFrame):
 ################################################################################
 # ## Set up the training environment
 def get_stock_env(df: pd.DataFrame) -> tp.Tuple[DRLAgent, StockTradingEnv]:
-    env_stock_train = StockTradingEnv(df=df, **hp.get_env_kwargs(df))
+    env_stock_train = StockTradingEnv(df=df, **get_env_kwargs(df))
     agent = DRLAgent(env=env_stock_train.get_sb_env()[0])
     return agent, env_stock_train
 
@@ -390,7 +390,7 @@ def training_model(model_type: str, train_data: pd.DataFrame, total_timesteps: i
     print("=== Training ===")
 
     #
-    env_stock_train = StockTradingEnv(df=train_data, **hp.get_env_kwargs(train_data))
+    env_stock_train = StockTradingEnv(df=train_data, **get_env_kwargs(train_data))
     agent = DRLAgent(env=env_stock_train.get_sb_env()[0])
     model = agent.get_model(model_type, model_kwargs=params)
     new_logger: Logger = configure(
@@ -409,7 +409,7 @@ def training_model(model_type: str, train_data: pd.DataFrame, total_timesteps: i
 def test(filepath: str, test_data: pd.DataFrame) -> tp.Any:
     print("==============Test Results===========")
 
-    env_stock_train = StockTradingEnv(df=test_data, **hp.get_env_kwargs(test_data))
+    env_stock_train = StockTradingEnv(df=test_data, **get_env_kwargs(test_data))
     account_value, actions = DRLAgent.DRL_prediction(model=load_trained_model(filepath), environment=env_stock_train)
     perf_stats_all = backtest_stats(account_value=account_value)
     perf_stats_all = pd.DataFrame(perf_stats_all)
@@ -449,11 +449,11 @@ class Main:
         if args[ArgNames.TRAIN]:
             train_data = get_train_data(prepared_dataset)
             for model_name, model_params, time_steps in [
-                hp.A2C_PARAMS,
-                # hp.DDPG_PARAMS,
-                # hp.PPO_PARAMS,
-                # hp.TD3_PARAMS,
-                # hp.SAC_PARAMS,
+                HyperParameter.A2C_PARAMS,
+                # DDPG_PARAMS,
+                # PPO_PARAMS,
+                # TD3_PARAMS,
+                # SAC_PARAMS,
             ]:
                 filename = training_model(model_name, train_data, time_steps, model_params)
                 trained_models.append(filename)

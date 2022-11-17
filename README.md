@@ -14,6 +14,7 @@
 # DEPENDENCIES
 
 - swig
+- ta-lib
 
 ## [TODO](./TODO.md)
 

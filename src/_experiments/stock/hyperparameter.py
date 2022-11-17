@@ -4,36 +4,37 @@ from typing import Dict
 
 
 class HyperParameter:
-    pass
+    A2C_PARAMS = ("a2c", None, 1000)
+    DDPG_PARAMS = ("ddpg", None, 50_000)
+    PPO_PARAMS = (
+        "ppo",
+        {
+            "n_steps": 2048,
+            "ent_coef": 0.01,
+            "learning_rate": 0.00025,
+            "batch_size": 128,
+        },
+        30_000,
+    )
 
+    TD3_PARAMS = ("sac", {"batch_size": 100, "buffer_size": 1000000, "learning_rate": 0.001}, 30_000)
 
-A2C_PARAMS = ("a2c", None, 1000)
+    SAC_PARAMS = (
+        "sac",  # name
+        {  # params
+            "batch_size": 128,
+            "buffer_size": 1000000,
+            "learning_rate": 0.0001,
+            "learning_starts": 100,
+            "ent_coef": "auto_0.1",
+        },
+        30_000,  # time_steps
+    )
 
-DDPG_PARAMS = ("ddpg", None, 50_000)
-PPO_PARAMS = (
-    "ppo",
-    {
-        "n_steps": 2048,
-        "ent_coef": 0.01,
-        "learning_rate": 0.00025,
-        "batch_size": 128,
-    },
-    30_000,
-)
-
-TD3_PARAMS = ("sac", {"batch_size": 100, "buffer_size": 1000000, "learning_rate": 0.001}, 30_000)
-
-SAC_PARAMS = (
-    "sac",  # name
-    {  # params
-        "batch_size": 128,
-        "buffer_size": 1000000,
-        "learning_rate": 0.0001,
-        "learning_starts": 100,
-        "ent_coef": "auto_0.1",
-    },
-    30_000,  # time_steps
-)
+    @staticmethod
+    def get_different_timesteps(samples: int, step: int):
+        for i in range(step, samples * step, step):
+            yield i
 
 
 def get_env_kwargs(df: pd.DataFrame) -> Dict[str, int]:
