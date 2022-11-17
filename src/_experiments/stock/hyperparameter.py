@@ -7,7 +7,7 @@ class HyperParameter:
     pass
 
 
-A2C_PARAMS = ("a2c", None, 50_000)
+A2C_PARAMS = ("a2c", None, 1000)
 
 DDPG_PARAMS = ("ddpg", None, 50_000)
 PPO_PARAMS = (

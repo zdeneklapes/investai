@@ -11,5 +11,5 @@
 	path = src/third_party/FinRL-Meta
 	url = https://github.com/AI4Finance-Foundation/FinRL-Meta
 [submodule "src/third_party/FinRL-Meta"]
-	path = src/third_party/FinRL-Meta
+	path = src/third_party/FinRL_Meta
 	url = git@github.com:zlapik/FinRL-Meta.git

@@ -463,7 +463,7 @@ class Main:
             for model in trained_models:
                 account_value, _ = test(model, test_data)
                 backtest_plot(
-                    account_value,
+                    account_value=account_value,
                     baseline_ticker="^DJI",
                     baseline_start=GlobalVariables.TEST_START_DATE,
                     baseline_end=GlobalVariables.TEST_END_DATE,

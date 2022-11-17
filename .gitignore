@@ -4,17 +4,20 @@
 # Env variables
 *.env*
 !sample.env*
+*.lock
 
 # Zip
 *.zip
 
 # Models
-datasets/
-results/
-tensorboard_log/
+**datasets/
+**results/
+**tensorboard_log/
 
 # Include all trained models
-!**/trained_models/**
+**trained_models/
+**train_model/
+
 
 # Documentation
 doc/**
