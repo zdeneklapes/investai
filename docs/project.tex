@@ -1,0 +1,31 @@
+% Author: Zdeněk Lapeš <lapes.zdenek@gmail.com> (xlapes02)
+\documentclass[a4paper, 11pt]{article}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Packages %%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage[czech]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[left=2cm, top=3cm, text={17cm, 24cm}]{geometry}
+\usepackage{xcolor}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[none]{hyphenat}
+\usepackage[unicode]{hyperref}
+\usepackage{listings}
+\usepackage{url}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Settings %%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{config/settings.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% Main %%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+    \input{section/title_page.tex}
+    \input{section/content.tex}
+    \input{section/introduction.tex}
+    \input{section/implementation.tex}
+    \input{section/tests.tex}
+    \input{section/usage.tex}
+    \input{section/conclusion.tex}
+    \input{section/literature.tex}
+
+\end{document}
