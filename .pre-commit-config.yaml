@@ -130,7 +130,7 @@ repos:
   ##########################################################################################
   # Latex
   - repo: https://github.com/cmhughes/latexindent.pl
-    rev: v3.19
+    rev: v3.18
     hooks:
       - id: latexindent
         args: [ --yaml=.indentconfig.yaml ]
