@@ -21,34 +21,34 @@
 % Problem is that this package have to be introduced as the last one so it
 % can not be placed in the template file.
 \ifWis
-	\ifx\pdfoutput\undefined % nejedeme pod pdflatexem / we are not using pdflatex
-	\else
-		\usepackage{color}
-		\usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex]{hyperref}
-		\definecolor{hrcolor-ref}{RGB}{223,52,30}
-		\definecolor{hrcolor-cite}{HTML}{2F8F00}
-		\definecolor{hrcolor-urls}{HTML}{092EAB}
-		\hypersetup{
-			linkcolor=hrcolor-ref,
-			citecolor=hrcolor-cite,
-			filecolor=magenta,
-			urlcolor=hrcolor-urls
-		}
-		\def\pdfBorderAttrs{/Border [0 0 0] }  % bez okrajů kolem odkazů / without margins around links
-		\pdfcompresslevel=9
-	\fi
+\ifx\pdfoutput\undefined % nejedeme pod pdflatexem / we are not using pdflatex
+\else
+\usepackage{color}
+\usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex]{hyperref}
+\definecolor{hrcolor-ref}{RGB}{223,52,30}
+\definecolor{hrcolor-cite}{HTML}{2F8F00}
+\definecolor{hrcolor-urls}{HTML}{092EAB}
+\hypersetup{
+    linkcolor=hrcolor-ref,
+    citecolor=hrcolor-cite,
+    filecolor=magenta,
+    urlcolor=hrcolor-urls
+}
+\def\pdfBorderAttrs{/Border [0 0 0] }  % bez okrajů kolem odkazů / without margins around links
+\pdfcompresslevel=9
+\fi
 \else % pro tisk budou odkazy, na které se dá klikat, černé / for the print clickable links will be black
-	\ifx\pdfoutput\undefined % nejedeme pod pdflatexem / we are not using pdflatex
-	\else
-		\usepackage{color}
-		\usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
-		\definecolor{links}{rgb}{0,0,0}
-		\definecolor{anchors}{rgb}{0,0,0}
-		\def\AnchorColor{anchors}
-		\def\LinkColor{links}
-		\def\pdfBorderAttrs{/Border [0 0 0] } % bez okrajů kolem odkazů / without margins around links
-		\pdfcompresslevel=9
-	\fi
+\ifx\pdfoutput\undefined % nejedeme pod pdflatexem / we are not using pdflatex
+\else
+\usepackage{color}
+\usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex,urlcolor=black,linkcolor=black,citecolor=black]{hyperref} % editorconfig-checker-disable-line
+\definecolor{links}{rgb}{0,0,0}
+\definecolor{anchors}{rgb}{0,0,0}
+\def\AnchorColor{anchors}
+\def\LinkColor{links}
+\def\pdfBorderAttrs{/Border [0 0 0] } % bez okrajů kolem odkazů / without margins around links
+\pdfcompresslevel=9
+\fi
 \fi
 % Řešení problému, kdy klikací odkazy na obrázky vedou za obrázek
 % This solves the problems with links which leads after the picture

@@ -1,26 +1,25 @@
 # https://editorconfig.org
 root = true
 
-[*]
+[*.{py,json,tex,bib,markdown,md,yaml,yml}]
+max_line_length = 120
 indent_style = space
 charset = utf-8
 end_of_line = lf
 insert_final_newline = true
+trim_trailing_whitespace = true
 
-[*.{js,ts,jsx,tsx,css,less,html,json,markdown,md,yaml,yml}]
+[*.{yaml,yml}]
 indent_size = 2
-max_line_length = 120
-trim_trailing_whitespace = true
 
-[*.py]
+[*.{py,json,tex,bib}]
 indent_size = 4
-max_line_length = 120
-trim_trailing_whitespace = true
 
-[*.md]
-indent_size = 4
-max_line_length = 120
-trim_trailing_whitespace = false
+[*.{markdown,md}]
+indent_size = 2
+
+[Makefile]
+indent_style = tab
 
 [COMMIT_EDITMSG]
 max_line_length = 0

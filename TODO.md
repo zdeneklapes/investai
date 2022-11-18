@@ -1,6 +1,6 @@
 # AI-INVESTING: Bachelor Thesis
 
-# TODO
+## TODO
 
 ---
 
@@ -20,12 +20,12 @@
 - Finite/infinite automatically building state machine consists in probabilities
 - Find correlation between some features (indicators | ...) and result ±1-5% (Gaussian Distribution)
 
-##### DIVERSIFICATION
+#### DIVERSIFICATION
 
 - Using:
-    - Investing into different sectors
+  - Investing into different sectors
 
-##### RL: Features
+#### RL: Features
 
 - Which companies have the most amount of cash available relative to amount of debt?
 - Which companies have the most biggest profit relative to amount of debt?
@@ -37,7 +37,7 @@
 - Which companies are the oldest?
 - Which companies are the youngest?
 
-###### HINTS:
+##### HINTS
 
 - The company exist a long time so the growth can be slower than in the young company
 - Result: (make the union on the top most companies | train NN | ...)

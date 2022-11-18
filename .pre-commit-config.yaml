@@ -123,9 +123,8 @@ repos:
     rev: 3.0.0
     hooks:
       - id: markdownlint
-        args: [ --config .markdownlint.json ]
-        #        files: \.(md|mdown|markdown)$
-        files: ^README.md$
+        files: \.(md|mdown|markdown)$
+  #        files: ^README.md$
 
   ##########################################################################################
   # Latex
@@ -169,6 +168,21 @@ repos:
       - id: circleci_validate
 
   ##########################################################################################
+  # EditorConfig
+  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+    rev: 2.6.1
+    hooks:
+      - id: editorconfig-checker
+        language: python
+        files: ^(src/|docs/)
+        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb)$
+      - id: editorconfig-checker-system
+        language: python
+        files: ^(src/|docs/)
+        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb)$
+        additional_dependencies: [ editorconfig-checker ]
+
+      ##########################################################################################
   # Dockerfile
 #  - repo: https://github.com/pryorda/dockerfilelint-precommit-hooks
 #    rev: v0.1.0
