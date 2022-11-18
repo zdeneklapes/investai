@@ -17,124 +17,9 @@
 \documentclass[english, zadani]{fitthesis} % without assignment - for the work start to avoid compilation problem
 
 
-% =======================================================================
-\graphicspath{{images/}{./images/}} % Setting of a path to the pictures
+\input{config/settings_sablona.tex}
+\input{config/project_info.tex}
 
-% =======================================================================
-\renewcommand{\rmdefault}{lmr}%zavede Latin Modern Roman jako rm / set Latin Modern Roman as rm
-\renewcommand{\sfdefault}{qhv}%zavede TeX Gyre Heros jako sf
-\renewcommand{\ttdefault}{lmtt}% zavede Latin Modern tt jako tt
-
-% =======================================================================
-\csdoublequotesoff % disables function of the template which replaces quotation marks % to avoid unnecessary replacements in the API descriptions etc.
-
-
-% =======================================================================
-\ifWis
-\ifx\pdfoutput\undefined % nejedeme pod pdflatexem / we are not using pdflatex
-\else
-
-
-% =======================================================================
-\usepackage{subfiles} % Compilation piecewise (faster, but not all parts in preview will be up-to-date)
-\usepackage{color}
-\usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex]{hyperref} % "hyperref" package create clickable links in pdf if you are using pdflatex. % Problem is that this package have to be introduced as the last one so it % can not be placed in the template file.
-\usepackage[all]{hypcap} % This solves the problems with links which leads after the picture
-
-\definecolor{hrcolor-ref}{RGB}{223,52,30}
-\definecolor{hrcolor-cite}{HTML}{2F8F00}
-\definecolor{hrcolor-urls}{HTML}{092EAB}
-\hypersetup{
-    linkcolor=hrcolor-ref,
-    citecolor=hrcolor-cite,
-    filecolor=magenta,
-    urlcolor=hrcolor-urls
-}
-\def\pdfBorderAttrs{/Border [0 0 0] }  % bez okrajů kolem odkazů / without margins around links
-\pdfcompresslevel=9
-\fi
-\else % pro tisk budou odkazy, na které se dá klikat, černé / for the print clickable links will be black
-\ifx\pdfoutput\undefined % nejedeme pod pdflatexem / we are not using pdflatex
-\else
-\usepackage{color}
-\usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
-\definecolor{links}{rgb}{0,0,0}
-\definecolor{anchors}{rgb}{0,0,0}
-\def\AnchorColor{anchors}
-\def\LinkColor{links}
-\def\pdfBorderAttrs{/Border [0 0 0] } % bez okrajů kolem odkazů / without margins around links
-\pdfcompresslevel=9
-\fi
-\fi
-
-% Informace o práci/projektu / Information about the thesis
-%---------------------------------------------------------------------------
-\projectinfo{
-%
-%Prace / Thesis
-    project={BP},            %typ práce BP/SP/DP/DR  / thesis type (SP = term project)
-    year={2023},             % rok odevzdání / year of submission
-    date=\today,             % datum odevzdání / submission date
-%
-%Nazev prace / thesis title
-    title.cs={Využití zpětnovazebného učení pro automatickou alokaci akciového portfolia},  % název práce v češtině či slovenštině (dle zadání) / thesis title in czech language (according to assignment)
-    title.en={Reinforcement Learning for Automated Stock Portfolio Allocation}, % název práce v angličtině / thesis title in english
-    title.length={14.5cm}, % nastavení délky bloku s titulkem pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a thesis title for adjusting a line break (can be defined here or below)
-    sectitle.length={14.5cm}, % nastavení délky bloku s druhým titulkem pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a second thesis title for adjusting a line break (can be defined here or below)
-    dectitle.length={14.5cm}, % nastavení délky bloku s titulkem nad prohlášením pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a thesis title above declaration for adjusting a line break (can be defined here or below)
-%
-%Autor / Author
-    author.name={Zdeněk},   % jméno autora / author name
-    author.surname={Lapeš},   % příjmení autora / author surname
-%
-%Ustav / Department
-    department={UITS}, % doplňte příslušnou zkratku dle ústavu na zadání: UPSY/UIFS/UITS/UPGM / fill in appropriate abbreviation of the department according to assignment: UPSY/UIFS/UITS/UPGM
-%
-% Školitel / supervisor
-    supervisor.name={Milan},   % jméno školitele / supervisor name
-    supervisor.surname={Češka},   % příjmení školitele / supervisor surname
-    supervisor.title.p={doc. RNDr.},   %titul před jménem (nepovinné) / title before the name (optional)
-    supervisor.title.a={Ph.D.},    %titul za jménem (nepovinné) / title after the name (optional)
-%
-% Klíčová slova / keywords
-    keywords.cs={umělá inteligence, AI, posilované učení, alokace akciového portfolia, moderni teorie portfolia, Q-learning, neuronové sítě, akciový trh}, % klíčová slova v českém či slovenském jazyce / keywords in czech or slovak language
-    keywords.en={artificial intelligence, AI, reinforcement learning, stock portfolio allocation, modern portfolio theory, Q-learning, neural networks, stock market}, % klíčová slova v anglickém jazyce / keywords in english
-%
-% Abstrakt / Abstract
-    abstract.cs={
-        Tato prace se zameruje na navrh a implementaci modelu schopnych
-        delat rozhodnuti ve velmi rychle se menicim financnim prostredi. Vychazi z teorie
-        moderniho portfolia a posilovaneho uceni. V prvnim kroku je vytvoreno
-        simulacni prostredi, ktere umoznuje testovat ruzne strategie. V druhem kroku
-        je trenovan agent, ktery se snazi dosahnout maximalniho navratu.
-        V tretim kroku je agent testovan na realnych datech.
-    }, % abstrakt v českém či slovenském jazyce / abstract in czech or slovak language
-    abstract.en={
-        This thesis focuses on the design and implementation of a model capable of
-        making decisions in a very fast-changing financial environment. It is based on the
-        modern portfolio therory and reinforcement learning.
-        In the first step, a simulation environment is created
-        that allows testing various strategies. In the second step
-        the agent is trained to try to achieve the maximum return.
-        In the third step, the agent is tested on real data.
-    }, % abstrakt v anglickém jazyce / abstract in english
-    declaration={I hereby declare that this Bachelor's thesis was prepared as an original work by the author under
-    the supervision of Mr. Milan Češka, Ph.D. % TODO: make this dynamic
-    I have listed all the literary sources, publications and other sources, which were used during the preparation of this thesis.},
-%
-% Poděkování (nepovinné, nejlépe v jazyce práce) / Acknowledgement (optional, ideally in the language of the thesis)
-    acknowledgment={
-        I would like to thank my supervisor, Mr. Milan Češka, for his guidance and support during the preparation of this thesis.
-        I would also like to thank my family and friends for their support.
-    },
-%
-% Rozšířený abstrakt (cca 3 normostrany) - lze definovat zde nebo níže / Extended abstract (approximately 3 standard pages) - can be defined here or below
-    extendedabstract={ % TODO: write extended abstract
-        \input{chapters/extended_abstract.tex}
-    },
-%
-    faculty={FIT}, % FIT/FEKT/FSI/FA/FCH/FP/FAST/FAVU/USI/DEF
-}
 
 % =======================================================================
 % solves first/last row of the paragraph on the previous/next page
@@ -150,53 +35,72 @@
 %\raggedbottom
 
 \begin{document}
-    % Vysazeni titulnich stran / Typesetting of the title pages
-    % ----------------------------------------------
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Title page
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \maketitle
-    % Obsah
-    % ----------------------------------------------
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Setttings
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \setlength{\parskip}{0pt}
 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Table of contents
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %
     {\hypersetup{hidelinks}\tableofcontents}
 
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Setttings
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %
     \ifODSAZ
     \setlength{\parskip}{0.5\bigskipamount}
     \else
     \setlength{\parskip}{0pt}
     \fi
 
-    % vynechani stranky v oboustrannem rezimu
-    % Skip the page in the two-sided mode
-    \iftwoside\cleardoublepage\fi
+    %
+    \iftwoside\cleardoublepage\fi % Skip the page in the two-sided mode
 
-    % Text prace / Thesis text
-    % ----------------------------------------------
-    \subfile{xlapes02_chapters.tex}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Content
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \subfile{./content/chapters/introduction.tex}
+    \subfile{./content/chapters/stock_enviroment.tex}
+    \subfile{./content/chapters/conclusion.tex}
 
 
-    % Pouzita literatura / Bibliography
-    % ----------------------------------------------
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Bibliography Settings
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \makeatletter
     \def\@openbib@code{\addcontentsline{toc}{chapter}{Bibliography}}
     \makeatother
     \bibliographystyle{bib-styles/Pysny/enplain}
-    %  \bibliographystyle{alpha}
+
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Bibliography
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \begin{flushleft}
-        \bibliography{xlapes02_bibliography}
+        \bibliography{content/xlapes02_bibliography}
     \end{flushleft}
 
     % Skip the page in the two-sided mode
     \iftwoside \cleardoublepage \fi
 
-    % Prilohy / Appendices
-    % ---------------------------------------------
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Appendices Settings
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     \appendix
-
 
     \section*{List of Appendices}
     \addcontentsline{toc}{section}{List of Appendices}
     \startcontents[chapters]
     \setlength{\parskip}{0pt}
+
+    %
     % seznam příloh / list of appendices
     % \printcontents[chapters]{l}{0}{\setcounter{tocdepth}{2}}
 
@@ -211,7 +115,9 @@
     \cleardoublepage
     \fi
 
-    % Přílohy / Appendices
-    \subfile{xlapes02_appendices.tex}
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    %%% Appendices
+    %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    \subfile{content/appendices/A_appendices.tex}
 
 \end{document}

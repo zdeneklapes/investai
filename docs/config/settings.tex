@@ -4,20 +4,56 @@
 %\setlength{\emergencystretch}{2pt}
 %\emergencystretch=1em
 
-\graphicspath{ {images/} }
-\hypersetup{
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Renew Commands
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\renewcommand{\rmdefault}{lmr}%zavede Latin Modern Roman jako rm / set Latin Modern Roman as rm
+\renewcommand{\sfdefault}{qhv}%zavede TeX Gyre Heros jako sf
+\renewcommand{\ttdefault}{lmtt}% zavede Latin Modern tt jako tt
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Packages
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{subfiles} % Compilation piecewise (faster, but not all parts in preview will be up-to-date)
+\usepackage{color}
+\usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex,urlcolor=black,linkcolor=black,citecolor=black]{hyperref}
+\usepackage[all]{hypcap} % This solves the problems with links which leads after the picture
+\usepackage{graphicx}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Images Folder
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\graphicspath{{images/}{./images/}} % Setting of a path to the pictures
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Hypersetup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\hypersetup {
     colorlinks = true,
     hypertexnames = false,
-    citecolor = red
+    linkcolor=hrcolor-ref,
+    citecolor=hrcolor-cite,
+    filecolor=magenta,
+    urlcolor=hrcolor-urls
 }
 
-\setlength{\parskip}{6pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Colors
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\definecolor{hrcolor-ref}{RGB}{223,52,30}
+\definecolor{hrcolor-cite}{HTML}{2F8F00}
+\definecolor{hrcolor-urls}{HTML}{092EAB}
 
 \definecolor{mGreen}{rgb}{0,0.6,0}
 \definecolor{mGray}{rgb}{0.5,0.5,0.5}
 \definecolor{mPurple}{rgb}{0.58,0,0.82}
 \definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Lst Define Style
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \lstdefinestyle{CStyle}{
     backgroundcolor=\color{backgroundColour},
     commentstyle=\color{mGreen},
@@ -56,7 +92,3 @@
     \endgroup
 }
 \newcommand{\opustt}[1]{\opus{#1}}
-
-%\showthe\textheight
-%\message{The text height is \the\textheight}
-%\typeout{The text height is \the\textheight}
