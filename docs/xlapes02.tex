@@ -1,7 +1,7 @@
 %==============================================================================
 % tento soubor pouzijte jako zaklad
 % this file should be used as a base for the thesis
-% Autoři / Authors: 2008 Michal Bidlo, 2019 Jaroslav Dytrych
+% Autoři / Authors: 2008 Michal Bidlo, 2019 Jaroslav Dytrych, 2022 Zdeněk Lapeš
 % Kontakt pro dotazy a připomínky: sablona@fit.vutbr.cz
 % Contact for questions and comments: sablona@fit.vutbr.cz
 %==============================================================================
@@ -10,80 +10,37 @@
 %------------------------------------------------------------------------------
 % zpracování / processing: make, make pdf, make clean
 %==============================================================================
-% Soubory, které je nutné upravit nebo smazat: / Files which have to be edited or deleted:
-%   projekt-20-literatura-bibliography.bib - literatura / bibliography
-%   projekt-01-kapitoly-chapters.tex - obsah práce / the thesis content
-%   projekt-01-kapitoly-chapters-en.tex - obsah práce v angličtině / the thesis content in English
-%   projekt-30-prilohy-appendices.tex - přílohy / appendices
-%   projekt-30-prilohy-appendices-en.tex - přílohy v angličtině / appendices in English
+
+
 %==============================================================================
-%\documentclass[]{fitthesis} % bez zadání - pro začátek práce, aby nebyl problém s překladem
 % TODO: Do I need odsaz?
 \documentclass[english, zadani]{fitthesis} % without assignment - for the work start to avoid compilation problem
-%\documentclass[zadani]{fitthesis} % odevzdani do wisu a/nebo tisk s barevnými odkazy - odkazy jsou barevné
-%\documentclass[english,zadani]{fitthesis} % for submission to the IS FIT and/or print with color links - links are color
-%\documentclass[zadani,print]{fitthesis} % pro černobílý tisk - odkazy jsou černé
-%\documentclass[english,zadani,print]{fitthesis} % for the black and white print - links are black
-%\documentclass[zadani,cprint]{fitthesis} % pro barevný tisk - odkazy jsou černé, znak VUT barevný
-%\documentclass[english,zadani,cprint]{fitthesis} % for the print - links are black, logo is color
-% * Je-li práce psaná v anglickém jazyce, je zapotřebí u třídy použít
-%   parametr english následovně:
-%   If thesis is written in English, it is necessary to use
-%   parameter english as follows:
-%      \documentclass[english]{fitthesis}
-% * Je-li práce psaná ve slovenském jazyce, je zapotřebí u třídy použít
-%   parametr slovak následovně:
-%   If the work is written in the Slovak language, it is necessary
-%   to use parameter slovak as follows:
-%      \documentclass[slovak]{fitthesis}
-% * Je-li práce psaná v anglickém jazyce se slovenským abstraktem apod.,
-%   je zapotřebí u třídy použít parametry english a enslovak následovně:
-%   If the work is written in English with the Slovak abstract, etc.,
-%   it is necessary to use parameters english and enslovak as follows:
-%      \documentclass[english,enslovak]{fitthesis}
-
-% Základní balíčky jsou dole v souboru šablony fitthesis.cls
-% Basic packages are at the bottom of template file fitthesis.cls
-% zde můžeme vložit vlastní balíčky / you can place own packages here
-
-% Kompilace po částech (rychlejší, ale v náhledu nemusí být vše aktuální)
-% Compilation piecewise (faster, but not all parts in preview will be up-to-date)
-% \usepackage{subfiles}
-
-% Nastavení cesty k obrázkům
-% Setting of a path to the pictures
-\graphicspath{{images/}{./images/}}
-%\graphicspath{{obrazky-figures/}{../obrazky-figures/}}
-
-%---rm---------------
-\renewcommand{\rmdefault}{lmr}%zavede Latin Modern Roman jako rm / set Latin Modern Roman as rm
-%---sf---------------
-\renewcommand{\sfdefault}{qhv}%zavede TeX Gyre Heros jako sf
-%---tt------------
-\renewcommand{\ttdefault}{lmtt}% zavede Latin Modern tt jako tt
-
-% vypne funkci šablony, která automaticky nahrazuje uvozovky,
-% aby nebyly prováděny nevhodné náhrady v popisech API apod.
-% disables function of the template which replaces quotation marks
-% to avoid unnecessary replacements in the API descriptions etc.
-\csdoublequotesoff
-
-
-\usepackage{url}
 
 
 % =======================================================================
-% balíček "hyperref" vytváří klikací odkazy v pdf, pokud tedy použijeme pdflatex
-% problém je, že balíček hyperref musí být uveden jako poslední, takže nemůže
-% být v šabloně
-% "hyperref" package create clickable links in pdf if you are using pdflatex.
-% Problem is that this package have to be introduced as the last one so it
-% can not be placed in the template file.
+\graphicspath{{images/}{./images/}} % Setting of a path to the pictures
+
+% =======================================================================
+\renewcommand{\rmdefault}{lmr}%zavede Latin Modern Roman jako rm / set Latin Modern Roman as rm
+\renewcommand{\sfdefault}{qhv}%zavede TeX Gyre Heros jako sf
+\renewcommand{\ttdefault}{lmtt}% zavede Latin Modern tt jako tt
+
+% =======================================================================
+\csdoublequotesoff % disables function of the template which replaces quotation marks % to avoid unnecessary replacements in the API descriptions etc.
+
+
+% =======================================================================
 \ifWis
 \ifx\pdfoutput\undefined % nejedeme pod pdflatexem / we are not using pdflatex
 \else
+
+
+% =======================================================================
+\usepackage{subfiles} % Compilation piecewise (faster, but not all parts in preview will be up-to-date)
 \usepackage{color}
-\usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex]{hyperref}
+\usepackage[unicode,colorlinks,hyperindex,plainpages=false,pdftex]{hyperref} % "hyperref" package create clickable links in pdf if you are using pdflatex. % Problem is that this package have to be introduced as the last one so it % can not be placed in the template file.
+\usepackage[all]{hypcap} % This solves the problems with links which leads after the picture
+
 \definecolor{hrcolor-ref}{RGB}{223,52,30}
 \definecolor{hrcolor-cite}{HTML}{2F8F00}
 \definecolor{hrcolor-urls}{HTML}{092EAB}
@@ -109,9 +66,6 @@
 \pdfcompresslevel=9
 \fi
 \fi
-% Řešení problému, kdy klikací odkazy na obrázky vedou za obrázek
-% This solves the problems with links which leads after the picture
-\usepackage[all]{hypcap}
 
 % Informace o práci/projektu / Information about the thesis
 %---------------------------------------------------------------------------
@@ -175,25 +129,25 @@
     },
 %
 % Rozšířený abstrakt (cca 3 normostrany) - lze definovat zde nebo níže / Extended abstract (approximately 3 standard pages) - can be defined here or below
-    extendedabstract={
-        TODO % TODO: write extended abstract
-        Tato
+    extendedabstract={ % TODO: write extended abstract
+        \input{chapters/extended_abstract.tex}
     },
 %
     faculty={FIT}, % FIT/FEKT/FSI/FA/FCH/FP/FAST/FAVU/USI/DEF
 }
 
-% řeší první/poslední řádek odstavce na předchozí/následující stránce
+% =======================================================================
 % solves first/last row of the paragraph on the previous/next page
 \clubpenalty=10000
 \widowpenalty=10000
 
+% =======================================================================
 % checklist
 \newlist{checklist}{itemize}{1}
 \setlist[checklist]{label=$\square$}
 
 % Nechcete-li, aby se u oboustranného tisku roztahovaly mezery pro zaplnění stránky, odkomentujte následující řádek / If you do not want enlarged spacing for filling of the pages in case of duplex printing, uncomment the following line
-% \raggedbottom
+%\raggedbottom
 
 \begin{document}
     % Vysazeni titulnich stran / Typesetting of the title pages
@@ -205,24 +159,6 @@
 
     {\hypersetup{hidelinks}\tableofcontents}
 
-    % Seznam obrazku a tabulek (pokud prace obsahuje velke mnozstvi obrazku, tak se to hodi)
-    % List of figures and list of tables (if the thesis contains a lot of pictures, it is good)
-    \ifczech
-    \renewcommand\listfigurename{Seznam obrázků}
-    \fi
-    \ifslovak
-    \renewcommand\listfigurename{Zoznam obrázkov}
-    \fi
-    % {\hypersetup{hidelinks}\listoffigures}
-
-    \ifczech
-    \renewcommand\listtablename{Seznam tabulek}
-    \fi
-    \ifslovak
-    \renewcommand\listtablename{Zoznam tabuliek}
-    \fi
-    % {\hypersetup{hidelinks}\listoftables}
-
     \ifODSAZ
     \setlength{\parskip}{0.5\bigskipamount}
     \else
@@ -231,89 +167,34 @@
 
     % vynechani stranky v oboustrannem rezimu
     % Skip the page in the two-sided mode
-    \iftwoside
-    \cleardoublepage
-    \fi
+    \iftwoside\cleardoublepage\fi
 
     % Text prace / Thesis text
     % ----------------------------------------------
-    \ifenglish
-    \input{projekt-01-kapitoly-chapters-en}
-    \else
-    \input{projekt-01-kapitoly-chapters}
-    \fi
-
-    % Kompilace po částech (viz výše, nutno odkomentovat)
-    % Compilation piecewise (see above, it is necessary to uncomment it)
-    %\subfile{projekt-01-uvod-introduction}
-    % ...
-    %\subfile{chapters/projekt-05-conclusion}
+    \subfile{xlapes02_chapters.tex}
 
 
     % Pouzita literatura / Bibliography
     % ----------------------------------------------
-    \ifslovak
-    \makeatletter
-    \def\@openbib@code{\addcontentsline{toc}{chapter}{Literatúra}}
-    \makeatother
-    \bibliographystyle{bib-styles/Pysny/skplain}
-    \else
-    \ifczech
-    \makeatletter
-    \def\@openbib@code{\addcontentsline{toc}{chapter}{Literatura}}
-    \makeatother
-    \bibliographystyle{bib-styles/Pysny/czplain}
-    \else
     \makeatletter
     \def\@openbib@code{\addcontentsline{toc}{chapter}{Bibliography}}
     \makeatother
     \bibliographystyle{bib-styles/Pysny/enplain}
     %  \bibliographystyle{alpha}
-    \fi
-    \fi
     \begin{flushleft}
-        \bibliography{projekt-20-literatura-bibliography}
+        \bibliography{xlapes02_bibliography}
     \end{flushleft}
 
-    % vynechani stranky v oboustrannem rezimu
     % Skip the page in the two-sided mode
-    \iftwoside
-    \cleardoublepage
-    \fi
+    \iftwoside \cleardoublepage \fi
 
     % Prilohy / Appendices
     % ---------------------------------------------
     \appendix
-    \ifczech
-    \renewcommand{\appendixpagename}{Přílohy}
-    \renewcommand{\appendixtocname}{Přílohy}
-    \renewcommand{\appendixname}{Příloha}
-    \fi
-    \ifslovak
-    \renewcommand{\appendixpagename}{Prílohy}
-    \renewcommand{\appendixtocname}{Prílohy}
-    \renewcommand{\appendixname}{Príloha}
-    \fi
-%  \appendixpage
 
-% vynechani stranky v oboustrannem rezimu
-% Skip the page in the two-sided mode
-%\iftwoside
-%  \cleardoublepage
-%\fi
 
-    \ifslovak
-%  \section*{Zoznam príloh}
-%  \addcontentsline{toc}{section}{Zoznam príloh}
-    \else
-    \ifczech
-%    \section*{Seznam příloh}
-%    \addcontentsline{toc}{section}{Seznam příloh}
-    \else
-%    \section*{List of Appendices}
-%    \addcontentsline{toc}{section}{List of Appendices}
-    \fi
-    \fi
+    \section*{List of Appendices}
+    \addcontentsline{toc}{section}{List of Appendices}
     \startcontents[chapters]
     \setlength{\parskip}{0pt}
     % seznam příloh / list of appendices
@@ -331,14 +212,6 @@
     \fi
 
     % Přílohy / Appendices
-    \ifenglish
-    \input{projekt-30-prilohy-appendices-en}
-    \else
-    \input{projekt-30-prilohy-appendices}
-    \fi
-
-    % Kompilace po částech (viz výše, nutno odkomentovat)
-    % Compilation piecewise (see above, it is necessary to uncomment it)
-    %\subfile{projekt-30-prilohy-appendices}
+    \subfile{xlapes02_appendices.tex}
 
 \end{document}
