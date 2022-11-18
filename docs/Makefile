@@ -30,7 +30,7 @@ $(CO).dvi: $(CO).tex $(CO).bib
 
 clean:
 	rm -f *.log *.dvi $(CO).blg $(CO).bbl $(CO).toc *.aux $(CO).out $(CO).lof $(CO).ptc
-	find . -iname "*.log"
+	find . -iname "*.log" -delete
 
 clean_all: clean
 	rm -f $(CO).pdf

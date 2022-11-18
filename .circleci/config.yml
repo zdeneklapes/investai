@@ -25,6 +25,6 @@ workflows:
   push:
     jobs:
       - lint
-      - latex:
-          requires:
-            - lint
+#      - latex:
+#          requires:
+#            - lint
