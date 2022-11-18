@@ -18,6 +18,9 @@
 **trained_models/
 **train_model/
 
+*.pdf
+*.eps
+
 
 # Documentation
 doc/**
