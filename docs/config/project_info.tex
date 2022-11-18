@@ -1,68 +1,68 @@
 % Informace o práci/projektu / Information about the thesis
 %---------------------------------------------------------------------------
 \projectinfo{
-%
-%Prace / Thesis
-    project={BP},            %typ práce BP/SP/DP/DR  / thesis type (SP = term project)
-    year={2023},             % rok odevzdání / year of submission
-    date=\today,             % datum odevzdání / submission date
-%
-%Nazev prace / thesis title
-    title.cs={Využití zpětnovazebného učení pro automatickou alokaci akciového portfolia},  % název práce v češtině či slovenštině (dle zadání) / thesis title in czech language (according to assignment)
-    title.en={Reinforcement Learning for Automated Stock Portfolio Allocation}, % název práce v angličtině / thesis title in english
-    title.length={14.5cm}, % nastavení délky bloku s titulkem pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a thesis title for adjusting a line break (can be defined here or below)
-    sectitle.length={14.5cm}, % nastavení délky bloku s druhým titulkem pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a second thesis title for adjusting a line break (can be defined here or below)
-    dectitle.length={14.5cm}, % nastavení délky bloku s titulkem nad prohlášením pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a thesis title above declaration for adjusting a line break (can be defined here or below)
-%
-%Autor / Author
-    author.name={Zdeněk},   % jméno autora / author name
-    author.surname={Lapeš},   % příjmení autora / author surname
-%
-%Ustav / Department
-    department={UITS}, % doplňte příslušnou zkratku dle ústavu na zadání: UPSY/UIFS/UITS/UPGM / fill in appropriate abbreviation of the department according to assignment: UPSY/UIFS/UITS/UPGM
-%
-% Školitel / supervisor
-    supervisor.name={Milan},   % jméno školitele / supervisor name
-    supervisor.surname={Češka},   % příjmení školitele / supervisor surname
-    supervisor.title.p={doc. RNDr.},   %titul před jménem (nepovinné) / title before the name (optional)
-    supervisor.title.a={Ph.D.},    %titul za jménem (nepovinné) / title after the name (optional)
-%
-% Klíčová slova / keywords
-    keywords.cs={umělá inteligence, AI, posilované učení, alokace akciového portfolia, moderni teorie portfolia, Q-learning, neuronové sítě, akciový trh}, % klíčová slova v českém či slovenském jazyce / keywords in czech or slovak language
-    keywords.en={artificial intelligence, AI, reinforcement learning, stock portfolio allocation, modern portfolio theory, Q-learning, neural networks, stock market}, % klíčová slova v anglickém jazyce / keywords in english
-%
-% Abstrakt / Abstract
-    abstract.cs={
-        Tato prace se zameruje na navrh a implementaci modelu schopnych
-        delat rozhodnuti ve velmi rychle se menicim financnim prostredi. Vychazi z teorie
-        moderniho portfolia a posilovaneho uceni. V prvnim kroku je vytvoreno
-        simulacni prostredi, ktere umoznuje testovat ruzne strategie. V druhem kroku
-        je trenovan agent, ktery se snazi dosahnout maximalniho navratu.
-        V tretim kroku je agent testovan na realnych datech.
-    }, % abstrakt v českém či slovenském jazyce / abstract in czech or slovak language
-    abstract.en={
-        This thesis focuses on the design and implementation of a model capable of
-        making decisions in a very fast-changing financial environment. It is based on the
-        modern portfolio therory and reinforcement learning.
-        In the first step, a simulation environment is created
-        that allows testing various strategies. In the second step
-        the agent is trained to try to achieve the maximum return.
-        In the third step, the agent is tested on real data.
-    }, % abstrakt v anglickém jazyce / abstract in english
-    declaration={I hereby declare that this Bachelor's thesis was prepared as an original work by the author under
-    the supervision of Mr. Milan Češka, Ph.D. % TODO: make this dynamic
-    I have listed all the literary sources, publications and other sources, which were used during the preparation of this thesis.},
-%
-% Poděkování (nepovinné, nejlépe v jazyce práce) / Acknowledgement (optional, ideally in the language of the thesis)
-    acknowledgment={
-        I would like to thank my supervisor, Mr. Milan Češka, for his guidance and support during the preparation of this thesis.
-        I would also like to thank my family and friends for their support.
-    },
-%
-% Rozšířený abstrakt (cca 3 normostrany) - lze definovat zde nebo níže / Extended abstract (approximately 3 standard pages) - can be defined here or below
-    extendedabstract={ % TODO: write extended abstract
-        \input{./content/chapters/extended_abstract.tex} % path must be like that because this is inserted directly into xlapes02.tex
-    },
-%
-    faculty={FIT}, % FIT/FEKT/FSI/FA/FCH/FP/FAST/FAVU/USI/DEF
+	%
+	%Prace / Thesis
+	project={BP},            %typ práce BP/SP/DP/DR  / thesis type (SP = term project)
+	year={2023},             % rok odevzdání / year of submission
+	date=\today,             % datum odevzdání / submission date
+	%
+	%Nazev prace / thesis title
+	title.cs={Využití zpětnovazebného učení pro automatickou alokaci akciového portfolia},  % název práce v češtině či slovenštině (dle zadání) / thesis title in czech language (according to assignment)
+	title.en={Reinforcement Learning for Automated Stock Portfolio Allocation}, % název práce v angličtině / thesis title in english
+	title.length={14.5cm}, % nastavení délky bloku s titulkem pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a thesis title for adjusting a line break (can be defined here or below)
+	sectitle.length={14.5cm}, % nastavení délky bloku s druhým titulkem pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a second thesis title for adjusting a line break (can be defined here or below)
+	dectitle.length={14.5cm}, % nastavení délky bloku s titulkem nad prohlášením pro úpravu zalomení řádku (lze definovat zde nebo níže) / setting the length of a block with a thesis title above declaration for adjusting a line break (can be defined here or below)
+	%
+	%Autor / Author
+	author.name={Zdeněk},   % jméno autora / author name
+	author.surname={Lapeš},   % příjmení autora / author surname
+	%
+	%Ustav / Department
+	department={UITS}, % doplňte příslušnou zkratku dle ústavu na zadání: UPSY/UIFS/UITS/UPGM / fill in appropriate abbreviation of the department according to assignment: UPSY/UIFS/UITS/UPGM
+	%
+	% Školitel / supervisor
+	supervisor.name={Milan},   % jméno školitele / supervisor name
+	supervisor.surname={Češka},   % příjmení školitele / supervisor surname
+	supervisor.title.p={doc. RNDr.},   %titul před jménem (nepovinné) / title before the name (optional)
+	supervisor.title.a={Ph.D.},    %titul za jménem (nepovinné) / title after the name (optional)
+	%
+	% Klíčová slova / keywords
+	keywords.cs={umělá inteligence, AI, posilované učení, alokace akciového portfolia, moderni teorie portfolia, Q-learning, neuronové sítě, akciový trh}, % klíčová slova v českém či slovenském jazyce / keywords in czech or slovak language
+	keywords.en={artificial intelligence, AI, reinforcement learning, stock portfolio allocation, modern portfolio theory, Q-learning, neural networks, stock market}, % klíčová slova v anglickém jazyce / keywords in english
+	%
+	% Abstrakt / Abstract
+	abstract.cs={
+			Tato prace se zameruje na navrh a implementaci modelu schopnych
+			delat rozhodnuti ve velmi rychle se menicim financnim prostredi. Vychazi z teorie
+			moderniho portfolia a posilovaneho uceni. V prvnim kroku je vytvoreno
+			simulacni prostredi, ktere umoznuje testovat ruzne strategie. V druhem kroku
+			je trenovan agent, ktery se snazi dosahnout maximalniho navratu.
+			V tretim kroku je agent testovan na realnych datech.
+		}, % abstrakt v českém či slovenském jazyce / abstract in czech or slovak language
+	abstract.en={
+			This thesis focuses on the design and implementation of a model capable of
+			making decisions in a very fast-changing financial environment. It is based on the
+			modern portfolio therory and reinforcement learning.
+			In the first step, a simulation environment is created
+			that allows testing various strategies. In the second step
+			the agent is trained to try to achieve the maximum return.
+			In the third step, the agent is tested on real data.
+		}, % abstrakt v anglickém jazyce / abstract in english
+	declaration={I hereby declare that this Bachelor's thesis was prepared as an original work by the author under
+			the supervision of Mr. Milan Češka, Ph.D. % TODO: make this dynamic
+			I have listed all the literary sources, publications and other sources, which were used during the preparation of this thesis.},
+	%
+	% Poděkování (nepovinné, nejlépe v jazyce práce) / Acknowledgement (optional, ideally in the language of the thesis)
+	acknowledgment={
+			I would like to thank my supervisor, Mr. Milan Češka, for his guidance and support during the preparation of this thesis.
+			I would also like to thank my family and friends for their support.
+		},
+	%
+	% Rozšířený abstrakt (cca 3 normostrany) - lze definovat zde nebo níže / Extended abstract (approximately 3 standard pages) - can be defined here or below
+	extendedabstract={ % TODO: write extended abstract
+			\input{./content/chapters/extended_abstract.tex} % path must be like that because this is inserted directly into xlapes02.tex
+		},
+	%
+	faculty={FIT}, % FIT/FEKT/FSI/FA/FCH/FP/FAST/FAVU/USI/DEF
 }

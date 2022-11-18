@@ -10,30 +10,34 @@
 %------------------------------------------------------------------------------
 % zpracování / processing: make, make pdf, make clean
 %==============================================================================
-
-
-%==============================================================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Start of the document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % TODO: Do I need odsaz?
-\documentclass[english, zadani]{fitthesis} % without assignment - for the work start to avoid compilation problem
+\documentclass[english, zadani]{fitthesis}
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Setup of the thesis
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{config/settings_sablona.tex}
 \input{config/project_info.tex}
 
-
-% =======================================================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % solves first/last row of the paragraph on the previous/next page
 \clubpenalty=10000
 \widowpenalty=10000
 
-% =======================================================================
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % checklist
 \newlist{checklist}{itemize}{1}
 \setlist[checklist]{label=$\square$}
 
-% Nechcete-li, aby se u oboustranného tisku roztahovaly mezery pro zaplnění stránky, odkomentujte následující řádek / If you do not want enlarged spacing for filling of the pages in case of duplex printing, uncomment the following line
-%\raggedbottom
+% =======================================================================
+% \raggedbottom % If you do not want enlarged spacing for filling of the pages in case of duplex printing, uncomment the following line
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Document
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{document}
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% Title page
@@ -67,9 +71,9 @@
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% Content
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    \subfile{./content/chapters/introduction.tex}
-    \subfile{./content/chapters/stock_enviroment.tex}
-    \subfile{./content/chapters/conclusion.tex}
+    \subfile{content/chapters/introduction.tex}
+    \subfile{content/chapters/stock_enviroment.tex}
+    \subfile{content/chapters/conclusion.tex}
 
 
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -102,7 +106,7 @@
 
     %
     % seznam příloh / list of appendices
-    % \printcontents[chapters]{l}{0}{\setcounter{tocdepth}{2}}
+%    \printcontents[chapters]{l}{0}{\setcounter{tocdepth}{2}}
 
     \ifODSAZ
     \setlength{\parskip}{0.5\bigskipamount}
@@ -118,6 +122,6 @@
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     %%% Appendices
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    \subfile{content/appendices/A_appendices.tex}
+    \subfile{content/appendices/A.tex}
 
 \end{document}

@@ -1,21 +1,21 @@
 # AI-INVESTING: Bachelor Thesis
 
-# README
+## README
 
 ---
 
-## AUTHORS
+### AUTHORS
 
 - **Student**: Zdeněk Lapeš <lapes.zdenek@gmail.com>
 - **Superviser**: Milan Češka <ceskam@fit.vut.cz>
 
-## BUGS
+### BUGS
 
-# DEPENDENCIES
+### DEPENDENCIES
 
 - swig
 - ta-lib
 
-## [TODO](./TODO.md)
+### [TODO](./TODO.md)
 
-## [MATERIALS](./MATERIALS.md)
+### [MATERIALS](./MATERIALS.md)

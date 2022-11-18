@@ -1,33 +1,33 @@
 # AI-INVESTING: Bachelor Thesis
 
-# MATERIALS
+## MATERIALS
 
 ---
 
-## POKYNY BP:
+## POKYNY BP
 
 - Harmonogram <https://www.fit.vut.cz/study/theses/schedule/.cs>
 - Podminky <https://www.fei.vsb.cz/export/sites/fei/cs/studium/informace-pokyny/files/pokyny_pro_vypracovani_praci.pdf>
 
 ---
 
-## LEGEND:
+## LEGEND
 
 - : I have read it
 - : I haven't read it yet
 
 ---
 
-## MATERIALS: AI + INVESTING:
+## MATERIALS: AI + INVESTING
 
-#### WEBSITES:
+#### WEBSITES
 
 - How “backtest overfitting” in finance leads to false
   discoveries <https://rss.onlinelibrary.wiley.com/doi/10.1111/1740-9713.01588>
 - Using Quantitative Investment Strategies (This method is not safe, based on the
   article) <https://www.investopedia.com/articles/trading/09/quant-strategies.asp>
 
-#### PAPERS:
+#### PAPERS
 
 - Artificial Intelligence Applied to Stock Market Trading: A
   Review <https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=9350582>
@@ -42,100 +42,100 @@
 - The application of artificial intelligence in stock
   investment <https://www.researchgate.net/publication/339687941_The_application_of_artificial_intelligence_in_stock_investment>
 
-#### MASTER THESIS:
+#### MASTER THESIS
 
 - Portfolio Trading System Using Maximum Sharpe Ratio Criterion <https://core.ac.uk/download/48544724.pdf>
 
 ---
 
-## BOOKS:
+## BOOKS
 
 ### Machine Learning in Finance: From Theory to Practice (Matthew F.Dixon)
 
-#### BOOK:
+#### BOOK
 
 - TODO
 
-#### CODE:
+#### CODE
 
 - <https://github.com/TikhonJelvis/RL-book>
 
 ### Foundations of Reinforcement Learning with Applications in Finance (Ashwin Rao, Tikhon Jelvis)
 
-#### BOOK:
+#### BOOK
 
 - <https://stanford.edu/~ashlearn/RLForFinanceBook/book.pdf>
 
-#### CODE:
+#### CODE
 
 - <https://github.com/TikhonJelvis/RL-book>
 
 ### Machine Learning for Algorithmic Trading: Predictive models to extract signals from market and alternative data for systematic trading strategies with Python, 2nd Edition
 
-#### BOOK:
+#### BOOK
 
 - <https://www.amazon.com/Machine-Learning-Algorithmic-Trading-alternative/dp/1839217715?pf_rd_r=GZH2XZ35GB3BET09PCCA&pf_rd_p=c5b6893a-24f2-4a59-9d4b-aff5065c90ec&pd_rd_r=91a679c7-f069-4a6e-bdbb-a2b3f548f0c8&pd_rd_w=2B0Q0&pd_rd_wg=GMY5S&ref_=pd_gw_ci_mcx_mr_hp_d>
 
-#### CODE:
+#### CODE
 
 - <https://github.com/stefan-jansen/machine-learning-for-trading>
 
 ### Machine-Learning-for-Finance
 
-#### BOOK:
+#### BOOK
 
 - TODO
 
-#### CODE:
+#### CODE
 
 - <https://github.com/PacktPublishing/Machine-Learning-for-Finance>
 
-#### OTHERS:
+#### OTHERS
 
-#### CODE:
+#### CODE
 
 - All Stock symbols in the world <https://levelup.gitconnected.com/how-to-get-all-stock-symbols-a73925c16a1b>
 - Quantitative finance <https://github.com/quantopian>
 - Spinning Up in Deep RL (OpenAI) <https://spinningup.openai.com/en/latest/user/introduction.html>
 - RLzoo <https://github.com/tensorlayer/RLzoo>
 
-#### WEBSITES:
+#### WEBSITES
 
 - <https://ml4trading.io/outline>
 
 ### Advances in Financial Machine Learning Exercises (Marcos Lopez De Prado)
 
-#### BOOK:
+#### BOOK
 
 - TODO
 
-#### CODE:
+#### CODE
 
 - Advances in Financial Machine Learning, Machine Learning (Marcos Lopez de Prado)  <https://github.com/jjakimoto>
 - Advances in Financial Machine Learning Exercises <https://github.com/BlackArbsCEO/Adv_Fin_ML_Exercises>
 
 ---
 
-## ML:
+## ML
 
-#### BOOK:
+#### BOOK
 
 - A Class of Competitive Learning Models which Avoids Neuron Underutilization
   Problem <https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.474.1879&rep=rep1&type=pdf>
 - Deep ML <https://d2l.ai/d2l-en.pdf>
 - An Introduction to Deep Reinforcement Learning <https://arxiv.org/pdf/1811.12560.pdf>
 
-#### CODE:
+#### CODE
 
 - TODO
 
 ---
 
-## MATERIALS: INVESTING:
+## MATERIALS: INVESTING
 
-### PEOPLE:
+### PEOPLE
 
-#### PAPERS:
+#### PAPERS
 
 - Modem portfolio theory (Harry M. Markowitz) \<todo link>
 - FOUNDATIONS OF PORTFOLIO THEORY (Harry M.
@@ -146,7 +146,7 @@
 
 ## AI4Finance-Foundation
 
-#### PAPERS:
+#### PAPERS
 
 - FinRL-Meta: A Universe of Near-Real Market Environments for Data-Driven Deep Reinforcement Learning in
   Quantitative Finance
@@ -167,7 +167,7 @@
 - Quantum Tensor Networks for Variational Reinforcement
   Learning <https://tensorworkshop.github.io/NeurIPS2020/accepted_papers/NIPS_2020_Workshop_Yiming%20(2).pdf>
 
-#### CODE:
+#### COD
 
 - AI4Finance-Foundation <https://github.com/AI4Finance-Foundation>
 - Awesome AI4Finance "This is BIG source of information and
@@ -177,34 +177,34 @@
 
 ---
 
-## MATH:
+## MATH
 
-### VGE:
+### VGE
 
-#### BOOK:
+#### BOOK
 
 - <http://www.jaapsuter.com/geometric-algebra.pdf>
 
-#### WEBSITES:
+#### WEBSITES
 
 - Course <http://cgm.cs.mcgill.ca/~godfried/teaching/cg-web.html>
 - Computational Geometry <https://staff.fnwi.uva.nl/l.dorst/clifford/>
 - Probabilsitic <https://blog.christianperone.com/2019/01/>
 - GMM, EM <http://krasserm.github.io/2019/11/21/latent-variable-models-part-1/>
 
-#### CODES:
+#### CODES
 
 - <https://github.com/Sciumo>
 
-### MDP:
+### MDP
 
-#### BOOK:
+#### BOOK
 
 - \<todo>
 
 ---
 
-## TYPES of PREDICTIONS:
+## TYPES of PREDICTIONS
 
 - portfolio allocation
 - stock trading
@@ -219,15 +219,15 @@
 
 ---
 
-## RL:
+## RL
 
-#### BOOK:
+#### BOOK
 
 - RL Book <http://incompleteideas.net/book/>
 - HJB Equation - <https://youtu.be/-hO-AnFYm6M?list=PLMrJAkhIeNNQe1JXNvaFvURxGY4gE9k74&t=641>
 
-### Optimizations:
+### Optimizations
 
-#### PAPERS:
+#### PAPERS
 
 - FB AI <https://web.stanford.edu/~boyd/papers/pdf/diff_cvxpy.pdf>

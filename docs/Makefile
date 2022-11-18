@@ -19,6 +19,8 @@ $(CO).pdf: clean
 	-bibtex $(CO)
 	pdflatex $(CO)
 	pdflatex $(CO)
+	$(MAKE) clean
+
 
 $(CO).dvi: $(CO).tex $(CO).bib
 	latex $(CO)
@@ -27,9 +29,11 @@ $(CO).dvi: $(CO).tex $(CO).bib
 	latex $(CO)
 
 clean:
-	rm -f *.dvi *.log $(CO).blg $(CO).bbl $(CO).toc *.aux $(CO).out $(CO).lof $(CO).ptc
+	rm -f *.log *.dvi $(CO).blg $(CO).bbl $(CO).toc *.aux $(CO).out $(CO).lof $(CO).ptc
+	find . -iname "*.log"
+
+clean_all: clean
 	rm -f $(CO).pdf
-	rm -f *~
 
 pack:
 	tar czvf $(CO).tar.gz *.tex *.bib *.bst ./template-fig/* ./bib-styles/* ./cls/* zadani.pdf $(CO).pdf Makefile Changelog
