@@ -129,12 +129,12 @@ repos:
 
   ##########################################################################################
   # Latex
-  - repo: https://github.com/cmhughes/latexindent.pl
-    rev: v3.18
-    hooks:
-      - id: latexindent
-        args: [ --yaml=.indentconfig.yaml ]
-        files: docs/
+#  - repo: https://github.com/cmhughes/latexindent.pl
+#    rev: v3.18
+#    hooks:
+#      - id: latexindent
+#        args: [ --yaml=.indentconfig.yaml ]
+#        files: docs/
   - repo: https://github.com/jonasbb/pre-commit-latex-hooks
     rev: v1.3.0
     hooks:
