@@ -11,7 +11,18 @@ jobs:
             sudo pip3 install pre-commit
             pre-commit run --all-files
 
+  latex:
+    docker:
+      - image: koppor/texlive
+    steps:
+      - checkout
+      - run: 'make'
+      - store_artifacts:
+          path: output/
+          destination: output
+
 workflows:
   push:
     jobs:
       - lint
+      - latex
