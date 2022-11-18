@@ -21,6 +21,8 @@
 *.pdf
 *.eps
 
+tags
+
 
 # Documentation
 doc/**
