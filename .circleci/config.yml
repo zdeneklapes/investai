@@ -16,7 +16,7 @@ jobs:
       - image: koppor/texlive
     steps:
       - checkout
-      - run: 'make -C docs'
+      - run: 'cd docs && make'
       - store_artifacts:
           path: output/
           destination: output
