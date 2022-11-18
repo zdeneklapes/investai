@@ -31,7 +31,6 @@ doc/**
 # Documentation Latex
 # sablona
 docs/obrazky-figures/
-docs/template-fig/
 
 *.dvi
 *.log
