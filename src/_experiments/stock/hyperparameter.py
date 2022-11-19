@@ -38,6 +38,7 @@ class HyperParameter:
 
 
 def get_env_kwargs(df: pd.DataFrame) -> Dict[str, int]:
+    # TODO add next ratios (and new class on it)
     ratio_list = [
         "OPM",
         "NPM",
@@ -60,6 +61,7 @@ def get_env_kwargs(df: pd.DataFrame) -> Dict[str, int]:
     state_space = 1 + 2 * stock_dimension + len(ratio_list) * stock_dimension  # TODO: Why?
     print(f"Stock Dimension: {stock_dimension}, State Space: {state_space}")
 
+    # TODO: Why these hyperparams?
     return {
         "hmax": 100,
         "initial_amount": 1000000,

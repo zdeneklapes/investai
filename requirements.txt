@@ -7,14 +7,15 @@ finrl
 finrl-meta
 gpustat
 gym-notices
+jupyter
 opencensus
 pandas-ta
+pip-autoremove
 pip-chill
-prometheus-client
 py-spy
 pydantic
+pyfolio
 python-binance
-python-telegram-bot
 quantstats
 rich
 smart-open
