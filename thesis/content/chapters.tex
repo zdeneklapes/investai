@@ -11,49 +11,58 @@
 The stock market is a wide and quickly changing environment.
 A lot of people are interested in it and a lot of people are trying to make money from it.
 How to make money from it in the long or short term?
-This thesis will focus on long-term investing, also called Portfolio Allocation.
+This thesis will focus on long-term investing, also called Portfolio Allocation~\cite[p.~67--69]{rao-2022}.
 
-% Main goal of this thesis and why AI
+% Main goal of this thesis
 The goal is to do the right decision at the right time, which in the Stock market means, when and at what price we should buy this stock or another.
 This is more complicated than it seems because we are emotionally
 based, and not every person is able to make rational decisions.
-Here come into play AI, which is able to make rational
-decisions based only on the things it has learned.
 
-% RL and MDP
+% RL
+Here come into play Artificial Intelligence (AI) and Reinforcement Learning (RL).
+Reinforcement Learning (RL) is one of three types of Artificial Intelligence.
 
+RL is learning what to do, how to map situations to actions, to maximize a numerical reward signal.
+RL differs from supervised learning in that the agent is not told what to do,
+but instead must discover for itself what actions yield the most
+reward by trial and error~\cite[p.~1]{sutton-2018}.
 
+Based on this rewards and losses, the agent improves its decision-making
+to get more rewards and fewer losses in the future
+in interaction with the environment.
 
+% MC & MDP
+The relationship between Markov Decision Process (MDP) and RL is
+that RL problem could be well described im MDP\@.
+And more precisely is problem described in MDP,
+the better and faster could RL agent learn.
 
-You need to know how to invest and understand how companies work.
-What the main business of the company is.
-On what product or service the company is focused
-and what is the stream of the companies' income.
-Then you need
-to follow simple rules, and you will be able to make money from the stock market e.q.\ as Warren Buffett did.
-But in these thesis we wil focus on long term investing as Warren Buffett,
-instead of short term investing as day traders.
-Then we will focus on how to invest in the stock market and how to make money
-from it using Reinforcement Learning and HMM\@.
-Reinforcement Learning is a machine learning algorithm that is used to train agents to
-make decisions in an environment.
-These further decisions are based on the previous rewards and looses that the agent
-gets from the environment.
-The agent is trying to maximize the reward and minimize the looses.
-This approach is very similar as people learn from their mistakes or successes.
-This branch of machine learning is very popular in the field of robotics and autonomous driving,
-it is also used in the field of video games, but in stock market it is not used very often,
-at least this is not published in the scientific literature very often.
-So I decided to use this approach in the stock market and see if it is possible to make money from it.
-My goal is to evaluate, benchmarks and try to improve the current solutions of models
-based on Reinforcement Learning and HMM in the stock market achieved by AI4Finance.
-The goal is to make a model that will be able to make money from the stock market in a long term
-and help in the decision-making process of the long term investor in creating, managing and evaluating
-their portfolio of stocks.
-In this thesis I will focus on training agent for stocks from US index S\&P 500.
-The agent will be trained on the historical data, and he should be able to predict
-what companies will be the most profitable and based on that the investor should be able
-to invest into these companies.
+The base for MDPs is Markov Chain (MC),
+which is a stochastic model describing a sequence of possible events in which the probability
+of each event depends only on the state attained in the previous event.
+MDPs from MCs differ from by adding actions and rewards.
+In other words, MDPs become MCs with one action in a states and all rewards are same
+for given state and action.
+
+% Dynamic Programming
+In Dynamic Programming, we can see two variants of Reinforcement Learning
+Policy Iteration and Value Iteration.
+
+% Why do I choose this topic
+In my opinion, the stock market is a very interesting topic.
+I love investing and what is called ''passive income''.
+This topic was already covered by many people, but because of the
+vision of getting rich, people tend to keep their solutions secret.
+
+As Warren Buffett said, ''Be fearful when others are greedy and greedy when others are fearful.''
+
+% Goal
+The goal is to evaluate, benchmark and try to improve the current solutions of models
+based on Reinforcement Learning and MDPs from AI4Finance-Foundation~\cite{https://doi.org/10.48550/arxiv.2111.03995}.
+The goal is to make a model that will be able to make decisions in the stock market
+in order to maximize the profit by allocating the portfolio.
+
+% TODO: Thesis Structure
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -62,11 +71,11 @@ to invest into these companies.
 
 
 \chapter{Preliminaries}\label{ch:preliminaries}
-In this~\cite{biblio}.
+TODO
 
 
 \section{Markov Processes}\label{sec:markov-processes}
-
+TODO
 
 \section{Markov Decision Process}\label{sec:markov-decision-process}
 TODO
@@ -78,25 +87,24 @@ TODO
 TODO
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Exisiting Approaches
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-\chapter{Existing Approaches to Portfolio Allocation}\label{ch:existing-approaches-to-portfolio-allocation}
-TODO
-
-
-\section{Introduction}\label{sec:introduction}
-TODO
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Reinforcement Learning
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \chapter{Reinforcement Learning}\label{ch:reinforcement-learning}
-TODO
+Reinforcement learning
+
+
+The purpose of this chapter is to introduce the reader to the basics of Reinforcement Learning.
+
+Section \ref{sec:rl-introduction} introduces the reader to the basics of Reinforcement Learning.
+Explain the terminology and the basic concepts of Reinforcement Learning.
+Section \ref{sec:rl-introduction} introduces the reader to the basics of Reinforcement Learning.
+Explain the terminology and the basic concepts of Reinforcement Learning.
+
+
+\section{Introduction}\label{sec:rl-introduction}
+
 
 
 \section{Classical Reinforcement Learning}\label{sec:classical-reinforcement-learning}
@@ -151,6 +159,19 @@ TODO
 
 \section{Used Frameworks}\label{sec:used-frameworks}
 TODO
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Exisiting Approaches
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\chapter{Existing Approaches to Portfolio Allocation}\label{ch:existing-approaches-to-portfolio-allocation}
+TODO
+
+
+\section{Introduction}\label{sec:introduction}
+TODO
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Environment
