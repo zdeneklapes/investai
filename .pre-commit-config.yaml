@@ -175,11 +175,11 @@ repos:
       - id: editorconfig-checker
         language: python
         files: ^(src/|docs/)
-        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb)$
+        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb|\.bib)$
       - id: editorconfig-checker-system
         language: python
         files: ^(src/|docs/)
-        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb)$
+        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb|\.bib)$
         additional_dependencies: [ editorconfig-checker ]
 
       ##########################################################################################
