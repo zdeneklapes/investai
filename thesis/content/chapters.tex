@@ -77,6 +77,7 @@ TODO
 \section{Markov Processes}\label{sec:markov-processes}
 TODO
 
+
 \section{Markov Decision Process}\label{sec:markov-decision-process}
 TODO
 
@@ -86,13 +87,19 @@ TODO
 \subsection{Bellman Optimality Equation}\label{subsec:bellman-optimality-equation}
 TODO
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Reinforcement Learning
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \chapter{Reinforcement Learning}\label{ch:reinforcement-learning}
-Reinforcement learning
+Reinforcement learning in general are used for decision-making.
+In RL there is no supervisor, who teaches the agent what actions to take.
+
+So it is obvious that agent get the result after the action is taken.
+
+The Reinforcement Learning is now used e.q. in robotics, games, finance, etc\ldots
 
 
 The purpose of this chapter is to introduce the reader to the basics of Reinforcement Learning.
@@ -102,10 +109,34 @@ Explain the terminology and the basic concepts of Reinforcement Learning.
 Section \ref{sec:rl-introduction} introduces the reader to the basics of Reinforcement Learning.
 Explain the terminology and the basic concepts of Reinforcement Learning.
 
+A reward $R_t$ is a scalar feedback signal.
+Reinforcement Learning is based on \textit{reqard hypothesis} that the agent's goal is to maximize the total reward.
+
+% TODO: Add Intr
+
 
 \section{Introduction}\label{sec:rl-introduction}
 
+\subsubsection{Reinforcement Learning related to Stock Market}\label{subsec:rl-introduction}
+\begin{itemize}
+    \item Sometimes the reward could have long term consequences.
+    \item Rewards could be delayed.
+    \item Sometimes it may be better to sacrifice short-term rewards for long-term gains.
+\end{itemize}
 
+\begin{itemize}
+    \item observations
+    \item actions
+    \item rewards
+\end{}
+
+\textbf{foo}
+\textrm{fff}
+
+
+\begin{definition}
+  \textit{history} is the sequence of observations, actions, and rewards that the agent has experienced.
+\end{definition}
 
 \section{Classical Reinforcement Learning}\label{sec:classical-reinforcement-learning}
 TODO

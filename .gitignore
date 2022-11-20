@@ -54,6 +54,7 @@ others/
 
 # IDE
 .idea/
+.vscode/
 
 # Caches
 .pytest_cache/
