@@ -45,7 +45,7 @@ docs/obrazky-figures/
 #
 *.eps
 *.pdf
-!docs/zadani.pdf
+!**/zadani.pdf
 #
 *.bak0
 
