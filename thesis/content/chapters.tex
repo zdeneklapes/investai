@@ -64,6 +64,7 @@ in order to maximize the profit by allocating the portfolio.
 
 % TODO: Thesis Structure
 
+\if 0
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Preliminaries
@@ -71,20 +72,6 @@ in order to maximize the profit by allocating the portfolio.
 
 
 \chapter{Preliminaries}\label{ch:preliminaries}
-TODO
-
-
-\section{Markov Processes}\label{sec:markov-processes}
-TODO
-
-
-\section{Markov Decision Process}\label{sec:markov-decision-process}
-TODO
-
-\subsection{Bellman Equation}\label{subsec:bellman-equation}
-TODO
-
-\subsection{Bellman Optimality Equation}\label{subsec:bellman-optimality-equation}
 TODO
 
 
@@ -112,7 +99,12 @@ Explain the terminology and the basic concepts of Reinforcement Learning.
 A reward $R_t$ is a scalar feedback signal.
 Reinforcement Learning is based on \textit{reqard hypothesis} that the agent's goal is to maximize the total reward.
 
-% TODO: Add Intr
+The information which determining the next state are: current state, action, reward
+
+The current state is the function of history.
+$S_t = f(H_t)$
+
+Even if envitonemt in current state $S_{t}^{e}$ is visible, it may contain irrelevant information.
 
 
 \section{Introduction}\label{sec:rl-introduction}
@@ -135,8 +127,11 @@ Reinforcement Learning is based on \textit{reqard hypothesis} that the agent's g
 
 
 \begin{definition}
-  \textit{history} is the sequence of observations, actions, and rewards that the agent has experienced.
+    \textit{history} is the sequence of observations, actions, and rewards that the agent has experienced.
 \end{definition}
+
+\fi
+
 
 \section{Classical Reinforcement Learning}\label{sec:classical-reinforcement-learning}
 TODO
@@ -190,6 +185,38 @@ TODO
 
 \section{Used Frameworks}\label{sec:used-frameworks}
 TODO
+
+
+\section{Markov Property}
+This equation says that the future is independent of the past given the present.
+$\probP[S_{t+1}|S_t] = \probP[S_{t+1}|S_1,\ldots,S_t]$
+
+
+\section{Partially Observable Markov Decision Process (POMDP)}
+
+\subsection{Partially Observable Environments}
+It is the situation where the agent have the restricted access to the environment
+and information provided by them are available only partially.
+
+Agent must remember everything that happened in the past.
+Own agent representation $S_t^d$.
+Complete environment representation $S_t^a=H_t$.
+Belief of environment state: $S_t^a=(\probP[S_t^e=s^1])$.
+
+
+\section{Markov Processes}\label{sec:markov-processes}
+TODO
+
+
+\section{Markov Decision Process}\label{sec:markov-decision-process}
+TODO
+
+\subsection{Bellman Equation}\label{subsec:bellman-equation}
+TODO
+
+\subsection{Bellman Optimality Equation}\label{subsec:bellman-optimality-equation}
+TODO
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Exisiting Approaches
