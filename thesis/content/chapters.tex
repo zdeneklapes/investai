@@ -284,6 +284,7 @@ Finding new information about the environment.
 \subsection{Exploitation}\label{subsec:exploitation}
 Exploiting the information that is already known to maximize the reward.
 
+
 \section{Prediction and Control}\label{sec:prediction-vs.-control}
 Here to solve the control problem we need to solve the prediction problem first.
 In the~\ref{subsec:exploration} the exploration approach is described and
@@ -296,12 +297,58 @@ Given a policy.
 Finding the best policy.
 
 
-\section{Markov Processes}\label{sec:markov-processes}
-TODO
+\section{Markov Processes (also called Markov Chains)}\label{sec:markov-processes}
+Markov Process is a stochastic process where the future is independent of the past given the present.
+
+\begin{definition}
+    A Markov process is a tuple $(S,A,P)$ where:
+    \begin{itemize}
+        \item $S$ is a finite set of states.
+        \item $A$ is a finite set of actions.
+        \item $P$ is a transition probability function fot time $t$, $P_t:S\times A\times S\to[0,1]$.
+    \end{itemize}
+\end{definition}
+$\probP[S_{t+1}|S_t] = \probP[S_{t+1}|S_1,\ldots,S_t]$
+
+
+\section{Markov Reward Process (MRP)}\label{sec:markov-reward-process}
+Markov Reward Process is a Markov Process with a reward function.
+MRP is a tuple of $g\in G\subseteq L \times \mathrm{Ops} \times L$
+\begin{definition}
+    A Markov Reward Process is a Markov Process, along with a time-indexed
+    sequence of Reward random variables $R_t \in D$ (a countable subset of R) for time steps $t =
+    1,2,\ldots$, satisfying the Markov Property (including Rewards):
+    $\probP[(R_{t+1}, S_{t+1})|S_t, S_{t-1}, \ldots, S_0] = P[(Rt+1, St+1)|St]$ for all $t \leq 0.$~\cite[p.~79]{rao-2022}
+\end{definition}
 
 
 \section{Markov Decision Process}\label{sec:markov-decision-process}
-TODO
+Formally describe an environment for reinforcement learning.
+
+The current state $S_t$ completely characterizes the process. % TODO: is it correct?
+Almost all RL problems can be described as MDPs.
+Optimal control primarily deals with continous MDPs.
+Into MSPs the POMDPs could be converted.
+
+\[
+    \probP[S_{t+1}|S_t]=\probP[S_{t+1}|S_1,\ldots,S_t]
+\]
+
+State transition matrix.
+\[
+    \mathcal{P}_{ss'}^a=\probP[S'=s'|S=s,A=a]
+\]
+
+where $S'$ is the all next possible states and $s'$ is the next concrete state from $S'$.
+
+\[
+    \mathcal{P} = \begin{bmatrix}
+                      \mathcal{P}_{11} & \dots  & \mathcal{P}_{1n} \\
+                      \vdots           & \ddots & \vdots           \\
+                      \mathcal{P}_{11} & \dots  & \mathcal{P}_{nn}
+    \end{bmatrix}
+\]
+where each row of the matrix sum to 1.
 
 \subsection{Bellman Equation}\label{subsec:bellman-equation}
 TODO

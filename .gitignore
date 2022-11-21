@@ -14,7 +14,8 @@ env/
 
 # Models
 **datasets/
-**results/
+**result_agent/
+**result/
 **tensorboard_log/
 
 # Include all trained models

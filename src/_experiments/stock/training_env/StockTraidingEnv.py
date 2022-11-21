@@ -165,7 +165,7 @@ class StockTradingEnv(gym.Env):
 
     def _make_plot(self):
         plt.plot(self.asset_memory, "r")
-        plt.savefig("results/account_value_trade_{}.png".format(self.episode))
+        plt.savefig("result_agent/account_value_trade_{}.png".format(self.episode))
         plt.close()
 
     def step(self, actions):
@@ -208,18 +208,18 @@ class StockTradingEnv(gym.Env):
 
             if (self.model_name != "") and (self.mode != ""):
                 df_actions = self.save_action_memory()
-                df_actions.to_csv("results/actions_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration))
+                df_actions.to_csv("result_agent/actions_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration))
                 df_total_value.to_csv(
-                    "results/account_value_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration),
+                    "result_agent/account_value_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration),
                     index=False,
                 )
                 df_rewards.to_csv(
-                    "results/account_rewards_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration),
+                    "result_agent/account_rewards_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration),
                     index=False,
                 )
                 plt.plot(self.asset_memory, "r")
                 plt.savefig(
-                    "results/account_value_{}_{}_{}.png".format(self.mode, self.model_name, self.iteration),
+                    "result_agent/account_value_{}_{}_{}.png".format(self.mode, self.model_name, self.iteration),
                     index=False,
                 )
                 plt.close()

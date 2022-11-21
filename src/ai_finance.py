@@ -35,5 +35,4 @@ if __name__ == "__main__":
 
     # if args["stock"]:
     #     print(f"{args['stock']=}")
-
     sys.exit()

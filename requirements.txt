@@ -15,6 +15,7 @@ pip-chill
 py-spy
 pydantic
 pyfolio
+pyportfolioopt
 python-binance
 quantstats
 rich
@@ -22,3 +23,4 @@ smart-open
 ta
 ta-lib
 tensorboard
+wandb
