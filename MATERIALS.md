@@ -16,6 +16,13 @@
 ---
 ---
 
+## LATEX
+
+- [drawink-tikz][47]
+
+---
+---
+
 ## MATERIALS: AI + INVESTING
 
 ---
@@ -209,3 +216,5 @@
 [45]: https://www.citace.com/
 
 [46]: https://www.scribbr.com/citation/generator/apa/
+
+[47]: https://latexdraw.com/petri-nets-tikz/

@@ -1,5 +1,3 @@
-%\documentclass[../xlapes02]{subfiles}
-%\begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Introduction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -321,6 +319,42 @@ MRP is a tuple of $g\in G\subseteq L \times \mathrm{Ops} \times L$
     $\probP[(R_{t+1}, S_{t+1})|S_t, S_{t-1}, \ldots, S_0] = P[(Rt+1, St+1)|St]$ for all $t \leq 0.$~\cite[p.~79]{rao-2022}
 \end{definition}
 
+The total reward discounted reward from time-step $t$ is given by:
+\[
+    G_t = \sum_{k=0}^{\infty} \gamma^k R_{t+k+1}
+\]
+for $\gamma \in [0,1]$.
+
+\subsection{Why discount factor $\gamma$ is needed?}
+Because there is more uncertainty in the future than in the past.
+So it is basicaly used to balance the future and the past, because
+model is not always perfect.
+
+So, Why?
+\begin{itemize}
+    \item Mathematical convenient to discount rewards.
+    \item To prevent rewards blow-up to infinity
+    \item Uncertainty about the future may not be fully captured by the model.
+    \item In finance: Immediate rewards are more important than future rewards.
+    (the current value of money is generally greater than in a year, because of inflation)
+    \item It is sometimes possible to use $\gamma=1$, e.q.\ when all sequences terminate.
+\end{itemize}
+
+The terminal state is the state where the episode ends, that means there
+is no more transitions from that state to any other state.
+
+The point in $G_t$ is that it tells us how good the state is, because
+it is the sum of all the rewards from that state to the end of the episode. % TODO: true?
+
+
+\section{Dynamic Programming vs. Reinforcement Learning}\label{sec:dynamic-programming-vs.-reinforcement-learning}
+Dynamic Programming is a method for solving Markov Decision Processes (MDP).
+The agent assumes that the transition probabilities and rewards are known.
+The Dynamic Programming Algorithm are considered to be planning and not learning,
+because the algorithm doesn’t need to interact with the Environment and
+doesn’t need to learn from the (states, rewards) data stream coming
+from the Environment~\cite[p.~28]{rao-2022}.
+
 
 \section{Markov Decision Process}\label{sec:markov-decision-process}
 Formally describe an environment for reinforcement learning.
@@ -351,10 +385,146 @@ where $S'$ is the all next possible states and $s'$ is the next concrete state f
 where each row of the matrix sum to 1.
 
 \subsection{Bellman Equation}\label{subsec:bellman-equation}
-TODO
+The value function can be decomposed into the immediate reward $R_{t+1}$
+and the discounted value of the next state $\gamma\ v(S_{t+1})$,
+where $v$ is the value function.
+
+\begin{eqnarray*}
+    v(s) = &=& \mathbb{E}[G_{t}|S_t=s]\\
+    &=& \mathbb{E}[R_{t+1} + \gamma\,R_{t+2}+\gamma^2\,R_{t+3}+\ldots|S_t=s]\\
+    &=& \mathbb{E}[R_{t+1} + \gamma(R_{t+2}+\gamma\,R_{t+3}+\ldots)|S_t=s]\\
+    &=& \mathbb{E}[R_{t+1} + \gamma\,G_{t+1}|S_t=s]\\
+    &=& \mathbb{E}[R_{t+1} + \gamma\,v(S_{t+1})|S_t=s]
+\end{eqnarray*}
+
+\begin{center}
+    \begin{tikzpicture}
+        [auto,node distance=3mm,>=latex,font=\small]
+        \tikzstyle{round}=[thick,draw=black,circle]
+
+        % Nodes
+        \node[round, label=left:$\upsilon(s)\mapsfrom\,s$] (s0) {};
+        \node[round,below left=10mm and 5mm of s0] (s1) {};
+        \node[round,label={[shift={(-2.1,0.0)}]left:$\upsilon(s')\mapsfrom\,s'$},below right=10mm and 5mm of s0] (s2) {};
+
+        % Paths
+        \draw[-] (s0) -- (s1) node[midway,left] {$r$};
+        \draw[-] (s0) -- (s2);
+    \end{tikzpicture}
+\end{center}
+
+\[
+    \text{v(s)} = \mathcal{R}_{s} + \gamma\,\sum_{s'\in\mathcal{S}}^{}\mathcal{P}_{ss'}\,v(s')
+\]
 
 \subsection{Bellman Optimality Equation}\label{subsec:bellman-optimality-equation}
 TODO
+
+\begin{eqnarray*}
+    v(s) &=& \mathcal{R}+\gamma\,\mathcal{P}\text{v}\\
+    (I - \gamma\,\mathcal{P})\,\text{v} &=& \mathcal{R}\\
+    \text{v} &=& (I-\gamma\mathcal{P})^{-1} R\\
+\end{eqnarray*}
+But the computation complexity of the inverse matrix is $O(n^3)$ for n states.
+So for big MRPs the inverse matrix method is not feasible.
+So the more usefull method is the iterative method:
+\begin{itemize}
+    \item Dynamic Programming
+    \item Monte Carlo evaluation
+    \item Temporal Difference learning
+\end{itemize}
+
+
+\section{Markov Decision Process}\label{sec:markov-decision-process2}
+\begin{definition}
+    A Markov Decision Process (MDP) is a tuple $\mathcal{M}=(\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{R},\gamma)$
+    where
+    $\mathcal{S}$ is the finite set of states, \\
+    $\mathcal{A}$ is the finite set of actions, \\
+    $\mathcal{P}$ is the state transition probability matrix,
+    $\mathcal{P}_{ss'}^{a}=\mathbb{P}[S_{t+1}=s'|S_t=s,A_t=a]$\\
+    $\mathcal{R}$ is the reward function, $\mathcal{R}_{s}^{a}=\mathbb{E}[R_{t+1}|S_t=s,A_t=a]$ \\
+    and  \\
+    $\gamma$ is the discount factor $\gamma\in[0,1]$. \\
+\end{definition} % TODO: citation
+
+\subsection{Policy}\label{subsec:policy}
+Policies are distributions over actions given states.
+\[
+    \pi(a|s) = \mathbb{P}[A_t=a|S_t=s]
+\]
+where MDPs only depend on the current state and action (not history).
+So the policy is a function of the current state and defines
+the behavior of the agent.
+Policies are time-independent, so $A_t=\pi(\cdot|S_t),\forall\,t>0$.
+
+
+If we evaluate a Markov Decision Process (MDP)
+$\mathcal{M}=\langle\mathcal{S},\mathcal{A},\mathcal{P},\mathcal{R},\gamma\rangle$
+with a fixed policy $\pi$ (in general, with a fixed stochastic policy $\pi$), we get the
+Markov Reward Process (MRP) $\langle \mathcal{S},\mathcal{P}^{\pi},\mathcal{R}^{\pi},\gamma\rangle$.
+that is implied by the combination of the MDP and the
+policy $\pi$~\cite[100]{rao-2022}.
+
+where
+\begin{align}
+    \mathcal{P}^{\pi}_{ss'} &= \sum_{a\in\mathcal{A}}^{}\pi(a|s)\,\mathcal{P}_{ss'}^{a} \\
+    \mathcal{R}^{\pi}_{s} &= \sum_{a\in\mathcal{A}}^{}\pi(a|s)\,\mathcal{R}_{s}^{a}
+\end{align}
+
+\subsection{Value Function}\label{subsec:value-function}
+
+\subsubsection{State-Value Function}\label{subsubsec:state-value-function}
+The value function of a policy $\pi$ is defined as
+\[
+    \text{v}_{\pi}(s) = \mathbb{E}_{\pi}[G_t|S_t=s]
+\]
+where $G_t$ is the total discounted reward starting from time $t$.
+The value function of a policy $\pi$ is the expected return starting from state $s$ and following policy $\pi$.
+
+\subsubsection{Action-Value Function}\label{subsubsec:action-value-function}
+The action-value function of a policy $\pi$ is defined as
+\[
+    \text{q}_{\pi}(s,a) = \mathbb{E}_{\pi}[G_t|S_t=s,A_t=a]
+\]
+where $G_t$ is the total discounted reward starting from time $t$.
+The action-value function of a policy $\pi$ is the expected return starting from state $s$ and following policy $\pi$.
+
+
+\section{Bellman Expectation Equation}\label{sec:bellman-expectation-equation}
+The Bellman Expectation Equation is a recursive equation that describes the value function of a policy $\pi$.
+
+value function of a policy $\pi$:
+\[
+    \text{v}_{\pi}^{s}=\mathbb{E}[R_{t+1}\gamma\text{v}_{\pi}(S_{t+1})|S_t=s]
+\]
+The equation says, how much reward can be obtain by following policy $\pi$ starting from state $s$.
+
+adn the action-value function of a policy $\pi$:
+\[
+    \text{q}_{\pi}^{s,a}=\mathbb{E}[R_{t+1}\gamma\text{q}_{\pi}(S_{t+1},A_{t+1})|S_t=s,A_t=a]
+\]
+
+Let consider the following graph, the black nodes are the
+actions and the white nodes are the states.
+\begin{center}
+    \begin{tikzpicture}
+        [auto,>=latex,font=\small]
+        \tikzstyle{round}=[thick,draw=black,circle,node distance=3mm]
+        \tikzstyle{round_black}=[thick,draw=black,circle,fill=black,node distance=2mm]
+
+        % Nodes
+        \node[round, label=left:$\upsilon(s)\mapsfrom\,s$] (s0) {};
+        \node[round_black,below left=10mm and 5mm of s0] (s1) {};
+        \node[round_black,label={[shift={(-1.5,0.0)}]left:$q_{\pi}(s,a)\mapsfrom\,a$},below right=10mm and 5mm of s0] (s2) {}; % TODO: better label positioning
+
+        % Paths
+        \draw[-] (s0) -- (s1) node[midway,left] {$r$};
+        \draw[-] (s0) -- (s2);
+    \end{tikzpicture}
+\end{center}
+
+% TODO: from 55:00
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -481,4 +651,3 @@ TODO
 
 \chapter{Conclusion}\label{ch:conclusion}
 TODO
-%\end{document}
