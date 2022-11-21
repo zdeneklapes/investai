@@ -1,3 +1,5 @@
+%\documentclass[../xlapes02]{subfiles}
+%\begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Introduction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -204,6 +206,64 @@ Complete environment representation $S_t^a=H_t$.
 Belief of environment state: $S_t^a=(\probP[S_t^e=s^1])$.
 
 
+\section{Value Function}
+Value function is the expected return starting from state $s$ and then following policy $\pi$.
+$v_{\pi}(s)=\expectP[R_t+\gamma\,R_{t+1}+\gamma^2\,R_{t+2}+\ldots|S_t=s]$
+
+Transition probability $P_{ss'}^{\pi}$ is the probability of transitioning from state $s$ to state $s'$ under policy $\pi$.
+
+\[
+    \mathcal{P}_{ss'}^a=\probP[S'=s'|S=s,A=a]
+\]
+
+Reward function $R(s,a,s')$ is the reward received when transitioning from state $s$ to state $s'$ under action $a$.
+\[
+    R_s^a=\expectP[R|S=s,A=s]
+\]
+
+\subsection{Value Based Agents}\label{subsec:value-based-agents}
+Value Function only.
+Value Function is the expected return starting from state $s$ and then following policy $\pi$.
+
+\subsection{Policy Agents}\label{subsec:policy-agents}
+Policy only.
+Policy is the probability of taking action $a$ in state $s$.
+
+\subsection{Actor-Critic Agents}\label{subsec:actor-critic-agents}
+Policy + Value function
+
+
+\section{Policy}
+Policy is how agent behaves in the environment.
+Map state to actions
+Deterministic policy $a=\pi(s)$.
+$\pi(a|s)=\probP[A=a|S=s]$
+
+\subsection{Model Free}
+Policy and/or Value Function.
+
+
+\section{RL Agent Taxonomy}
+% TODO: add image from: https://youtu.be/2pWv7GOvuf0?list=PLqYmG7hTraZDM-OYHWgPebj2MfCFzFObQ&t=4549
+
+
+\section{Sequential Decision Making}
+Here two problems need to be solved:
+In Reinforcement Learning:
+\begin{itemize}
+    \item The environment is initially unknown.
+    \item The agent must learn to act in the environment.
+    \item The agent improves its policy by interacting with the environment.
+\end{itemize}
+
+Planning:
+\begin{itemize}
+    \item A model of the environment is unknown.
+    \item The agent performs computations with its model (without any external interaction).
+    \item The agent improves its policy by performing computations with its model.
+\end{itemize}
+
+
 \section{Markov Processes}\label{sec:markov-processes}
 TODO
 
@@ -342,3 +402,4 @@ TODO
 
 \chapter{Conclusion}\label{ch:conclusion}
 TODO
+%\end{document}
