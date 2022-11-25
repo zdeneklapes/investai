@@ -524,7 +524,263 @@ actions and the white nodes are the states.
     \end{tikzpicture}
 \end{center}
 
+
+\section{Optimal Policies}\label{sec:optimal-policies}
+
 % TODO: from 55:00
+
+\subsection{Optimal Value Function}\label{subsec:optimal-value-function}
+The optimal state-value function $v_{*}(s)$ is the maximum value function over all policies.
+\[
+    v_{*}(s) = \max_{\pi}\text{v}_{\pi}(s)
+\]
+
+The optimal action-value function $q_{*}(s,a)$ is the maximum action-value function over all policies.
+\[
+    q_{*}(s,a) = \max_{\pi}\text{q}_{\pi}(s,a)
+\]
+
+\subsection{Partial Ordering of Policies}\label{subsec:partial-ordering-of-policies}
+Value functions define a partial ordering over policies.
+
+\begin{definition}[Partial Ordering of Policies]
+    \label{def:partial-ordering-of-policies}
+    Let $\pi_1$ and $\pi_2$ be two policies.
+    Then $\pi_1\leq\pi_2$ if and only if $\text{v}_{\pi_1}(s)\geq\text{v}_{\pi_2}(s),\forall\,s\in\mathcal{S}$.
+    There is always one policy that is better than all other policies.
+    \[
+        \pi_1\leq\pi_2\iff\text{v}_{\pi_1}(s)\leq\text{v}_{\pi_2}(s),\forall\,s\in\mathcal{S}
+    \]
+    This is an optimal policy $\pi_{*}$.
+    The optimal policy $\pi_{*}$ is the policy that maximizes the action-value function.
+    $q_{\pi_{*}}(s,a) = q_*(s,a)$
+\end{definition}\cite[p.~84]{sutton-2018}
+
+Optimal policy can be found by maximizing over $q_*(s,a)$
+\[
+    \pi_{*}(a|s) =
+    \begin{cases}
+        1 & \text{if}\,a=\arg\max_{a\in\mathcal{A}}q_*(s,a) \\
+        0 & \text{otherwise}
+    \end{cases}
+\]
+
+
+\section{Bellman Optimality Equation}\label{sec:bellman-optimality-equation}
+The Bellman Optimality Equation is a recursive equation that describes the optimal value function $v_*(s)$.
+
+\newcommand{\tikzAngleOfLine}{\tikz@AngleOfLine}
+\def\tikz@AngleOfLine(#1)(#2)#3{%
+    \pgfmathanglebetweenpoints{%
+        \pgfpointanchor{#1}{center}}{%
+        \pgfpointanchor{#2}{center}}
+    \pgfmathsetmacro{#3}{\pgfmathresult}%
+}
+
+
+\begin{definition}
+    The optimal value function $v_*(s)$ is the maximum value function over all actions
+    we can take in state $s$.
+    \[
+        v_*(s) = \max_{a}q_*(s,a)
+    \]
+\end{definition}
+\begin{center}
+    \begin{tikzpicture}
+%        \useasboundingbox rectangle (2,2);
+        [auto,>=latex,font=\small]
+        \tikzstyle{round}=[thick,draw=black,circle,minimum size=3mm]
+        \tikzstyle{round_black}=[thick,draw=black,circle,fill=black,scale=0.6]
+
+        % Nodes
+        \node[round, label=left:$v(s)\mapsfrom\,s$] (s0) {};
+        \node[round_black,below left=10mm and 5mm of s0] (s1) {};
+        \node[round_black,label={[shift={(-1.6,0.0)}]left:$q(s,a)\mapsfrom\,a$},below right=10mm and 5mm of s0] (s2) {};
+
+        % Paths
+        \draw[-] (s0) -- (s1) node[midway,left] {};
+        \draw[-] (s0) -- (s2);
+
+        % Angle
+        \tikzAngleOfLine(s0)(s2){\AngleStart}
+        \tikzAngleOfLine(s0)(s1){\AngleEnd}
+        \draw[black,-] (s0)+(\AngleStart:0.6cm) arc (\AngleStart:\AngleEnd:0.6cm);
+    \end{tikzpicture}
+\end{center}
+
+
+\begin{center}
+    \begin{tikzpicture}
+%        \useasboundingbox rectangle (2,2);
+        [auto,>=latex,font=\small]
+        \tikzstyle{round}=[thick,draw=black,circle,minimum size=3mm]
+        \tikzstyle{round_black}=[thick,draw=black,circle,fill=black,scale=0.6]
+
+        % Nodes
+%        \node[round_black, label=left:$q_*(s,a)\mapsfrom\,s,a$] (s0) {};
+        \node[round_black, label=left:$q_{*}({s,a})\mapsfrom\,{s,a}$] (s0) {};
+        \node[round,below left=10mm and 5mm of s0] (s1) {};
+        \node[round,label={[shift={(-1.6,0.0)}]left:$v_*(s')\mapsfrom\,s'$},below right=10mm and 5mm of s0] (s2) {};
+
+        % Paths
+        \draw[-] (s0) -- (s1) node[midway,left] {$r$};
+        \draw[-] (s0) -- (s2);
+
+        % Angle
+        \tikzAngleOfLine(s0)(s2){\AngleStart}
+        \tikzAngleOfLine(s0)(s1){\AngleEnd}
+        \draw[black,-] (s0)+(\AngleStart:0.6cm) arc (\AngleStart:\AngleEnd:0.6cm);
+    \end{tikzpicture}
+\end{center}
+
+If the optimal value function $v_*(s')$ is known, then we can choose the
+action $a$ that maximizes the action-value function $q_*(s,a)$ by
+averaging over the probability of taking action $a$ in state $s$ and end
+up in state $s'$ and the immediate reward $R$ taking action $a$ in state
+$s$.
+
+This tells us how good are the actions we can take in state $s$.
+
+
+\section{Bellman Optimality Equation for $V^*$}\label{sec:bellman-optimality-equation-for-v}
+\[
+    q_*(s,a) = \mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_*(s')
+\]
+
+\begin{definition}
+    The Bellman Optimality Equation is the recursive equation that describes the optimal value function $v_*(s)$.
+    \[
+        v_*(s) = \max_{a}\left(\mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_*(s')\right)
+    \]
+\end{definition}
+
+\begin{tikzpicture}
+    [auto,>=latex,font=\small]
+    \tikzstyle{round}=[thick,draw=black,circle,minimum size=3mm]
+    \tikzstyle{round_black}=[thick,draw=black,circle,fill=black,scale=0.6]
+
+    % 1 layer
+    \node[round, label=left:$v_*(s)\mapsfrom\,s$] (s0) {};
+
+    % 2 layer
+    \node[round_black,below left=10mm and 8mm of s0]                                        (s1) {};
+    \node[round_black,below right=10mm and 8mm of s0, label={[shift={(-2.1,0.0)}]left:$a$}] (s2) {};
+
+    % Paths
+    \draw[-] (s0) -- (s1);
+    \draw[-] (s0) -- (s2);
+
+    % Angle
+    \tikzAngleOfLine(s0)(s2){\AngleStart}
+    \tikzAngleOfLine(s0)(s1){\AngleEnd}
+    \draw[black,-] (s0)+(\AngleStart:0.6cm) arc (\AngleStart:\AngleEnd:0.6cm);
+
+    % 3 layer
+    \node[round,below left=10mm and 5mm of s1, label={[shift={(0.0,0.0)}]left:$v_*(s')\mapsfrom\,s'$}]  (s3) {};
+    \node[round,below right=10mm and 5mm of s1]                                       (s4) {};
+    \node[round,below left=10mm and 5mm of s2]                                        (s5) {};
+    \node[round,below right=10mm and 5mm of s2]                                       (s6) {};
+
+    % Paths
+    \draw[-] (s1) -- (s3) node[midway,left] {$r$};
+    \draw[-] (s1) -- (s4);
+
+    \draw[-] (s2) -- (s5);
+    \draw[-] (s2) -- (s6);
+
+\end{tikzpicture}
+
+\[
+    v_*(s) = \max_{a}\left(\mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_*(s')\right)
+\]
+
+
+\section{Bellman Optimality Equation for $Q^*$}\label{sec:bellman-optimality-equation-for-q}
+\[
+    q_*(s,a) = \mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_*(s')
+\]
+
+\begin{tikzpicture}
+    [auto,>=latex,font=\small]
+    \tikzstyle{round}=[thick,draw=black,circle,minimum size=3mm]
+    \tikzstyle{round_black}=[thick,draw=black,circle,fill=black,scale=0.6]
+
+    % 1 layer
+    \node[round, label=left:$q_*({s,a})\mapsfrom\,{s,a}$] (s0) {};
+
+    % 2 layer
+    \node[round_black,below left=10mm and 8mm of s0]                                        (s1) {$r$};
+    \node[round_black,below right=10mm and 8mm of s0, label={[shift={(-2.1,0.0)}]left:$s'$}] (s2) {};
+
+    % Paths
+    \draw[-] (s0) -- (s1);
+    \draw[-] (s0) -- (s2);
+
+    % Angle
+    \tikzAngleOfLine(s0)(s2){\AngleStart}
+    \tikzAngleOfLine(s0)(s1){\AngleEnd}
+    \draw[black,-] (s0)+(\AngleStart:0.6cm) arc (\AngleStart:\AngleEnd:0.6cm);
+
+    % 3 layer
+    \node[round,below left=10mm and 5mm of s1, label={[shift={(0.0,0.0)}]left:$q_*({s',a'})\mapsfrom\,a'$}]  (s3) {};
+    \node[round,below right=10mm and 5mm of s1]                                       (s4) {};
+    \node[round,below left=10mm and 5mm of s2]                                        (s5) {};
+    \node[round,below right=10mm and 5mm of s2]                                       (s6) {};
+
+    % Paths
+    \draw[-] (s1) -- (s3) node[midway,left] {};
+    \draw[-] (s1) -- (s4);
+
+    \draw[-] (s2) -- (s5);
+    \draw[-] (s2) -- (s6);
+\end{tikzpicture}
+
+\[
+    q_*(s,a) = \mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_*(s')
+\]
+
+Bellman Optimality Equation is non-linear and non-convex.
+It is not possible to solve it analytically.
+However, it is possible to solve it numerically using iterative methods.
+\begin{itemize}
+    \item Value Iteration
+    \item Policy Iteration
+    \item Q-Learning
+    \item SARSA
+    \item \ldots
+\end{itemize}
+
+
+\section{Planning by Dynamic Programming}\label{sec:planning-by-dynamic-programming}
+Dynamic programming is a method for solving complex problems by breaking them down into simpler subproblems.
+It is a general technique for solving optimization problems.
+It is a mathematical programming method that can be used to find an optimal policy for a given Markov decision process (MDP).
+Dynamic programming assumes that the MDP is known and finite.
+It is used for planning in an MDP.
+For prediction:
+\begin{itemize}
+    \item \textbf{Input}: MDP $\mathcal{M} = \langle\,S,\,A,\,R,\,P,\,\gamma\,\rangle$ and policy $\pi$
+    or: MDP $\mathcal{M} = \langle\,S,\,A,\,R,\,P,\,\gamma\,\rangle$ and value function $v_*$ or $q_*$.
+    \item \textbf{Output}: Value function $v_*$ or $q_*$.
+\end{itemize}
+
+for control:
+\begin{itemize}
+    \item \textbf{Input}: MDP $\mathcal{M} = \langle\,S,\,A,\,R,\,P,\,\gamma\,\rangle$ and value function $v_*$ or $q_*$.
+    \item \textbf{Output}: Optimal value function $v_*$ and optimal policy $\pi_*$.
+\end{itemize}
+
+
+\section{Where to stop learning?}\label{sec:where-to-stop-learning}
+% TODO:
+$\epsilon$-convergence.
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Experiments
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
