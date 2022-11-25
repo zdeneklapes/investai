@@ -526,6 +526,390 @@ actions and the white nodes are the states.
 
 % TODO: from 55:00
 
+<<<<<<< Updated upstream
+=======
+\subsection{Optimal Value Function}\label{subsec:optimal-value-function}
+The optimal state-value function $v_{*}(s)$ is the maximum value function over all policies.
+\[
+    v_{*}(s) = \max_{\pi}\text{v}_{\pi}(s)
+\]
+
+The optimal action-value function $q_{*}(s,a)$ is the maximum action-value function over all policies.
+\[
+    q_{*}(s,a) = \max_{\pi}\text{q}_{\pi}(s,a)
+\]
+
+\subsection{Partial Ordering of Policies}\label{subsec:partial-ordering-of-policies}
+Value functions define a partial ordering over policies.
+
+\begin{definition}[Partial Ordering of Policies]
+    \label{def:partial-ordering-of-policies}
+    Let $\pi_1$ and $\pi_2$ be two policies.
+    Then $\pi_1\leq\pi_2$ if and only if $\text{v}_{\pi_1}(s)\geq\text{v}_{\pi_2}(s),\forall\,s\in\mathcal{S}$.
+    There is always one policy that is better than all other policies.
+    \[
+        \pi_1\leq\pi_2\iff\text{v}_{\pi_1}(s)\leq\text{v}_{\pi_2}(s),\forall\,s\in\mathcal{S}
+    \]
+    This is an optimal policy $\pi_{*}$.
+    The optimal policy $\pi_{*}$ is the policy that maximizes the action-value function.
+    $q_{\pi_{*}}(s,a) = q_*(s,a)$
+\end{definition}\cite[p.~84]{sutton-2018}
+
+Optimal policy can be found by maximizing over $q_*(s,a)$
+\[
+    \pi_{*}(a|s) =
+    \begin{cases}
+        1 & \text{if}\,a=\arg\max_{a\in\mathcal{A}}q_*(s,a) \\
+        0 & \text{otherwise}
+    \end{cases}
+\]
+
+
+\section{Bellman Optimality Equation}\label{sec:bellman-optimality-equation}
+The Bellman Optimality Equation is a recursive equation that describes the optimal value function $v_*(s)$.
+
+\newcommand{\tikzAngleOfLine}{\tikz@AngleOfLine}
+\def\tikz@AngleOfLine(#1)(#2)#3{%
+    \pgfmathanglebetweenpoints{%
+        \pgfpointanchor{#1}{center}}{%
+        \pgfpointanchor{#2}{center}}
+    \pgfmathsetmacro{#3}{\pgfmathresult}%
+}
+
+
+\begin{definition}
+    The optimal value function $v_*(s)$ is the maximum value function over all actions
+    we can take in state $s$.
+    \[
+        v_*(s) = \max_{a}q_*(s,a)
+    \]
+\end{definition}
+\begin{center}
+    \begin{tikzpicture}
+%        \useasboundingbox rectangle (2,2);
+        [auto,>=latex,font=\small]
+        \tikzstyle{round}=[thick,draw=black,circle,minimum size=3mm]
+        \tikzstyle{round_black}=[thick,draw=black,circle,fill=black,scale=0.6]
+
+        % Nodes
+        \node[round, label=left:$v(s)\mapsfrom\,s$] (s0) {};
+        \node[round_black,below left=10mm and 5mm of s0] (s1) {};
+        \node[round_black,label={[shift={(-1.6,0.0)}]left:$q(s,a)\mapsfrom\,a$},below right=10mm and 5mm of s0] (s2) {};
+
+        % Paths
+        \draw[-] (s0) -- (s1) node[midway,left] {};
+        \draw[-] (s0) -- (s2);
+
+        % Angle
+        \tikzAngleOfLine(s0)(s2){\AngleStart}
+        \tikzAngleOfLine(s0)(s1){\AngleEnd}
+        \draw[black,-] (s0)+(\AngleStart:0.6cm) arc (\AngleStart:\AngleEnd:0.6cm);
+    \end{tikzpicture}
+\end{center}
+
+
+\begin{center}
+    \begin{tikzpicture}
+%        \useasboundingbox rectangle (2,2);
+        [auto,>=latex,font=\small]
+        \tikzstyle{round}=[thick,draw=black,circle,minimum size=3mm]
+        \tikzstyle{round_black}=[thick,draw=black,circle,fill=black,scale=0.6]
+
+        % Nodes
+%        \node[round_black, label=left:$q_*(s,a)\mapsfrom\,s,a$] (s0) {};
+        \node[round_black, label=left:$q_{*}({s,a})\mapsfrom\,{s,a}$] (s0) {};
+        \node[round,below left=10mm and 5mm of s0] (s1) {};
+        \node[round,label={[shift={(-1.6,0.0)}]left:$v_*(s')\mapsfrom\,s'$},below right=10mm and 5mm of s0] (s2) {};
+
+        % Paths
+        \draw[-] (s0) -- (s1) node[midway,left] {$r$};
+        \draw[-] (s0) -- (s2);
+
+        % Angle
+        \tikzAngleOfLine(s0)(s2){\AngleStart}
+        \tikzAngleOfLine(s0)(s1){\AngleEnd}
+        \draw[black,-] (s0)+(\AngleStart:0.6cm) arc (\AngleStart:\AngleEnd:0.6cm);
+    \end{tikzpicture}
+\end{center}
+
+If the optimal value function $v_*(s')$ is known, then we can choose the
+action $a$ that maximizes the action-value function $q_*(s,a)$ by
+averaging over the probability of taking action $a$ in state $s$ and end
+up in state $s'$ and the immediate reward $R$ taking action $a$ in state
+$s$.
+
+This tells us how good are the actions we can take in state $s$.
+
+
+\section{Bellman Optimality Equation for $V^*$}\label{sec:bellman-optimality-equation-for-v}
+\[
+    q_*(s,a) = \mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_*(s')
+\]
+
+\begin{definition}
+    The Bellman Optimality Equation is the recursive equation that describes the optimal value function $v_*(s)$.
+    \[
+        v_*(s) = \max_{a}\left(\mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_*(s')\right)
+    \]
+\end{definition}
+
+\begin{tikzpicture}
+    [auto,>=latex,font=\small]
+    \tikzstyle{round}=[thick,draw=black,circle,minimum size=3mm]
+    \tikzstyle{round_black}=[thick,draw=black,circle,fill=black,scale=0.6]
+
+    % 1 layer
+    \node[round, label=left:$v_*(s)\mapsfrom\,s$] (s0) {};
+
+    % 2 layer
+    \node[round_black,below left=10mm and 8mm of s0]                                        (s1) {};
+    \node[round_black,below right=10mm and 8mm of s0, label={[shift={(-2.1,0.0)}]left:$a$}] (s2) {};
+
+    % Paths
+    \draw[-] (s0) -- (s1);
+    \draw[-] (s0) -- (s2);
+
+    % Angle
+    \tikzAngleOfLine(s0)(s2){\AngleStart}
+    \tikzAngleOfLine(s0)(s1){\AngleEnd}
+    \draw[black,-] (s0)+(\AngleStart:0.6cm) arc (\AngleStart:\AngleEnd:0.6cm);
+
+    % 3 layer
+    \node[round,below left=10mm and 5mm of s1, label={[shift={(0.0,0.0)}]left:$v_*(s')\mapsfrom\,s'$}]  (s3) {};
+    \node[round,below right=10mm and 5mm of s1]                                       (s4) {};
+    \node[round,below left=10mm and 5mm of s2]                                        (s5) {};
+    \node[round,below right=10mm and 5mm of s2]                                       (s6) {};
+
+    % Paths
+    \draw[-] (s1) -- (s3) node[midway,left] {$r$};
+    \draw[-] (s1) -- (s4);
+
+    \draw[-] (s2) -- (s5);
+    \draw[-] (s2) -- (s6);
+
+\end{tikzpicture}
+
+\[
+    v_*(s) = \max_{a}\left(\mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_*(s')\right)
+\]
+
+
+\section{Bellman Optimality Equation for $Q^*$}\label{sec:bellman-optimality-equation-for-q}
+\[
+    q_*(s,a) = \mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_*(s')
+\]
+
+\begin{tikzpicture}
+    [auto,>=latex,font=\small]
+    \tikzstyle{round}=[thick,draw=black,circle,minimum size=3mm]
+    \tikzstyle{round_black}=[thick,draw=black,circle,fill=black,scale=0.6]
+
+    % 1 layer
+    \node[round, label=left:$q_*({s,a})\mapsfrom\,{s,a}$] (s0) {};
+
+    % 2 layer
+    \node[round_black,below left=10mm and 8mm of s0]                                        (s1) {$r$};
+    \node[round_black,below right=10mm and 8mm of s0, label={[shift={(-2.1,0.0)}]left:$s'$}] (s2) {};
+
+    % Paths
+    \draw[-] (s0) -- (s1);
+    \draw[-] (s0) -- (s2);
+
+    % Angle
+    \tikzAngleOfLine(s0)(s2){\AngleStart}
+    \tikzAngleOfLine(s0)(s1){\AngleEnd}
+    \draw[black,-] (s0)+(\AngleStart:0.6cm) arc (\AngleStart:\AngleEnd:0.6cm);
+
+    % 3 layer
+    \node[round,below left=10mm and 5mm of s1, label={[shift={(0.0,0.0)}]left:$q_*({s',a'})\mapsfrom\,a'$}]  (s3) {};
+    \node[round,below right=10mm and 5mm of s1]                                       (s4) {};
+    \node[round,below left=10mm and 5mm of s2]                                        (s5) {};
+    \node[round,below right=10mm and 5mm of s2]                                       (s6) {};
+
+    % Paths
+    \draw[-] (s1) -- (s3) node[midway,left] {};
+    \draw[-] (s1) -- (s4);
+
+    \draw[-] (s2) -- (s5);
+    \draw[-] (s2) -- (s6);
+\end{tikzpicture}
+
+\[
+    q_*(s,a) = \mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_*(s')
+\]
+
+Bellman Optimality Equation is non-linear and non-convex.
+It is not possible to solve it analytically.
+However, it is possible to solve it numerically using iterative methods.
+\begin{itemize}
+    \item Value Iteration
+    \item Policy Iteration
+    \item Q-Learning
+    \item SARSA
+    \item \ldots
+\end{itemize}
+
+
+\section{Planning by Dynamic Programming}\label{sec:planning-by-dynamic-programming}
+Dynamic programming is a method for solving complex problems by breaking them down into simpler subproblems.
+It is a general technique for solving optimization problems.
+It is a mathematical programming method that can be used to find an optimal policy for a given Markov decision process (MDP).
+Dynamic programming assumes that the MDP is known and finite.
+It is used for planning in an MDP.
+For prediction:
+\begin{itemize}
+    \item \textbf{Input}: MDP $\mathcal{M} = \langle\,S,\,A,\,R,\,P,\,\gamma\,\rangle$ and policy $\pi$
+    or: MDP $\mathcal{M} = \langle\,S,\,A,\,R,\,P,\,\gamma\,\rangle$ and value function $v_*$ or $q_*$.
+    \item \textbf{Output}: Value function $v_*$ or $q_*$.
+\end{itemize}
+
+for control:
+\begin{itemize}
+    \item \textbf{Input}: MDP $\mathcal{M} = \langle\,S,\,A,\,R,\,P,\,\gamma\,\rangle$ and value function $v_*$ or $q_*$.
+    \item \textbf{Output}: Optimal value function $v_*$ and optimal policy $\pi_*$.
+\end{itemize}
+
+
+\section{Where to stop learning?}\label{sec:where-to-stop-learning}
+% TODO:
+$\epsilon$-convergence.
+
+\subsection{Bellman Expectation Equation}\label{sec:bellman-expectation-equation}
+Problem is ot find optimal policy $\pi_*$.
+
+\subsection{States backups}
+TODO
+% TODO:
+
+\subsection{Value Iteration}\label{sec:value-iteration}
+One solution is to use Bellman Optimality backup.
+$v_1\rightarrow\,v_2\ldots\rightarrow\,v_*$
+
+\[
+    v_{k+1}(s) = \max_{a\in\,A}\left(\mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_k(s')\right)
+\]
+
+% TODO: Should be here this equation?
+\[
+    v_*(s) = \mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty}\gamma^tR_{t+1}\,\bigg|\,S_0=s\right]
+\]
+
+
+\begin{center}
+    \begin{NiceTabular}{ |wl{2cm}|wl{7cm}|wc{3.5cm}|  }
+        \hline
+        \multicolumn{3}{|c|}{\textbf{Synchronous Dynamic Programming Algorithms}} \\
+        \hline
+        \RowStyle[color=red]{}
+        \textbf{Problem} & \textbf{Bellman Equation}                                           & \textbf{Algorithm}          \\
+        \hline
+        Prediction       & Bellman Expectation Equation                                        & \makecell{Iterative \\ Policy Evaluation} \\
+        \hline
+        Control          & \makecell{Bellman Expectation Equation \\ + Greedy Policy Improvements} & Policy Iteration            \\
+        \hline
+        Control          & Bellman Optimality Equation                                         & Value Iteration             \\
+        \hline
+    \end{NiceTabular}
+\end{center}
+
+Synchronous value iteration stores two copies of the value function.
+for all $s\in\,S$:
+\[
+    v_{new}(s) \leftarrow \max_{a\in\,A}\left(\mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_{old}(s')\right)
+\]
+
+\[
+    v_{old}(s) \leftarrow v_{new}(s)
+\]
+
+In-place value iteration stores only one copy of the value function.
+for all $s\in\,S$:
+\[
+    v(s) \leftarrow \max_{a\in\,A}\left(\mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v(s')\right)
+\]
+
+So the ordering really matters.
+The efficiency of the algorithm depends on the ordering of value calculation and value update
+and can be really improved by using a better ordering.
+
+Use magnitude of Bellman error to guide state selection, e.g.
+% TODO: The Absolute values should be with or without max function
+\begin{gather*}
+    \Delta v(s) = \max_{a\in\,A}\left|\mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v(s') - v(s)\right|\\
+    \Delta v(s) = \left|\max_{a\in\,A}\mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v(s') - v(s)\right|\\
+\end{gather*}
+
+
+\section{Model Free Prediction}\label{sec:model-free-prediction}
+
+\subsection{Introduction}\label{subsec:introduction}
+
+\subsection{Monte-Carlo Learning}\label{subsec:monte-carlo-learning}
+MC learns directly from episodes of experience.
+MC is model free, that means it does not need a model of the environment
+like MDPs (transition probabilities and rewards).
+MC learns from complete episodes of experience (no bootstrapping).
+Caveat: MC is off-policy, that means it can learn from any policy, not only the optimal one. % TODO: Is this true?
+All episodes must terminate.
+
+Goal is to learn the value function $v_*$, from episodes of experience under policy $\pi$.
+$S_1, A_1, R_2, \ldots, S_k \sim\,\pi$
+
+$G_t$ is the total reward from time $t$ to the end of the episode.
+\[
+    G_t = \sum_{k=t}^{\infty}\gamma^{k-t}R_k
+\]
+
+$v_{\pi}(s)$ is the value function, representing the expected return starting from state $s$ and following policy $\pi$.
+\[
+    v_{\pi}(s) = \mathbb{E}_{\pi}\left[G_1\,\bigg|\,S_1=s\right]
+\]
+
+\subsubsection{First-visit MC}\label{subsubsec:first-visit-mc}
+We are generating episodes of experience under policy $\pi$.
+
+The first time-step $t$ that state $s$ is visited:
+\begin{itemize}
+    \item Increment the number of times state $s$ has been visited: $N(s) \leftarrow N(s) + 1$.
+    \item Update the value of state $s$: $v(s) \leftarrow v(s) + \frac{1}{N(s)}\left(G_t - v(s)\right)$.
+\end{itemize}
+N(s): How many time is state $s$ visited in the episode for the first time.
+S(s): Total return over many episodes for state $s$.
+
+Value is estimated as the average of returns when the state is visited for the first time.
+\[
+    v_{\pi}(s) = \frac{S(s)}{N(s)}
+\]
+By law of large numbers, $V(s)\rightarrow\,v_{\pi}(s)$ as $N(s)\rightarrow\infty$
+
+\subsubsection{Every-visit MC}\label{subsubsec:every-visit-mc}
+Every time-step $t$ that state $s$ is visited:
+\begin{itemize}
+    \item Increment the number of times state $s$ has been visited: $N(s) \leftarrow N(s) + 1$.
+    \item Increment the total return when state $s$ is visited: $S(s) \leftarrow S(s) + G_t$.
+\end{itemize}
+Value is estimated as the average of returns when the state is visited.
+\[
+    v_{\pi}(s) = \frac{S(s)}{N(s)}
+\]
+And again by law of large numbers, $V(s)\rightarrow\,v_{\pi}(s)$ as $N(s)\rightarrow\infty$
+
+
+
+
+
+Monte-Carlo policy evaluation uses empirical average of return instead of the expected return.
+
+\subsection{Temporal-Difference Learning}\label{subsec:temporal-difference-learning}
+
+\subsection{TD($\lambda$) Learning}\label{subsec:td-lambda-learning}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Experiments
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+>>>>>>> Stashed changes
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Exisiting Approaches
