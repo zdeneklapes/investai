@@ -775,7 +775,21 @@ for control:
 % TODO:
 $\epsilon$-convergence.
 
+\subsection{Bellman Expectation Equation}\label{sec:bellman-expectation-equation}
+Problem is ot find optimal policy $\pi_*$.
 
+\subsection{Value Iteration}\label{sec:value-iteration}
+One solution is to use Bellman Optimality backup.
+$v_1\rightarrow\,v_2\ldots\rightarrow\,v_*$
+
+\[
+    v_{k+1}(s) = \max_{a\in\,A}\left(\mathcal{R}_{s}^{a} + \gamma\sum_{s'\in\,S}\mathcal{P}_{ss'}^{a}v_k(s')\right)
+\]
+
+% TODO: Should be here this equation?
+\[
+    v_*(s) = \mathbb{E}_{\pi}\left[\sum_{t=0}^{\infty}\gamma^tR_{t+1}\,\bigg|\,S_0=s\right]
+\]
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
