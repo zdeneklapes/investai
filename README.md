@@ -16,6 +16,6 @@
 - swig
 - ta-lib
 
-### [TODO](./TODO.md)
+### [TODOS](./TODOS.md)
 
 ### [MATERIALS](./MATERIALS.md)

@@ -2,12 +2,15 @@
 
 ## TODO
 
----
+- [ ] Clean `.gitmodules` file
+- [ ] Update forked finrl-meta to latest version
+- [ ] Clean up the code
+- [ ] Add more comments
+- [ ] Add more tests
+- [ ] Add more documentation
+- [ ] Add more examples
 
-- Ceska: Where to train models (cloud)?
-- Ceska: Where to store datasets (cloud)?
-
----
+-------------------- -------------------- --------------------
 
 ### IDEAS
 
@@ -42,3 +45,5 @@
 - The company exist a long time so the growth can be slower than in the young company
 - Result: (make the union on the top most companies | train NN | ...)
 - combination of financial series classification and portfolio optimization surpasses each of the single approaches
+
+-------------------- -------------------- --------------------
