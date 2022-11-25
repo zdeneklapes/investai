@@ -14,7 +14,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-
 # Append root path, because importing from root directory
 sys.path.append(str(Path(__file__).parent.parent))
 

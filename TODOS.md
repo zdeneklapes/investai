@@ -2,7 +2,6 @@
 
 ## TODO
 
-- [ ] Clean `.gitmodules` file
 - [ ] Update forked finrl-meta to latest version
 - [ ] Clean up the code
 - [ ] Add more comments
@@ -31,7 +30,7 @@
 #### RL: Features
 
 - Which companies have the most amount of cash available relative to amount of debt?
-- Which companies have the most biggest profit relative to amount of debt?
+- Which companies have the biggest profit relative to amount of debt?
 - Which companies have the biggest sales margin?
 - Which companies have the biggest sales margin?
 - Which companies are increasing profits constantly

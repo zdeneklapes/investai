@@ -1,0 +1,3 @@
+[submodule "src/third_party/FinRL-Meta"]
+	path = src/third_party/FinRL-Meta
+	url = git@github.com:zlapik/FinRL-Meta.git
