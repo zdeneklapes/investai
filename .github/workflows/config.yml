@@ -10,28 +10,38 @@ defaults:
 jobs:
   pre-commit:
     runs-on: ubuntu-latest
+    name: pre-commit
     steps:
-      - checkout
-      - run:
-          name: Pre-commit Checks
-          command: |
-            sudo pip3 install pre-commit
-            pre-commit run --all-files
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Set up Python 3.9
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+
+      - name: Install pre-commit
+        run: |
+          sudo pip3 install pre-commit
+          pre-commit run --all-files
+
+  #          python -m pip install --upgrade pip
+  #          pip install pre-commit
 
   documentation-build:
     docker:
       - image: koppor/texlive
     steps:
-      - checkout
-      - run: 'cd thesis && make'
-      - store_artifacts:
-          path: output/
-          destination: output
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Build documentation
+        run: cd thesis && make
 
 workflows:
   push:
     jobs:
-      - lint
-#      - latex:
-#          requires:
-#            - lint
+      - pre-commit
+      - documentation-build
