@@ -992,7 +992,6 @@ Weighting function $\lambda$ is a parameter between 0 and 1.
 \]
 
 
-
 % TODO: Check corectness of Backward and Forward views
 Backward view: TD($\lambda$) is a weighted average of TD targets.
 \[
@@ -1007,6 +1006,20 @@ Forward view: TD($\lambda$) is a weighted average of TD errors.
     % TODO: Is this correct?
     V(S_t) \leftarrow V(S_t) + \alpha\left(\delta_t + \gamma\lambda\delta_{t+1} + \gamma^2\lambda^2\delta_{t+2} + \ldots\right)
 \]
+
+\subsubsection{TD($\lambda$) and TD(0)}
+When $\lambda = 0$, TD($\lambda$) reduces to TD(0) and
+only current state is updated.
+\[
+    V(S_t) \leftarrow V(S_t) + \alpha\delta_{t}E_{t}(s)
+\]
+is equivalent to
+\[
+    V(S_t) \leftarrow V(S_t) + \alpha\left(R_{t+1} + \gamma V(S_{t+1}) - V(S_t)\right)
+\]
+% TODO: What is E_t(s)?
+
+When $\lambda = 1$, TD($\lambda$) reduces to MC and
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
