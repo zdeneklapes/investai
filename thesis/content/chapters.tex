@@ -491,7 +491,7 @@ where $G_t$ is the total discounted reward starting from time $t$.
 The action-value function of a policy $\pi$ is the expected return starting from state $s$ and following policy $\pi$.
 
 
-\section{Bellman Expectation Equation}\label{sec:bellman-expectation-equation}
+\section{Bellman Expectation Equation}\label{sec:bellman-expectation-equation} % TODO: already this section exist in the book
 The Bellman Expectation Equation is a recursive equation that describes the value function of a policy $\pi$.
 
 value function of a policy $\pi$:
@@ -772,7 +772,7 @@ for control:
 % TODO:
 $\epsilon$-convergence.
 
-\subsection{Bellman Expectation Equation}\label{sec:bellman-expectation-equation}
+\subsection{Bellman Expectation Equation}\label{sec:bellman-expectation-equation} % TODO: already this section exist in the book
 Problem is ot find optimal policy $\pi_*$.
 
 \subsection{States backups}
@@ -799,13 +799,13 @@ $v_1\rightarrow\,v_2\ldots\rightarrow\,v_*$
         \multicolumn{3}{|c|}{\textbf{Synchronous Dynamic Programming Algorithms}} \\
         \hline
         \RowStyle[color=red]{}
-        \textbf{Problem} & \textbf{Bellman Equation}                                           & \textbf{Algorithm}          \\
+        \textbf{Problem} & \textbf{Bellman Equation}    & \textbf{Algorithm}  \\
         \hline
-        Prediction       & Bellman Expectation Equation                                        & \makecell{Iterative \\ Policy Evaluation} \\
+        Prediction       & Bellman Expectation Equation & \makecell{Iterative \\ Policy Evaluation} \\
         \hline
-        Control          & \makecell{Bellman Expectation Equation \\ + Greedy Policy Improvements} & Policy Iteration            \\
+        Control          & \makecell{Bellman Expectation Equation  \\ + Greedy Policy Improvements}          & Policy Iteration  \\
         \hline
-        Control          & Bellman Optimality Equation                                         & Value Iteration             \\
+        Control          & Bellman Optimality Equation  & Value Iteration     \\
         \hline
     \end{NiceTabular}
 \end{center}
@@ -858,18 +858,24 @@ $G_t$ is the total reward from time $t$ to the end of the episode.
     G_t = \sum_{k=t}^{\infty}\gamma^{k-t}R_k
 \]
 
-$v_{\pi}(s)$ is the value function, representing the expected return starting from state $s$ and following policy $\pi$.
+$v_{\pi}(s)$ is the value function, representing the expected return starting from
+state $s$ and following policy $\pi$.
 \[
     v_{\pi}(s) = \mathbb{E}_{\pi}\left[G_1\,\bigg|\,S_1=s\right]
 \]
+
+Monte-Carlo policy evaluation uses empirical average of return
+instead of the expected return. % TODO: What does it mean?
 
 \subsubsection{First-visit MC}\label{subsubsec:first-visit-mc}
 We are generating episodes of experience under policy $\pi$.
 
 The first time-step $t$ that state $s$ is visited:
 \begin{itemize}
-    \item Increment the number of times state $s$ has been visited: $N(s) \leftarrow N(s) + 1$.
-    \item Update the value of state $s$: $v(s) \leftarrow v(s) + \frac{1}{N(s)}\left(G_t - v(s)\right)$.
+    \item Increment the number of times state $s$ has
+    been visited: $N(s) \leftarrow N(s) + 1$.
+    \item Update the value of
+    state $s$: $v(s) \leftarrow v(s) + \frac{1}{N(s)}\left(G_t - v(s)\right)$.
 \end{itemize}
 N(s): How many time is state $s$ visited in the episode for the first time.
 S(s): Total return over many episodes for state $s$.
@@ -883,24 +889,124 @@ By law of large numbers, $V(s)\rightarrow\,v_{\pi}(s)$ as $N(s)\rightarrow\infty
 \subsubsection{Every-visit MC}\label{subsubsec:every-visit-mc}
 Every time-step $t$ that state $s$ is visited:
 \begin{itemize}
-    \item Increment the number of times state $s$ has been visited: $N(s) \leftarrow N(s) + 1$.
-    \item Increment the total return when state $s$ is visited: $S(s) \leftarrow S(s) + G_t$.
+    \item Increment the number of times state $s$ has
+    been visited: $N(s) \leftarrow N(s) + 1$.
+    \item Increment the total return when
+    state $s$ is visited: $S(s) \leftarrow S(s) + G_t$.
 \end{itemize}
 Value is estimated as the average of returns when the state is visited.
 \[
     v_{\pi}(s) = \frac{S(s)}{N(s)}
 \]
-And again by law of large numbers, $V(s)\rightarrow\,v_{\pi}(s)$ as $N(s)\rightarrow\infty$
+And again by law of large numbers,
+$V(s)\rightarrow\,v_{\pi}(s)$ as $N(s)\rightarrow\infty$
 
+The mean $\mu_1, \mu_2, \ldots$ of sequence of $x_1, x_2, \ldots$ can be computed
+incrementally as:
+\begin{align}
+    \mu_n &= \frac{1}{n}\sum_{i=1}^{n}x_i \\
+    &= \frac{1}{n}\left(x_k + \sum_{i=1}^{n-1}x_i\right) \\
+    &= \frac{1}{n}\left(x_k + (k-1)\mu_{k-1}\right) \\
+    &= \mu_{k-1} + \frac{1}{n}\left(x_k-\mu_{k-1}\right) \\
+\end{align}
 
+\subsubsection{Incremental Monte-Carlo Updates}\label{subsubsec:incremental-monte-carlo-updates}
+\begin{gather*}
+    N(S_t) \leftarrow N(S_t) + 1\\
+    V(S_t) \leftarrow V(S_t) + \frac{1}{N(S_t)}\left(G_t - V(S_t)\right)\\
+\end{gather*}
 
-
-
-Monte-Carlo policy evaluation uses empirical average of return instead of the expected return.
+Memory less: Only the current state and return are needed.
 
 \subsection{Temporal-Difference Learning}\label{subsec:temporal-difference-learning}
+TD learns directly from episodes of experience.
+TD is model free, that means it does not need a model of the environment,
+like MDPS (transition probabilities and rewards).
+TD learns from incomplete episodes (by bootstrapping).
+TD updates a guess of the value function using other guesses of the value function.
+
+Goal is to learn the value function $v_{\pi}$, from episodes of experience under policy $\pi$.
+Incremental every-visit Monte-Carlo, updates the
+value function $V(S_t)$ towards actual return $\textcolor{red}{G_t}$.
+\[
+    V(S_t) \leftarrow V(S_t) + \alpha\left(\textcolor{red}{G_t} - V(S_t)\right)
+\]
+
+Temporal-Difference learning, updates the value function $V(S_t)$ towards
+the estimated return $\textcolor{red}{R_{t+1} + \gamma V(S_{t+1})}$.
+\[
+    V(S_t) \leftarrow V(S_t) + \alpha\left(\textcolor{red}{R_{t+1} + \gamma V(S_{t+1})} - V(S_t)\right)
+\]
+
+TD target is an estimate of the actual return: $\textcolor{red}{R_{t+1} + \gamma V(S_{t+1})}$
+TD error $\delta_t$ is the difference between the TD target and the current
+value estimate: $\delta_t = \textcolor{red}{R_{t+1} + \gamma V(S_{t+1})} - V(S_t)$
+
+\subsection{TD vs. MC}
+\begin{center}
+    \begin{NiceTabular}{ |m{0.45\linewidth}|m{0.45\linewidth}|  }
+        \hline
+        \RowStyle[color=red]{}
+        \textbf{Temporal Difference} & \textbf{Monte-Carlo}  \\
+        \hline
+        TD can learn before knowing the final outcome of the episode.          & MC can only learn after knowing the final outcome of the episode (at the end of the episode). \\
+        \hline
+        TD work in continuing (incomplete) environments         & MC only works for episodic (terminating) environments    \\
+        \hline
+    \end{NiceTabular}
+\end{center}
+
+% TODO: Continue here https://youtu.be/PnHCvfgC_ZA?t=3175
+MC converges to the solution with minimun mean squared error.
+
+TD exploits Markov property, and converges to the solution with
+max likelihood Markov model.
+Usually more efficient in Markovian environments.
+MC does not exploit Markov property, and converges to the solution with
+minimun mean squared error. % TODO: mean-squared or absoule error?
+Usually more effictive in non-Markovian environments.
+
+\subsection{Bootstrapping vs. Sampling}\label{subsec:bootstrapping-vs-sampling}
+\begin{center}
+    \begin{NiceTabular}{ |m{0.45\linewidth}|m{0.45\linewidth}|  }
+        \hline
+        \RowStyle[color=red]{}
+        \textbf{Bootstrapping}:     & \textbf{Sampling}: \\
+        update involves an estimate &  update samples an expectation \\
+        \hline
+        MC does not bootstrap.      & MC samples \\
+        \hline
+        DP bootstraps.              & DP does not samples \\
+        \hline
+        TD bootstraps               & TD samples \\
+        \hline
+    \end{NiceTabular}
+\end{center}
 
 \subsection{TD($\lambda$) Learning}\label{subsec:td-lambda-learning}
+TD($\lambda$) is a generalization of TD(0) and MC.
+
+Weighting function $\lambda$ is a parameter between 0 and 1.
+\[
+    G_t^{\lambda} = (1-\lambda)\sum_{n=1}^{\infty}\lambda^{n-1}G_{t}^{(n)}
+\]
+
+
+
+% TODO: Check corectness of Backward and Forward views
+Backward view: TD($\lambda$) is a weighted average of TD targets.
+\[
+    V(S_t) \leftarrow V(S_t) + \alpha\left(G_t^{\lambda} - V(S_t)\right)
+\]
+
+Forward view: TD($\lambda$) is a weighted average of TD errors.
+\[
+    \delta_t = R_{t+1} + \gamma V(S_{t+1}) - V(S_t)
+\]
+\[
+    % TODO: Is this correct?
+    V(S_t) \leftarrow V(S_t) + \alpha\left(\delta_t + \gamma\lambda\delta_{t+1} + \gamma^2\lambda^2\delta_{t+2} + \ldots\right)
+\]
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
