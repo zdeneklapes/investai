@@ -41,6 +41,8 @@ repos:
     rev: v0.6 # Ensure this is the latest tag, comparing to the Releases tab
     hooks:
       - id: circleci_validate
+        args: [ --config, .circleci/config.yml ]
+        files: .circleci/config.yml
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.19.2
