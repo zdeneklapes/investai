@@ -199,18 +199,18 @@ repos:
 
   ##########################################################################################
   # EditorConfig
-  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
-    rev: 2.6.1
-    hooks:
-      - id: editorconfig-checker
-        language: python
-        files: ^(src/|docs/)
-        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb|\.bib)$
-      - id: editorconfig-checker-system
-        language: python
-        files: ^(src/|docs/)
-        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb|\.bib)$
-        additional_dependencies: [ editorconfig-checker ]
+#  - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
+#    rev: 2.6.1
+#    hooks:
+#      - id: editorconfig-checker
+#        language: python
+#        files: ^(src/|docs/)
+#        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb|\.bib)$
+#      - id: editorconfig-checker-system
+#        language: python
+#        files: ^(src/|docs/)
+#        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb|\.bib)$
+#        additional_dependencies: [ editorconfig-checker ]
 
       ##########################################################################################
   # Dockerfile
