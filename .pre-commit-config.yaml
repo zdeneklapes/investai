@@ -7,6 +7,14 @@ fail_fast: false
 minimum_pre_commit_version: '0'
 repos:
   ##########################################################################################
+  # Meta hooks
+  - repo: meta
+    hooks:
+      #      - id: check-hooks-apply
+      - id: check-useless-excludes
+      - id: identity
+
+  ##########################################################################################
   # Local hooks
   #  - repo: local
   #    hooks:
@@ -33,18 +41,13 @@ repos:
     rev: v0.6 # Ensure this is the latest tag, comparing to the Releases tab
     hooks:
       - id: circleci_validate
+
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.19.2
     hooks:
       - id: check-github-workflows
+        files: ^(.github/workflows/.*.yml)$
 
-  ##########################################################################################
-  # Meta hooks
-  - repo: meta
-    hooks:
-      #      - id: check-hooks-apply
-      - id: check-useless-excludes
-  #      - id: identity
 
   ##########################################################################################
   # Standard hooks
@@ -186,15 +189,6 @@ repos:
         files: docs/
       - id: unique-labels
         files: docs/
-
-
-  #  - repo: github.com/python-jsonschema/check-jsonschema
-  #    rev: v0.1.0
-  #    hooks:
-  #      - id: check-github-actions
-  #        files: .github/workflows/*.yml
-  #      - id: check-github-workflows
-  #        files: "/.github/workflows/*.yml/"
 
 
   ##########################################################################################

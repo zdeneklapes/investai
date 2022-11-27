@@ -31,7 +31,9 @@ jobs:
           echo $PWD
           python3 -m pip install --upgrade pip
           pip3 install pre-commit
+          echo $PWD
           pre-commit run --all-files --show-diff-on-failure
+          echo $PWD
           echo $?
 
   documentation-build:
