@@ -63,10 +63,10 @@ ignored-modules=
 
 # Python code to execute, usually for sys.path manipulation such as
 # pygtk.require().
-init-hook=
-    import sys; sys.path.append("$(pwd)/venv3.10/lib/python3.10/site-packages")
-    try: import pylint_venv; pylint_venv.inithook(force_venv_activation=True)
-    except ImportError: pass
+#init-hook=
+#    import sys; sys.path.append("$(pwd)/venv3.10/lib/python3.10/site-packages")
+#    try: import pylint_venv; pylint_venv.inithook(force_venv_activation=True)
+#    except ImportError: pass
 
 
 # Use multiple processes to speed up Pylint. Specifying 0 will auto-detect the
