@@ -1,4 +1,3 @@
-*.zip
 wandb/
 runs/
 tensorboard_log/
@@ -6,6 +5,13 @@ trained_models/
 results/
 models/
 **__pycache__**
-*.pdf
-*.ipynb
 **RL_book**
+*.zip
+*.ipynb
+*.pdf
+*.dll
+*.dsd
+*.bst
+*.json
+**/static/**
+**/dataset/**

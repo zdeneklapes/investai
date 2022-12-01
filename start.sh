@@ -77,17 +77,24 @@ function tags() {
 
 function usage() {
     echo "USAGE:
-    '-r' | '--run') run ;;
     '-c' | '--clean') clean ;;
-    '-z' | '--zip') zip_project ;;
-    '-sz' | '--ssh-zdenek') ssh 'xlapes02' ;;
-    '--cloc') line_of_codes ;;
+    '-cd' | '--clean-docker') clean_docker ;;
+    '-id' | '--install-docker') install_docker ;;
+    '-idd' | '--install-docker-deploy') install_docker_deploy ;;
+    '-dsip' | '--install-docker-deploy') docker_show_ipaddress ;;
+        #
+    '--create-samples-env') create_env_samples ;;
+    '-s' | '--sync') sync_gpu_server ;;
+        #
     '--tags') tags ;;
-    '-h' | '--help' | *) usage ;;"
+    '-h' | '--help') usage ;;
 }
 
 function sync_gpu_server() {
-    rsync -av --exclude-from=.rsync_ignore src xlapes02@sc-gpu1.fit.vutbr.cz:/home/xlapes02/ai-investing-remote
+    rsync -av \
+        --exclude-from=.rsync_ignore \
+        ./src ./requirements.txt \
+        xlapes02@sc-gpu1.fit.vutbr.cz:/home/xlapes02/ai-investing-remote
 }
 
 ##### PARSE CLI-ARGS
