@@ -14,13 +14,12 @@ env/
 
 # Models
 **datasets/
-**result_agent/
-**result/
 **tensorboard_log/
-
-# Include all trained models
 **trained_models/
-**train_model/
+**train_model**
+**result_agent/
+**results/
+**result/
 
 # Vim
 tags

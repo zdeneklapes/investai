@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import gym
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -8,18 +7,13 @@ from gym import spaces
 from gym.utils import seeding
 from stable_baselines3.common.vec_env import DummyVecEnv
 
-matplotlib.use("Agg")
-
-
-# from stable_baselines3.common import logger
-
 
 class StockTradingEnv(gym.Env):
     """A stock trading environment for OpenAI gym"""
 
     metadata = {"render.modes": ["human"]}
 
-    def __init__(
+    def __init__(  # pylint: disable=W0102
         self,
         df,
         stock_dim,
@@ -37,7 +31,7 @@ class StockTradingEnv(gym.Env):
         print_verbosity=10,
         day=0,
         initial=True,
-        previous_state=None,
+        previous_state=[],  # pylint: disable=W0102
         model_name="",
         mode="",
         iteration="",
@@ -165,7 +159,7 @@ class StockTradingEnv(gym.Env):
 
     def _make_plot(self):
         plt.plot(self.asset_memory, "r")
-        plt.savefig("result_agent/account_value_trade_{}.png".format(self.episode))
+        plt.savefig("results/account_value_trade_{}.png".format(self.episode))
         plt.close()
 
     def step(self, actions):
@@ -208,18 +202,18 @@ class StockTradingEnv(gym.Env):
 
             if (self.model_name != "") and (self.mode != ""):
                 df_actions = self.save_action_memory()
-                df_actions.to_csv("result_agent/actions_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration))
+                df_actions.to_csv("results/actions_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration))
                 df_total_value.to_csv(
-                    "result_agent/account_value_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration),
+                    "results/account_value_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration),
                     index=False,
                 )
                 df_rewards.to_csv(
-                    "result_agent/account_rewards_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration),
+                    "results/account_rewards_{}_{}_{}.csv".format(self.mode, self.model_name, self.iteration),
                     index=False,
                 )
                 plt.plot(self.asset_memory, "r")
                 plt.savefig(
-                    "result_agent/account_value_{}_{}_{}.png".format(self.mode, self.model_name, self.iteration),
+                    "results/account_value_{}_{}_{}.png".format(self.mode, self.model_name, self.iteration),
                     index=False,
                 )
                 plt.close()

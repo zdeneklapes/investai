@@ -1022,6 +1022,34 @@ is equivalent to
 When $\lambda = 1$, TD($\lambda$) reduces to MC and
 
 
+\section{On-policy vs. Off-policy}\label{sec:on-policy-vs-off-policy}
+
+\subsection{Policy Iteration}\label{subsec:policy-iteration}
+Policy evaluation ?
+Policy improvement
+
+\subsection{Greedy policy improvement}\label{subsec:greedy-policy-improvement}
+Greedy policy improvement over $V(s)$ requires a model of the environment (MDP).
+\[
+    \pi'(s) = \arg\max_{a\in\mathcal{A}}{\mathcal{R}_{s}^{a} + \mathcal{P}_{ss'}^{a} V(s')}
+\]
+
+Greedy policy improvement over $Q(s,a)$ is model-free.
+\[
+    \pi'(s) = \arg\max_{a\in\mathcal{A}}Q(s,a)
+\]
+
+\subsection{$\epsilon$-Greedy Exploration}\label{subsec:epsilon-greedy-exploration}
+$m$ represents all possible actions, $1 - \epsilon$ probability to choose the greedy action,
+$\epsilon$ probability to choose an action at random.
+\[
+    \pi'(s) = \begin{cases}
+                  \frac{\epsilon}{m+1-\epsilon} & \text{if } \arg\max_{a\in\mathcal{A}}Q(s,a) \\
+                  \epsilon/m & \text{otherwise - random action} \\
+    \end{cases}
+\]
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Experiments
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
