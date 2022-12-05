@@ -39,6 +39,27 @@ class HyperParameter:
 
 def get_env_kwargs(df: pd.DataFrame) -> Dict[str, int]:
     # TODO add next ratios (and new class on it)
+
+    ratio_list_2 = {  # noqa: F841 # pylint: disable=unused-variable
+        "OPM": "Operating Profit Margin",
+        "ROE": "Return on Equity",
+        "ROA": "Return on Assets",
+        "ROIC": "Return on Invested Capital",
+        "ROCE": "Return on Capital Employed",
+        "NPM": "Net Profit Margin",
+        "cur_ratio": "Current Ratio",
+        "quick_ratio": "Quick Ratio",
+        "cash_ratio": "Cash Ratio",
+        "inv_turnover": "Inventory Turnover",
+        "acc_rec_turnover": "Accounts Receivable Turnover",
+        "acc_pay_turnover": "Accounts Payable Turnover",
+        "debt_ratio": "Debt Ratio",
+        "debt_to_equity": "Debt to Equity Ratio",
+        "PE": "Price to Earnings Ratio",
+        "PB": "Price to Book Ratio",
+        "Div_yield": "Dividend Yield",
+    }
+
     ratio_list = [
         "OPM",
         "NPM",

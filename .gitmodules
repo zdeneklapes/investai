@@ -1,6 +1,0 @@
-[submodule "src/third_party/FinRL-Meta"]
-	path = third_party/FinRL-Meta
-	url = git@github.com:zlapik/FinRL-Meta.git
-[submodule "src/third_party/RLSolver"]
-	path = third_party/RLSolver
-	url = git@github.com:zlapik/RLSolver.git
