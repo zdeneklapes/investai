@@ -2,12 +2,13 @@
 #  python: python3.9
 default_stages: [ commit, push ]
 files: ''
-exclude: '^(venv/)|(pytest_caches/)|(src/third_party/)|(env/)'
+exclude: '^(venv/)|(pytest_caches/)|(src/third_party/)|(env/)|(third_party/)'
 fail_fast: false
 minimum_pre_commit_version: '0'
 repos:
   ##########################################################################################
   # Meta hooks
+  ##########################################################################################
   - repo: meta
     hooks:
       #      - id: check-hooks-apply
@@ -16,6 +17,7 @@ repos:
 
   ##########################################################################################
   # Local hooks
+  ##########################################################################################
   #  - repo: local
   #    hooks:
   #      - id: pytest-check
@@ -37,6 +39,7 @@ repos:
 
   ##########################################################################################
   # CircleCI
+  ##########################################################################################
   - repo: https://github.com/zahorniak/pre-commit-circleci.git
     rev: v0.6 # Ensure this is the latest tag, comparing to the Releases tab
     hooks:
@@ -52,6 +55,7 @@ repos:
 
   ##########################################################################################
   # Standard hooks
+  ##########################################################################################
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.3.0
     hooks:
@@ -93,24 +97,7 @@ repos:
 
   ##########################################################################################
   # Python
-  - repo: https://github.com/pycqa/pylint
-    rev: 'v2.15.6'
-    hooks:
-      - id: pylint
-        args: [ "--rcfile=./.pylintrc" ]
-        files: src/
-        language_version: python3.10
-        additional_dependencies: [ "pylint" ]
-
-  - repo: https://github.com/PyCQA/flake8
-    rev: '6.0.0'
-    hooks:
-      - id: flake8
-        language_version: python3
-        additional_dependencies:
-          - flake8-tidy-imports
-        args: [ --statistics ]
-
+  ##########################################################################################
   - repo: https://github.com/myint/autoflake
     rev: 'v2.0.0'
     hooks:
@@ -128,28 +115,49 @@ repos:
     rev: 22.10.0
     hooks:
       - id: black
-        args: [ --safe, --line-length=120 ]
         name: black
         description: "Black: The uncompromising Python code formatter"
         entry: black
+        args:
+          - --config=pyproject.toml
         language: python
-        minimum_pre_commit_version: 2.9.2
         require_serial: true
         types_or: [ python, pyi ]
       - id: black-jupyter
-        args: [ --safe, --line-length=120 ]
         name: black-jupyter
-        description:
-          "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
+        description: "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
         entry: black
+        args:
+          - --config=pyproject.toml
         language: python
-        minimum_pre_commit_version: 2.9.2
         require_serial: true
         types_or: [ jupyter ]
         additional_dependencies: [ ".[jupyter]" ]
 
+  - repo: https://github.com/PyCQA/flake8
+    rev: '6.0.0'
+    hooks:
+      - id: flake8
+        language_version: python3
+        additional_dependencies:
+          - flake8-tidy-imports
+          - flake8-bugbear
+          - flake8-comprehensions
+          - flake8-simplify
+        args: [ --statistics ]
+
+  - repo: https://github.com/pycqa/pylint
+    rev: 'v2.15.6'
+    hooks:
+      - id: pylint
+        args: [ "--rcfile=./.pylintrc" ]
+        files: src/
+        language_version: python3.10
+        additional_dependencies: [ "pylint" ]
+
   ##########################################################################################
   # Markdown
+  ##########################################################################################
   - repo: https://github.com/jumanjihouse/pre-commit-hooks
     rev: 3.0.0
     hooks:
@@ -159,6 +167,7 @@ repos:
 
   ##########################################################################################
   # Latex
+  ##########################################################################################
   - repo: https://github.com/cmhughes/latexindent.pl
     rev: V3.19
     hooks:
@@ -194,6 +203,7 @@ repos:
 
   ##########################################################################################
   # EditorConfig
+  ##########################################################################################
   - repo: https://github.com/editorconfig-checker/editorconfig-checker.python
     rev: 2.6.1
     hooks:
@@ -207,9 +217,10 @@ repos:
         exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb|\.bib)$
         additional_dependencies: [ editorconfig-checker ]
 
-      ##########################################################################################
+  ##########################################################################################
   # Dockerfile
-#  - repo: https://github.com/pryorda/dockerfilelint-precommit-hooks
-#    rev: v0.1.0
-#    hooks:
-#      - id: dockerfilelint
+  ##########################################################################################
+  - repo: https://github.com/pryorda/dockerfilelint-precommit-hooks
+    rev: v0.1.0
+    hooks:
+      - id: dockerfilelint

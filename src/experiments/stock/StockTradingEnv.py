@@ -31,7 +31,7 @@ class StockTradingEnv(gym.Env):
         print_verbosity=10,
         day=0,
         initial=True,
-        previous_state=[],  # pylint: disable=W0102
+        previous_state=[],  # noqa: B006 # pylint: disable=W0102
         model_name="",
         mode="",
         iteration="",
@@ -231,9 +231,8 @@ class StockTradingEnv(gym.Env):
 
             actions = actions * self.hmax  # actions initially is scaled between 0 to 1
             actions = actions.astype(int)  # convert into integer because we can't by fraction of shares
-            if self.turbulence_threshold is not None:
-                if self.turbulence >= self.turbulence_threshold:
-                    actions = np.array([-self.hmax] * self.stock_dim)
+            if self.turbulence_threshold is not None and self.turbulence >= self.turbulence_threshold:
+                actions = np.array([-self.hmax] * self.stock_dim)
             begin_total_asset = self.state[0] + sum(
                 np.array(self.state[1 : (self.stock_dim + 1)])
                 * np.array(self.state[(self.stock_dim + 1) : (self.stock_dim * 2 + 1)])

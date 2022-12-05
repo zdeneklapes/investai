@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
-import pandas as pd
 from typing import Dict
+
+import pandas as pd
 
 
 class HyperParameter:
@@ -33,8 +34,7 @@ class HyperParameter:
 
     @staticmethod
     def get_different_timesteps(samples: int, step: int):
-        for i in range(step, samples * step, step):
-            yield i
+        yield from range(step, samples * step, step)
 
 
 def get_env_kwargs(df: pd.DataFrame) -> Dict[str, int]:

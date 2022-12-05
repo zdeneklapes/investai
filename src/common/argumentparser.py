@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
+import argparse
 import os
 from operator import itemgetter
 from typing import Dict, Any
-import argparse
 
 from config.settings import DATA_DIR
 
@@ -45,9 +45,8 @@ def argument_validator(args: vars):
             parser.error("Model not found")
 
     # Dataset
-    if args["dataset"] is not None:
-        if not os.path.exists(args["dataset"]):
-            parser.error("Dataset not found")
+    if args["dataset"] is not None and not os.path.exists(args["dataset"]):
+        parser.error("Dataset not found")
 
 
 def argument_parser() -> Dict[str, Any]:
