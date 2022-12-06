@@ -28,8 +28,6 @@ tags
 doc/**
 !doc/Doxyfile
 
-**third_party/
-
 # Documentation Latex
 # sablona
 docs/obrazky-figures/

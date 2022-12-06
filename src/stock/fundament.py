@@ -46,11 +46,11 @@ sys.path.append("../")
 sys.path.append("../../")
 sys.path.append("../../../")
 
-from experiments.stock.StockTradingEnv import StockTradingEnv  # noqa: E402
-from config.settings import DATA_DIR  # noqa: E402
-from _experiments.stock.hyperparameter import HyperParameter, get_env_kwargs  # noqas: E402
 from common.argumentparser import argument_parser, ArgNames  # noqa: E402
 from common.baseexitcode import BaseExitCode  # noqa: E402
+from config.settings import PROJECT_STUFF_DIR  # noqa: E402
+from stock.StockTradingEnv import StockTradingEnv  # noqa: E402
+from stock.hyperparameter import HyperParameter, get_env_kwargs  # noqas: E402
 
 
 # %%
@@ -112,7 +112,7 @@ def get_price_data_dji30() -> pd.DataFrame:
 
 
 def get_fundament_data_from_csv() -> pd.DataFrame:
-    fundamenatal_data_filename = Path(os.path.join(DATA_DIR, "stock/ai4-finance/dji30_fundamental_data.csv"))
+    fundamenatal_data_filename = Path(os.path.join(PROJECT_STUFF_DIR, "stock/ai4-finance/dji30_fundamental_data.csv"))
     fundamental_all_data = pd.read_csv(
         fundamenatal_data_filename, low_memory=False, index_col=0
     )  # dtype param make low_memory warning silent
@@ -310,7 +310,9 @@ def get_processed_full_data_done(processed_full: pd.DataFrame) -> pd.DataFrame:
     processed_full = processed_full.fillna(0)
     processed_full = processed_full.replace(np.inf, 0)
 
-    processed_full.to_csv(os.path.join(DATA_DIR, f"stock/ai4-finance/dataset_fundament_{GlobalVariables.NOW}.csv"))
+    processed_full.to_csv(
+        os.path.join(PROJECT_STUFF_DIR, f"stock/ai4-finance/dataset_fundament_{GlobalVariables.NOW}.csv")
+    )
 
     return processed_full
 
@@ -432,44 +434,58 @@ def backtest_baseline():
     # TODO: Save stats to log file
 
 
+def run_train(args: tp.Dict[str, tp.Any], dataset: pd.DataFrame) -> tp.List[str]:
+    trained_models = list()
+    train_data = get_train_data(dataset)
+
+    for model_name, model_params, time_steps in [
+        HyperParameter.A2C_PARAMS,  # DDPG_PARAMS, # PPO_PARAMS, # TD3_PARAMS, # SAC_PARAMS,
+    ]:
+        filename = training_model(model_name, train_data, time_steps, model_params)
+        trained_models.append(filename)
+
+    return trained_models
+
+
+def run_test(trained_models: tp.List[str], dataset: pd.DataFrame):
+    test_data = get_test_data(dataset)
+    for model in trained_models:
+        account_value, _ = test(model, test_data)
+        backtest_plot(
+            account_value=account_value,
+            baseline_ticker="^DJI",
+            baseline_start=GlobalVariables.TEST_START_DATE,
+            baseline_end=GlobalVariables.TEST_END_DATE,
+        )
+        #     test(model, test_data)
+        backtest_baseline()
+
+
 # %%
 def main() -> None:
-    args = argument_parser()
     config()
-    prepared_dataset: pd.DataFrame
-    trained_models = args[ArgNames.MODEL]
+    args = argument_parser()
+    dataset: pd.DataFrame
 
-    if not args[ArgNames.DATASET]:
-        prepared_dataset = get_processed_full_data()
+    # Data Preprocessing
+    if args[ArgNames.CREATE_DATASET]:
+        dataset = get_processed_full_data()
+    elif args[ArgNames.DATASET]:
+        dataset = pd.read_csv(args[ArgNames.DATASET], index_col=0)
     else:
-        prepared_dataset = pd.read_csv(args["dataset"], index_col=0)
+        raise ValueError("No dataset provided")
 
+    # Train
     if args[ArgNames.TRAIN]:
-        train_data = get_train_data(prepared_dataset)
-        for model_name, model_params, time_steps in [
-            HyperParameter.A2C_PARAMS,
-            # DDPG_PARAMS,
-            # PPO_PARAMS,
-            # TD3_PARAMS,
-            # SAC_PARAMS,
-        ]:
-            filename = training_model(model_name, train_data, time_steps, model_params)
-            trained_models.append(filename)
+        trained_models = run_train(args, dataset)
+        if args[ArgNames.TEST]:
+            run_test(trained_models, dataset)
 
-    if args[ArgNames.TEST]:
-        test_data = get_test_data(prepared_dataset)
-        for model in trained_models:
-            account_value, _ = test(model, test_data)
-            backtest_plot(
-                account_value=account_value,
-                baseline_ticker="^DJI",
-                baseline_start=GlobalVariables.TEST_START_DATE,
-                baseline_end=GlobalVariables.TEST_END_DATE,
-            )
-            backtest_baseline()
+    # Test
+    if args[ArgNames.MODEL]:
+        run_test(args[ArgNames.MODEL], dataset)
 
 
 # %%
 if __name__ == "__main__":
     main()
-    sys.exit(BaseExitCode.OK)

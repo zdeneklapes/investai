@@ -1,2 +1,0 @@
---train
---dataset /Users/zlapik/my-drive-zlapik/datasets/ai-investing/stock/ai4-finance/dataset_fundament_20221027-00h19.csv

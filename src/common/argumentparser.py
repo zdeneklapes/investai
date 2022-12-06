@@ -4,7 +4,7 @@ import os
 from operator import itemgetter
 from typing import Dict, Any
 
-from config.settings import DATA_DIR
+from config.settings import PROJECT_STUFF_DIR
 
 
 class ArgNames:
@@ -13,7 +13,7 @@ class ArgNames:
     CREATE_DATASET = "create-dataset"
     DATASET = "dataset"
     MODEL = "model"
-    FROM_FILE = "from-file"
+    CONFIG = "config"
 
 
 class LoadFromFile(argparse.Action):
@@ -64,15 +64,15 @@ def argument_parser() -> Dict[str, Any]:
         f"--{ArgNames.CREATE_DATASET}",
         dest=f"{ArgNames.CREATE_DATASET}",
         action="store_true",
-        help=f"Prepare and save dataset as csv into: {DATA_DIR}",
+        help=f"Prepare and save dataset as csv into: {PROJECT_STUFF_DIR}",
     )
     parser.add_argument(
-        f"--{ArgNames.DATASET}", dest=f"{ArgNames.DATASET}", nargs="?", help="Used already prepared dataset."
+        f"--{ArgNames.DATASET}", dest=f"{ArgNames.DATASET}", nargs="?", help="Use already prepared dataset."
     )
     parser.add_argument(
         f"--{ArgNames.MODEL}", dest=f"{ArgNames.MODEL}", nargs="*", help="Already trained model", default=[]
     )
-    parser.add_argument(f"--{ArgNames.FROM_FILE}", dest=f"{ArgNames.FROM_FILE}", type=open, action=LoadFromFile)
+    parser.add_argument(f"--{ArgNames.CONFIG}", dest=f"{ArgNames.CONFIG}", type=open, action=LoadFromFile)
     cli_args = vars(parser.parse_args())
     argument_validator(cli_args)
     return cli_args
