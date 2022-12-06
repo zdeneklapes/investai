@@ -46,11 +46,13 @@ sys.path.append("../")
 sys.path.append("../../")
 sys.path.append("../../../")
 
-from common.argumentparser import argument_parser, ArgNames  # noqa: E402
-from common.baseexitcode import BaseExitCode  # noqa: E402
+# from common.Args import argument_parser, ArgNames  # noqa: E402
+from common.Args import Args
+# from common.baseexitcode import BaseExitCode  # noqa: E402
 from config.settings import PROJECT_STUFF_DIR  # noqa: E402
 from stock.StockTradingEnv import StockTradingEnv  # noqa: E402
 from stock.hyperparameter import HyperParameter, get_env_kwargs  # noqas: E402
+from Ratios import Ratios  # noqa: E402
 
 
 # %%
@@ -107,192 +109,6 @@ def get_price_data_dji30() -> pd.DataFrame:
     return df
 
 
-################################################################################
-# # Preprocess fundamental data
-
-
-def get_fundament_data_from_csv() -> pd.DataFrame:
-    fundamenatal_data_filename = Path(os.path.join(PROJECT_STUFF_DIR, "stock/ai4-finance/dji30_fundamental_data.csv"))
-    fundamental_all_data = pd.read_csv(
-        fundamenatal_data_filename, low_memory=False, index_col=0
-    )  # dtype param make low_memory warning silent
-    items_naming = {
-        "datadate": "date",  # Date
-        "tic": "tic",  # Ticker
-        "oiadpq": "op_inc_q",  # Quarterly operating income
-        "revtq": "rev_q",  # Quartely revenue
-        "niq": "net_inc_q",  # Quartely net income
-        "atq": "tot_assets",  # Assets
-        "teqq": "sh_equity",  # Shareholder's equity
-        "epspiy": "eps_incl_ex",  # EPS(Basic) incl. Extraordinary items
-        "ceqq": "com_eq",  # Common Equity
-        "cshoq": "sh_outstanding",  # Common Shares Outstanding
-        "dvpspq": "div_per_sh",  # Dividends per share
-        "actq": "cur_assets",  # Current assets
-        "lctq": "cur_liabilities",  # Current liabilities
-        "cheq": "cash_eq",  # Cash & Equivalent
-        "rectq": "receivables",  # Receivalbles
-        "cogsq": "cogs_q",  # Cost of  Goods Sold
-        "invtq": "inventories",  # Inventories
-        "apq": "payables",  # Account payable
-        "dlttq": "long_debt",  # Long term debt
-        "dlcq": "short_debt",  # Debt in current liabilites
-        "ltq": "tot_liabilities",  # Liabilities
-    }
-
-    # Omit items that will not be used
-    fundamental_specified_data = fundamental_all_data[items_naming.keys()]
-
-    # Rename column names for the sake of readability
-    fundamental_specified_data = fundamental_specified_data.rename(columns=items_naming)
-    fundamental_specified_data["date"] = pd.to_datetime(fundamental_specified_data["date"], format="%Y%m%d")
-    # fund_data.sort_values(["date", "tic"], ignore_index=True)
-    return fundamental_specified_data
-
-
-################################################################################
-# ## Calculate financial ratios
-def get_ratios():
-    fund_data = get_fundament_data_from_csv()
-
-    # Calculate financial ratios
-    date = pd.to_datetime(fund_data["date"], format="%Y%m%d")
-    tic = fund_data["tic"].to_frame("tic")
-
-    # Profitability ratios
-    # Operating Margin
-    OPM = pd.Series(np.empty(fund_data.shape[0], dtype=object), name="OPM")
-    for i in range(0, fund_data.shape[0]):
-        if i - 3 < 0:
-            OPM[i] = np.nan
-        elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
-            OPM.iloc[i] = np.nan
-        else:
-            OPM.iloc[i] = np.sum(fund_data["op_inc_q"].iloc[i - 3 : i]) / np.sum(fund_data["rev_q"].iloc[i - 3 : i])
-
-    # Net Profit Margin
-    NPM = pd.Series(np.empty(fund_data.shape[0], dtype=object), name="NPM")
-    for i in range(0, fund_data.shape[0]):
-        if i - 3 < 0:
-            NPM[i] = np.nan
-        elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
-            NPM.iloc[i] = np.nan
-        else:
-            NPM.iloc[i] = np.sum(fund_data["net_inc_q"].iloc[i - 3 : i]) / np.sum(fund_data["rev_q"].iloc[i - 3 : i])
-
-    # Return On Assets
-    ROA = pd.Series(np.empty(fund_data.shape[0], dtype=object), name="ROA")
-    for i in range(0, fund_data.shape[0]):
-        if i - 3 < 0:
-            ROA[i] = np.nan
-        elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
-            ROA.iloc[i] = np.nan
-        else:
-            ROA.iloc[i] = np.sum(fund_data["net_inc_q"].iloc[i - 3 : i]) / fund_data["tot_assets"].iloc[i]
-
-    # Return on Equity
-    ROE = pd.Series(np.empty(fund_data.shape[0], dtype=object), name="ROE")
-    for i in range(0, fund_data.shape[0]):
-        if i - 3 < 0:
-            ROE[i] = np.nan
-        elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
-            ROE.iloc[i] = np.nan
-        else:
-            ROE.iloc[i] = np.sum(fund_data["net_inc_q"].iloc[i - 3 : i]) / fund_data["sh_equity"].iloc[i]
-
-        # For calculating valuation ratios in the next subpart, calculate per share items in advance
-    # Earnings Per Share
-    EPS = fund_data["eps_incl_ex"].to_frame("EPS")
-
-    # Book Per Share
-    BPS = (fund_data["com_eq"] / fund_data["sh_outstanding"]).to_frame("BPS")  # Need to check units
-
-    # Dividend Per Share
-    DPS = fund_data["div_per_sh"].to_frame("DPS")
-
-    # Liquidity ratios
-    # Current ratio
-    cur_ratio = (fund_data["cur_assets"] / fund_data["cur_liabilities"]).to_frame("cur_ratio")
-
-    # Quick ratio
-    quick_ratio = ((fund_data["cash_eq"] + fund_data["receivables"]) / fund_data["cur_liabilities"]).to_frame(
-        "quick_ratio"
-    )
-
-    # Cash ratio
-    cash_ratio = (fund_data["cash_eq"] / fund_data["cur_liabilities"]).to_frame("cash_ratio")
-
-    # Efficiency ratios
-    # Inventory turnover ratio
-    inv_turnover = pd.Series(np.empty(fund_data.shape[0], dtype=object), name="inv_turnover")
-    for i in range(0, fund_data.shape[0]):
-        if i - 3 < 0:
-            inv_turnover[i] = np.nan
-        elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
-            inv_turnover.iloc[i] = np.nan
-        else:
-            inv_turnover.iloc[i] = np.sum(fund_data["cogs_q"].iloc[i - 3 : i]) / fund_data["inventories"].iloc[i]
-
-    # Receivables turnover ratio
-    acc_rec_turnover = pd.Series(np.empty(fund_data.shape[0], dtype=object), name="acc_rec_turnover")
-    for i in range(0, fund_data.shape[0]):
-        if i - 3 < 0:
-            acc_rec_turnover[i] = np.nan
-        elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
-            acc_rec_turnover.iloc[i] = np.nan
-        else:
-            acc_rec_turnover.iloc[i] = np.sum(fund_data["rev_q"].iloc[i - 3 : i]) / fund_data["receivables"].iloc[i]
-
-    # Payable turnover ratio
-    acc_pay_turnover = pd.Series(np.empty(fund_data.shape[0], dtype=object), name="acc_pay_turnover")
-    for i in range(0, fund_data.shape[0]):
-        if i - 3 < 0:
-            acc_pay_turnover[i] = np.nan
-        elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
-            acc_pay_turnover.iloc[i] = np.nan
-        else:
-            acc_pay_turnover.iloc[i] = np.sum(fund_data["cogs_q"].iloc[i - 3 : i]) / fund_data["payables"].iloc[i]
-
-    # Leverage financial ratios
-    # Debt ratio
-    debt_ratio = (fund_data["tot_liabilities"] / fund_data["tot_assets"]).to_frame("debt_ratio")
-
-    # Debt to Equity ratio
-    debt_to_equity = (fund_data["tot_liabilities"] / fund_data["sh_equity"]).to_frame("debt_to_equity")
-
-    # Create a dataframe that merges all the ratios
-    ratios = pd.concat(
-        [
-            date,
-            tic,
-            OPM,
-            NPM,
-            ROA,
-            ROE,
-            EPS,
-            BPS,
-            DPS,
-            cur_ratio,
-            quick_ratio,
-            cash_ratio,
-            inv_turnover,
-            acc_rec_turnover,
-            acc_pay_turnover,
-            debt_ratio,
-            debt_to_equity,
-        ],
-        axis=1,
-    )
-
-    # ## 4.4 Deal with NAs and infinite values
-    # - We replace N/A and infinite values with zero.
-
-    # Replace NAs infinite values with zero
-    final_ratios = ratios.copy()
-    final_ratios = final_ratios.fillna(0)
-    final_ratios = final_ratios.replace(np.inf, 0)
-
-    return final_ratios
 
 
 ################################################################################
@@ -348,7 +164,7 @@ def get_processed_full_data() -> pd.DataFrame:
 # - Trade data period: 2019-01-01 to 2020-12-31
 
 
-def get_train_data(processed_full: pd.DataFrame):
+def get_train_data(processed_full: pd.DataFrame) -> pd.DataFrame:
     train_data = data_split(processed_full, GlobalVariables.TRAIN_START_DATE, GlobalVariables.TRAIN_END_DATE)
     return train_data
 
@@ -434,10 +250,12 @@ def backtest_baseline():
     # TODO: Save stats to log file
 
 
-def run_train(args: tp.Dict[str, tp.Any], dataset: pd.DataFrame) -> tp.List[str]:
-    trained_models = list()
-    train_data = get_train_data(dataset)
+def run_train(args: Args) -> tp.List[str]:
+    # vars
+    trained_models: tp.List = []
+    train_data: pd.DataFrame = get_train_data(pd.read_csv(args.dataset))
 
+    # Train Models
     for model_name, model_params, time_steps in [
         HyperParameter.A2C_PARAMS,  # DDPG_PARAMS, # PPO_PARAMS, # TD3_PARAMS, # SAC_PARAMS,
     ]:
@@ -447,9 +265,11 @@ def run_train(args: tp.Dict[str, tp.Any], dataset: pd.DataFrame) -> tp.List[str]
     return trained_models
 
 
-def run_test(trained_models: tp.List[str], dataset: pd.DataFrame):
-    test_data = get_test_data(dataset)
-    for model in trained_models:
+def run_test(args: Args):
+    test_data = get_test_data(pd.read_csv(filepath_or_buffer=args.dataset))
+
+    #
+    for model in args.models:
         account_value, _ = test(model, test_data)
         backtest_plot(
             account_value=account_value,
@@ -464,26 +284,19 @@ def run_test(trained_models: tp.List[str], dataset: pd.DataFrame):
 # %%
 def main() -> None:
     config()
-    args = argument_parser()
-    dataset: pd.DataFrame
+    args: Args = Args()
 
     # Data Preprocessing
-    if args[ArgNames.CREATE_DATASET]:
-        dataset = get_processed_full_data()
-    elif args[ArgNames.DATASET]:
-        dataset = pd.read_csv(args[ArgNames.DATASET], index_col=0)
-    else:
-        raise ValueError("No dataset provided")
+    if args.create_dataset and not args.dataset:
+        args.dataset = get_processed_full_data()
 
     # Train
-    if args[ArgNames.TRAIN]:
-        trained_models = run_train(args, dataset)
-        if args[ArgNames.TEST]:
-            run_test(trained_models, dataset)
+    if args.train:
+        args.models.append(*run_train(args))
 
     # Test
-    if args[ArgNames.MODEL]:
-        run_test(args[ArgNames.MODEL], dataset)
+    if args.models and args.test:
+        run_test(args)
 
 
 # %%
