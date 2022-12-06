@@ -36,62 +36,42 @@ class HyperParameter:
     def get_different_timesteps(samples: int, step: int):
         yield from range(step, samples * step, step)
 
+    @staticmethod
+    def get_env_kwargs(df: pd.DataFrame) -> Dict[str, int]:
+        ratio_list_2 = {  # noqa: F841 # pylint: disable=unused-variable
+            "opm": "operating profit margin",
+            "roe": "return on equity",
+            "roa": "return on assets",
+            "roic": "return on invested capital",
+            "roce": "return on capital employed",
+            "npm": "net profit margin",
+            "cur_ratio": "current ratio",
+            "quick_ratio": "quick ratio",
+            "cash_ratio": "cash ratio",
+            "inv_turnover": "inventory turnover",
+            "acc_rec_turnover": "accounts receivable turnover",
+            "acc_pay_turnover": "accounts payable turnover",
+            "debt_ratio": "debt ratio",
+            "debt_to_equity": "debt to equity ratio",
+            "pe": "price to earnings ratio",
+            "pb": "price to book ratio",
+            "div_yield": "dividend yield",
+        }
 
-def get_env_kwargs(df: pd.DataFrame) -> Dict[str, int]:
-    # TODO add next ratios (and new class on it)
+        stock_dimension = len(df.tic.unique())
+        state_space = 1 + 2 * stock_dimension + len(ratio_list_2.keys()) * stock_dimension  # TODO: Why?
+        print(f"Stock Dimension: {stock_dimension}, State Space: {state_space}")
 
-    ratio_list_2 = {  # noqa: F841 # pylint: disable=unused-variable
-        "OPM": "Operating Profit Margin",
-        "ROE": "Return on Equity",
-        "ROA": "Return on Assets",
-        "ROIC": "Return on Invested Capital",
-        "ROCE": "Return on Capital Employed",
-        "NPM": "Net Profit Margin",
-        "cur_ratio": "Current Ratio",
-        "quick_ratio": "Quick Ratio",
-        "cash_ratio": "Cash Ratio",
-        "inv_turnover": "Inventory Turnover",
-        "acc_rec_turnover": "Accounts Receivable Turnover",
-        "acc_pay_turnover": "Accounts Payable Turnover",
-        "debt_ratio": "Debt Ratio",
-        "debt_to_equity": "Debt to Equity Ratio",
-        "PE": "Price to Earnings Ratio",
-        "PB": "Price to Book Ratio",
-        "Div_yield": "Dividend Yield",
-    }
-
-    ratio_list = [
-        "OPM",
-        "NPM",
-        "ROA",
-        "ROE",
-        "cur_ratio",
-        "quick_ratio",
-        "cash_ratio",
-        "inv_turnover",
-        "acc_rec_turnover",
-        "acc_pay_turnover",
-        "debt_ratio",
-        "debt_to_equity",
-        "PE",
-        "PB",
-        "Div_yield",
-    ]
-
-    stock_dimension = len(df.tic.unique())
-    state_space = 1 + 2 * stock_dimension + len(ratio_list) * stock_dimension  # TODO: Why?
-    print(f"Stock Dimension: {stock_dimension}, State Space: {state_space}")
-
-    # TODO: Why these hyperparams?
-    return {
-        "hmax": 100,
-        "initial_amount": 1000000,
-        "buy_cost_pct": 0.001,
-        "sell_cost_pct": 0.001,
-        "state_space": state_space,
-        "stock_dim": stock_dimension,
-        "tech_indicator_list": ratio_list,
-        "action_space": stock_dimension,
-        "reward_scaling": 1e-4,
-        # "num_stock_shares": 0,
-    }
+        # TODO: Why these hyperparams?
+        return {
+            "hmax": 100,
+            "initial_amount": 1000000,
+            "buy_cost_pct": 0.001,
+            "sell_cost_pct": 0.001,
+            "state_space": state_space,
+            "stock_dim": stock_dimension,
+            "tech_indicator_list": ratio_list_2.keys(),
+            "action_space": stock_dimension,
+            "reward_scaling": 1e-4,
+            # "num_stock_shares": 0,
+        }

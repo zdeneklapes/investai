@@ -1,20 +1,30 @@
+# -*- coding: utf-8 -*-
 import os
-from pathlib import Path
+from typing import Callable
+import dataclasses
 
 import pandas as pd
-import numpy as np
 
 from config.settings import PROJECT_STUFF_DIR
 
 
+@dataclasses.dataclass(init=False)
 class Data:
-    @staticmethod
-    def get_fundament_data_from_csv() -> pd.DataFrame:
-        fundamenatal_data_filename = Path(
-            os.path.join(PROJECT_STUFF_DIR, "stock/ai4-finance/dji30_fundamental_data.csv"))
-        fundamental_all_data = pd.read_csv(
-            fundamenatal_data_filename, low_memory=False, index_col=0
-        )  # dtype param make low_memory warning silent
+    def __init__(self, path: str, cb: Callable):
+        """
+        :param path: relative path to data from PROJECT_STUFF_DIR
+        :param cb: callback to load data
+        """
+        self.path = os.path.join(PROJECT_STUFF_DIR, path)
+        self.cb = pd.read_csv
+
+    def get_fundament_data_from_csv(self) -> pd.DataFrame:
+        # fundamenatal_data_filename = Path(
+        #     os.path.join(PROJECT_STUFF_DIR, "stock/ai4-finance/dji30_fundamental_data.csv"))
+        # fundamental_all_data = pd.read_csv(
+        #     fundamenatal_data_filename, low_memory=False, index_col=0
+        # )  # dtype param make low_memory warning silent
+        data_all = self.cb(self.path)
         items_naming = {
             "datadate": "date",  # Date
             "tic": "tic",  # Ticker
@@ -31,7 +41,7 @@ class Data:
             "lctq": "cur_liabilities",  # Current liabilities
             "cheq": "cash_eq",  # Cash & Equivalent
             "rectq": "receivables",  # Receivalbles
-            "cogsq": "cogs_q",  # Cost of  Goods Sold
+            "cogsq": "cogs_q",  # Cost of Goods Sold
             "invtq": "inventories",  # Inventories
             "apq": "payables",  # Account payable
             "dlttq": "long_debt",  # Long term debt
@@ -40,10 +50,10 @@ class Data:
         }
 
         # Omit items that will not be used
-        fundamental_specified_data = fundamental_all_data[items_naming.keys()]
+        useful_data = data_all[items_naming.keys()]
 
         # Rename column names for the sake of readability
-        fundamental_specified_data = fundamental_specified_data.rename(columns=items_naming)
-        fundamental_specified_data["date"] = pd.to_datetime(fundamental_specified_data["date"], format="%Y%m%d")
+        useful_data = useful_data.rename(columns=items_naming)
+        useful_data["date"] = pd.to_datetime(useful_data["date"], format="%Y%m%d")
         # fund_data.sort_values(["date", "tic"], ignore_index=True)
-        return fundamental_specified_data
+        return useful_data
