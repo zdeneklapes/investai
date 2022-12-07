@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Dict
+from typing import Dict, List, Tuple
 
 import pandas as pd
 
@@ -31,6 +31,18 @@ class HyperParameter:
         },
         30_000,  # time_steps
     )
+
+    @staticmethod
+    def get_hyperparameter(name: str) -> Tuple[str, Dict, int]:
+        return getattr(HyperParameter, f"{name.upper()}_PARAMS")
+
+    @staticmethod
+    def get_hyperparameters() -> List[Tuple[str, Dict, int]]:
+        return [
+            HyperParameter.get_hyperparameter(name)
+            for name in HyperParameter.__dict__.keys()
+            if name.endswith("_PARAMS")
+        ]
 
     @staticmethod
     def get_different_timesteps(samples: int, step: int):

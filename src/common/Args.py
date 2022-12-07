@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from typing import Dict, List, Any
-import dataclasses
+from typing import Dict, List, Any, Optional
+from dataclasses import dataclass, field
 import argparse
 import os
 from operator import itemgetter
@@ -8,14 +8,14 @@ from operator import itemgetter
 from config.settings import PROJECT_STUFF_DIR
 
 
-@dataclasses.dataclass
+@dataclass
 class Args:
-    train: bool
-    test: bool
-    create_dataset: bool
-    dataset: str
-    models: List[str]
-    config: str
+    train: Optional[bool] = False
+    test: Optional[bool] = False
+    create_dataset: Optional[bool] = False
+    dataset_file: Optional[str] = None
+    models: List[str] = field(default_factory=list)
+    config: Optional[str] = None
 
 
 class _LoadFromFile(argparse.Action):
@@ -31,7 +31,7 @@ def argument_parser():
     class Names:
         TRAIN = "train"
         TEST = "test"
-        CREATE_DATASET = "create-dataset"
+        CREATE_DATASET = ("create_dataset", "create-dataset")
         DATASET = "dataset"
         MODELS = "models"
         CONFIG = "config"
@@ -51,8 +51,8 @@ def argument_parser():
             action="store_true",
         )
         parser.add_argument(
-            f"--{Names.CREATE_DATASET}",
-            dest=f"{Names.CREATE_DATASET}",
+            f"--{Names.CREATE_DATASET[1]}",
+            dest=f"{Names.CREATE_DATASET[0]}",
             help=f"Prepare and save dataset as csv into: {PROJECT_STUFF_DIR}",
             action="store_true",
         )
@@ -82,7 +82,7 @@ def argument_parser():
             parser.error("No argument provided")
 
         # All
-        if not any(itemgetter(Names.TRAIN, Names.TEST, Names.DATASET, Names.CREATE_DATASET)(_args)):
+        if not any(itemgetter(Names.TRAIN, Names.TEST, Names.DATASET, Names.CREATE_DATASET[0])(_args)):
             parser.error("Please choose at least one action to do.")
 
         # model

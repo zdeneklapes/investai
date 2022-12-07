@@ -16,3 +16,9 @@ class Util:
                 # TODO: LOGGER_STREAM.error(f'Bad directory|{key}: {val}')
                 print(f"Bad directory|{key}: {val}")  # TODO: Remove this
                 sys.exit(BaseExitCode.BAD_PARAMS)
+
+
+def now_time(format: str = "%Y-%m-%d %H:%M:%S") -> str:
+    import datetime
+
+    return datetime.datetime.now().strftime(format)
