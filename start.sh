@@ -90,12 +90,19 @@ function usage() {
     '-h' | '--help') usage ;;"
 }
 
-function sync_gpu_server() {
-    rsync -avh \
-        --exclude-from=.rsync_ignore \
+function upload_code() {
+#    rsync -avh -u \
+    rsync -avPz \
+        --exclude-from=.rsync_ignore_code \
         ./src ./requirements.txt \
-        xlapes02@sc-gpu1.fit.vutbr.cz:/home/xlapes02/ai-investing-remote
-        --delete \
+        xlapes02@sc-gpu1.fit.vutbr.cz:/home/xlapes02/ai-investing-code
+}
+
+function upload_data() {
+    rsync -avh -u \
+        --exclude-from=.rsync_ignore_data \
+        $HOME/my-drive-zlapik/1-todo-project-info/ai-investing-stuff \
+        xlapes02@sc-gpu1.fit.vutbr.cz:/home/xlapes02/ai-investing-data
 }
 
 ##### PARSE CLI-ARGS
@@ -109,7 +116,8 @@ while [ "$#" -gt 0 ]; do
     '-dsip' | '--install-docker-deploy') docker_show_ipaddress ;;
         #
     '--create-samples-env') create_env_samples ;;
-    '-s' | '--sync') sync_gpu_server ;;
+    '-sc' | '--sync-code') upload_code ;;
+    '-sd' | '--sync-data') upload_data ;;
         #
     '--tags') tags ;;
     '-h' | '--help') usage ;;

@@ -18,7 +18,7 @@ class Util:
                 sys.exit(BaseExitCode.BAD_PARAMS)
 
 
-def now_time(format: str = "%Y-%m-%d %H:%M:%S") -> str:
+def now_time(format: str = "%Y-%m-%dT%H-%M-%S") -> str:
     import datetime
 
     return datetime.datetime.now().strftime(format)

@@ -24,7 +24,7 @@ load_dotenv()
 def parse_cli_argument() -> dict:
     parser = argparse.ArgumentParser()
     parser.add_argument("-hp", "--hyperparams", nargs="?", dest="hyperparams", type=str, required=False)
-    parser.add_argument("-s", "--stock", dest="stock", action="store_true", required=False)
+    parser.add_argument("-s", "--rl", dest="rl", action="store_true", required=False)
     return vars(parser.parse_args())
 
 
@@ -32,6 +32,6 @@ def parse_cli_argument() -> dict:
 if __name__ == "__main__":
     args = parse_cli_argument()
 
-    # if args["stock"]:
-    #     print(f"{args['stock']=}")
+    # if args["rl"]:
+    #     print(f"{args['rl']=}")
     sys.exit()

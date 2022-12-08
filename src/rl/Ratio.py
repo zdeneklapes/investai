@@ -5,7 +5,7 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
-from stock.Data import Data
+from data.Data import Data
 
 
 @dataclasses.dataclass

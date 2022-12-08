@@ -3,8 +3,6 @@ from typing import Dict, List, Any, Optional
 from dataclasses import dataclass, field
 import argparse
 import enum
-import os
-from operator import itemgetter
 
 from config.settings import PROJECT_STUFF_DIR
 
@@ -15,6 +13,7 @@ class Args:
     test: Optional[bool] = False
     create_dataset: Optional[bool] = False
     input_dataset: Optional[str] = None
+    default_dataset: Optional[bool] = None
     models: List[str] = field(default_factory=list)
     config: Optional[str] = None
 
@@ -54,6 +53,7 @@ def argument_parser():
         test = "test"
         create_dataset = "create-dataset"
         input_dataset = "input-dataset"
+        default_dataset = "default-dataset"
         models = "models"
         config = "config"
 
@@ -83,6 +83,12 @@ def argument_parser():
             help="Use already prepared dataset.",
             nargs="?",  # 1 optional argument
             type=str,
+        )
+        parser.add_argument(
+            f"--{Names.default_dataset.value}",
+            dest=f"{Names.default_dataset.name}",
+            help="Default preprocessed dataset will be used",
+            action="store_true",
         )
         parser.add_argument(
             f"--{Names.models.value}",

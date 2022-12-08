@@ -1,16 +1,11 @@
 # -*- coding: utf-8 -*-
 import os
-from typing import Literal, Any
+from typing import Literal
 
-from stock.StockTradingEnv import StockTradingEnv
+from rl.StockTradingEnv import StockTradingEnv
 from finrl.agents.stablebaselines3.models import DRLAgent
-from finrl.plot import backtest_stats, backtest_plot, get_daily_return, get_baseline
-from finrl.config import (
-    RESULTS_DIR,
-    TEST_START_DATE,
-    TEST_END_DATE,
-    TRAINED_MODEL_DIR
-)
+from finrl.plot import backtest_plot, backtest_stats, get_baseline
+from finrl.config import RESULTS_DIR, TEST_START_DATE, TEST_END_DATE, TRAINED_MODEL_DIR
 
 from stable_baselines3.common.logger import configure
 import pandas as pd
@@ -19,9 +14,10 @@ from common.utils import now_time
 
 
 class Agent:
-    def __init__(self, train_data, trade_data):
+    def __init__(self, train_data, trade_data, model_type: Literal["ppo", "ddpg", "td3", "a2c", "sac"] = "ppo"):
         self.train_data = train_data
         self.trade_data = trade_data
+        self.model_type: str = model_type
         self.tested = {
             "account_value": None,
             "actions": None,
@@ -75,12 +71,13 @@ class Agent:
         agent = DRLAgent(env=env_train)
         return agent
 
-    def train(self, model_name: Literal["ppo", "ddpg", "td3", "a2c", "sac"]):
+    def train(self):
         agent = self.get_agent()
-        model = agent.get_model(model_name)
+        A2C_PARAMS = {"n_steps": 1000, "ent_coef": 0.01, "learning_rate": 0.0007, "device": "cpu"}
+        model = agent.get_model(self.model_type, model_kwargs=A2C_PARAMS)
 
         # set up logger
-        tmp_path = os.path.join(RESULTS_DIR, model_name)
+        tmp_path = os.path.join(RESULTS_DIR, self.model_type)
         new_logger = configure(tmp_path, ["stdout", "csv", "tensorboard"])
         model.set_logger(new_logger)
 
@@ -90,8 +87,7 @@ class Agent:
 
     def test(self):
         e_trade_gym = StockTradingEnv(df=self.trade_data, **self.get_env_params())
-        df_account_value, df_actions = DRLAgent.DRL_prediction(model=self.trained_agent,
-                                                               environment=e_trade_gym)
+        df_account_value, df_actions = DRLAgent.DRL_prediction(model=self.trained_agent, environment=e_trade_gym)
 
         self.tested["account_value"] = df_account_value
         self.tested["actions"] = df_actions
@@ -99,23 +95,25 @@ class Agent:
     def backtest(self):
         perf_stats_all_sac = backtest_stats(account_value=self.tested["account_value"])
         perf_stats_all_sac = pd.DataFrame(perf_stats_all_sac)
-        perf_stats_all_sac.to_csv("./" + RESULTS_DIR + "/perf_stats_all_sac_" + now_time() + '.csv')
+        perf_stats_all_sac.to_csv("./" + RESULTS_DIR + "/perf_stats_all_sac_" + now_time() + ".csv")
         print("==============Get Baseline Stats===========")
-        baseline_df = get_baseline(
-            ticker="^DJI",
-            start=TEST_START_DATE,
-            end=TEST_END_DATE)
+        baseline_df = get_baseline(ticker="^DJI", start=TEST_START_DATE, end=TEST_END_DATE)
 
-        stats = backtest_stats(baseline_df, value_col_name='close')
-        backtest_plot(self.tested["account_value"],
-                      baseline_ticker='^DJI',
-                      baseline_start=TEST_START_DATE,
-                      baseline_end=TEST_END_DATE)
+        stats = backtest_stats(baseline_df, value_col_name="close")
+        backtest_plot(
+            self.tested["account_value"],
+            baseline_ticker="^DJI",
+            baseline_start=TEST_START_DATE,
+            baseline_end=TEST_END_DATE,
+        )
 
-    def save_trained_model(self, trained_model: Any, type_model: str) -> str:
-        model_filename = os.path.join(TRAINED_MODEL_DIR, type_model, f"{now_time()}")
-        trained_model.save(model_filename)
-        return model_filename
+    def save_trained_model(self) -> str:
+        filename = os.path.join(TRAINED_MODEL_DIR, self.model_type, f"{now_time()}")
+        if self.trained_agent is not None:
+            self.trained_agent.save(filename)
+        else:
+            raise Exception(f"No trained agent to save (agent is: {self.trained_agent})")
+        return filename
 
     def load_trained_model(self, filepath: str):
         """
