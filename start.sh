@@ -87,14 +87,15 @@ function usage() {
     '-s' | '--sync') sync_gpu_server ;;
         #
     '--tags') tags ;;
-    '-h' | '--help') usage ;;
+    '-h' | '--help') usage ;;"
 }
 
 function sync_gpu_server() {
-    rsync -av \
+    rsync -avh \
         --exclude-from=.rsync_ignore \
         ./src ./requirements.txt \
         xlapes02@sc-gpu1.fit.vutbr.cz:/home/xlapes02/ai-investing-remote
+        --delete \
 }
 
 ##### PARSE CLI-ARGS

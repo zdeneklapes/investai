@@ -5,13 +5,13 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
-from Data import Data
+from stock.Data import Data
 
 
 @dataclasses.dataclass
 class Ratio(Data):
-    def __init__(self, path: str, cb: Callable):
-        super().__init__(path, cb)
+    def __init__(self, non_preproccesed_data: str, cb: Callable):
+        super().__init__(non_preproccesed_data, cb)
         self.data = self.get_fundament_data_from_csv()
 
     def get_ratios(self):

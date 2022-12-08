@@ -1050,6 +1050,33 @@ $\epsilon$ probability to choose an action at random.
 \]
 
 
+\section{Greedy in the Limit with Infinite Exploration (GLIE)}\label{sec:greedy-in-the-limit-with-infinite-exploration}
+
+All state-action pairs are explored infinitely many times
+\[
+    \lim_{n\to\infty}N_k(s,a) = \infty
+\]
+\[
+    \lim_{n\to\infty}\pi_{k}^{a|s}=1(a=\arg\max_{a\in\mathcal{A}}Q(s,a'))
+\]
+
+\subsection{GLIE Monte-Carlo Control}\label{subsec:glie-monte-carlo-control}
+\[
+    N(S_t,A_t) \leftarrow N(S_t,A_t) + 1
+\]
+\[
+    Q(S_t,A_t) \leftarrow Q(S_t,A_t) + \frac{1}{N(S_t,A_t)}\left(G_t - Q(S_t,A_t)\right)
+\]
+
+Performs policy based on new action-value function.
+\begin{align}
+    \epsilon &\leftarrow \frac{1}{k} \\
+    \pi &\leftarrow \epsilon-greedy(Q)
+\end{align}
+
+% TODO: How to initilaize Q? We can start from everything...
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Experiments
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -16,31 +16,44 @@ from finrl.config import (
     TEST_END_DATE,
 )
 
-from config.settings import PROJECT_STUFF_DIR
+from config.settings import PROJECT_STUFF_DIR, AI_FINANCE_DIR
 from common.utils import now_time
 
 
 @dataclasses.dataclass(init=False)
 class Data:
-    def __init__(self, start_date: str, end_date: str, path: str, cb: Callable = pd.read_csv, ticker_list: list = None):
+    def __init__(self, start_date: str, end_date: str, non_preproccesed_data: str = None, cb: Callable = pd.read_csv,
+                 ticker_list: list = None, preprocessed_data: str = None):
         """
-        :param path: relative path to data from PROJECT_STUFF_DIR
+        :param non_preproccesed_data: relative path to data from PROJECT_STUFF_DIR
         :param cb: callback to load data
         """
-        self.path = os.path.join(PROJECT_STUFF_DIR, path)
-        self.cb = cb
-        self.filename = os.path.join(PROJECT_STUFF_DIR, f"stock/ai4-finance/dataset_fundament_{now_time()}.csv")
-        self.start_date = start_date
-        self.end_date = end_date
-        self.ticker_list = ticker_list
+        self.non_preprocessed_data_filepath: str = os.path.join(
+            AI_FINANCE_DIR,
+            non_preproccesed_data if non_preproccesed_data else "dji30_fundamental_data.csv"
+        )
+        self.preprocessed_data_filepath: str = os.path.join(
+            AI_FINANCE_DIR,
+            preprocessed_data if preprocessed_data else "dataset_fundament_20221027-01h18.csv"
+        )
+        self.cb: Callable = cb
+        self.start_date: str = start_date
+        self.end_date: str = end_date
+        self.ticker_list: list = ticker_list
+        self.data_preprocessed: pd.DataFrame = None
+
+    def save_preprocessed_data(self):
+        self.data_preprocessed.to_csv(self.preprocessed_data_filepath)
+
+    def load_data(self) -> pd.DataFrame:
+        self.data_preprocessed = self.cb(self.preprocessed_data_filepath)
 
     def get_fundament_data_from_csv(self) -> pd.DataFrame:
         # fundamenatal_data_filename = Path(
-        #     os.path.join(PROJECT_STUFF_DIR, "stock/ai4-finance/dji30_fundamental_data.csv"))
         # fundamental_all_data = pd.read_csv(
         #     fundamenatal_data_filename, low_memory=False, index_col=0
         # )  # dtype param make low_memory warning silent
-        data_all = self.cb(self.path)
+        data_all = self.cb(self.non_preprocessed_data_filepath)
         items_naming = {
             "datadate": "date",  # Date
             "tic": "tic",  # Ticker
@@ -153,7 +166,7 @@ class Data:
             elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
                 OPM.iloc[i] = np.nan
             else:
-                OPM.iloc[i] = np.sum(fund_data["op_inc_q"].iloc[i - 3 : i]) / np.sum(fund_data["rev_q"].iloc[i - 3 : i])
+                OPM.iloc[i] = np.sum(fund_data["op_inc_q"].iloc[i - 3: i]) / np.sum(fund_data["rev_q"].iloc[i - 3: i])
 
         # Net Profit Margin
         NPM = pd.Series(np.empty(fund_data.shape[0], dtype=object), name="NPM")
@@ -163,8 +176,8 @@ class Data:
             elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
                 NPM.iloc[i] = np.nan
             else:
-                NPM.iloc[i] = np.sum(fund_data["net_inc_q"].iloc[i - 3 : i]) / np.sum(
-                    fund_data["rev_q"].iloc[i - 3 : i]
+                NPM.iloc[i] = np.sum(fund_data["net_inc_q"].iloc[i - 3: i]) / np.sum(
+                    fund_data["rev_q"].iloc[i - 3: i]
                 )
 
         # Return On Assets
@@ -175,7 +188,7 @@ class Data:
             elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
                 ROA.iloc[i] = np.nan
             else:
-                ROA.iloc[i] = np.sum(fund_data["net_inc_q"].iloc[i - 3 : i]) / fund_data["tot_assets"].iloc[i]
+                ROA.iloc[i] = np.sum(fund_data["net_inc_q"].iloc[i - 3: i]) / fund_data["tot_assets"].iloc[i]
 
         # Return on Equity
         ROE = pd.Series(np.empty(fund_data.shape[0], dtype=object), name="ROE")
@@ -185,7 +198,7 @@ class Data:
             elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
                 ROE.iloc[i] = np.nan
             else:
-                ROE.iloc[i] = np.sum(fund_data["net_inc_q"].iloc[i - 3 : i]) / fund_data["sh_equity"].iloc[i]
+                ROE.iloc[i] = np.sum(fund_data["net_inc_q"].iloc[i - 3: i]) / fund_data["sh_equity"].iloc[i]
 
             # For calculating valuation ratios in the next subpart, calculate per share items in advance
         # Earnings Per Share
@@ -218,7 +231,7 @@ class Data:
             elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
                 inv_turnover.iloc[i] = np.nan
             else:
-                inv_turnover.iloc[i] = np.sum(fund_data["cogs_q"].iloc[i - 3 : i]) / fund_data["inventories"].iloc[i]
+                inv_turnover.iloc[i] = np.sum(fund_data["cogs_q"].iloc[i - 3: i]) / fund_data["inventories"].iloc[i]
 
         # Receivables turnover ratio
         acc_rec_turnover = pd.Series(np.empty(fund_data.shape[0], dtype=object), name="acc_rec_turnover")
@@ -228,7 +241,7 @@ class Data:
             elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
                 acc_rec_turnover.iloc[i] = np.nan
             else:
-                acc_rec_turnover.iloc[i] = np.sum(fund_data["rev_q"].iloc[i - 3 : i]) / fund_data["receivables"].iloc[i]
+                acc_rec_turnover.iloc[i] = np.sum(fund_data["rev_q"].iloc[i - 3: i]) / fund_data["receivables"].iloc[i]
 
         # Payable turnover ratio
         acc_pay_turnover = pd.Series(np.empty(fund_data.shape[0], dtype=object), name="acc_pay_turnover")
@@ -238,7 +251,7 @@ class Data:
             elif fund_data.iloc[i, 1] != fund_data.iloc[i - 3, 1]:
                 acc_pay_turnover.iloc[i] = np.nan
             else:
-                acc_pay_turnover.iloc[i] = np.sum(fund_data["cogs_q"].iloc[i - 3 : i]) / fund_data["payables"].iloc[i]
+                acc_pay_turnover.iloc[i] = np.sum(fund_data["cogs_q"].iloc[i - 3: i]) / fund_data["payables"].iloc[i]
 
         # Debt ratio
         debt_ratio = (fund_data["tot_liabilities"] / fund_data["tot_assets"]).to_frame("debt_ratio")
@@ -301,15 +314,15 @@ class Data:
 
         # Check the final data
         processed_full.sort_values(["date", "tic"], ignore_index=True).head(10)
-        train_data = data_split(processed_full, TRAIN_START_DATE, TRAIN_END_DATE)
 
-        #
-        trade_data = data_split(processed_full, TEST_START_DATE, TEST_END_DATE)
+        # train_data = data_split(processed_full, TRAIN_START_DATE, TRAIN_END_DATE)
+        # trade_data = data_split(processed_full, TEST_START_DATE, TEST_END_DATE)
         # Check the length of the two datasets
-        print(len(train_data))
-        print(len(trade_data))
+        # print(len(train_data))
+        # print(len(trade_data))
 
-        return train_data, trade_data
+        self.data_preprocessed = processed_full
+        return self.data_preprocessed
 
 
 def save(self):

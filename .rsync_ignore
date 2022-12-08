@@ -1,9 +1,9 @@
-wandb/
-runs/
-tensorboard_log/
-trained_models/
-results/
-models/
+**wandb/
+**runs/
+**tensorboard_log/
+**trained_models/
+**results/
+**models/
 **__pycache__**
 **RL_book**
 *.zip
