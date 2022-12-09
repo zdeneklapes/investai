@@ -73,7 +73,7 @@ class Agent:
 
     def train(self):
         agent = self.get_agent()
-        A2C_PARAMS = {"n_steps": 1000, "ent_coef": 0.01, "learning_rate": 0.0007, "device": "cpu"}
+        A2C_PARAMS = {"n_steps": 1000, "ent_coef": 0.01, "learning_rate": 0.0007, "device": "cuda"}
         model = agent.get_model(self.model_type, model_kwargs=A2C_PARAMS)
 
         # set up logger
@@ -81,7 +81,7 @@ class Agent:
         new_logger = configure(tmp_path, ["stdout", "csv", "tensorboard"])
         model.set_logger(new_logger)
 
-        trained = agent.train_model(model=model, tb_log_name=model, total_timesteps=30000)
+        trained = agent.train_model(model=model, tb_log_name=model, total_timesteps=A2C_PARAMS["n_steps"]*200)
         #
         self.trained_agent = trained
 

@@ -106,7 +106,7 @@ if __name__ == "__main__" and "__file__" in globals():
         train_data = data_split(data.data_preprocessed, TRAIN_START_DATE, TRAIN_END_DATE)
         trade_data = data_split(data.data_preprocessed, TEST_START_DATE, TEST_END_DATE)
         agent = Agent(train_data, trade_data)
-        # agent.train()
+        agent.train()
         agent.save_trained_model()
         if args.test:
             agent.test()
