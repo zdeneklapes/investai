@@ -4,6 +4,8 @@ from os import path
 from typing import (
     Dict,
 )
+import cProfile
+import pstats
 
 from common.baseexitcode import BaseExitCode
 
@@ -22,3 +24,43 @@ def now_time(_format: str = "%Y-%m-%dT%H-%M-%S") -> str:
     import datetime
 
     return datetime.datetime.now().strftime(_format)
+
+
+def line_profiler_stats(func):
+    def wrapper(*args, **kwargs):
+        import line_profiler
+
+        time_profiler = line_profiler.LineProfiler()
+        try:
+            return time_profiler(func)(*args, **kwargs)
+        finally:
+            time_profiler.print_stats()
+
+    return wrapper
+
+
+def profileit(func):
+    def wrapper(*args, **kwargs):
+        prof = cProfile.Profile()
+        retval = prof.runcall(func, *args, **kwargs)
+        ps = pstats.Stats(prof).sort_stats("cumtime")
+        ps.print_stats()
+        return retval
+
+    return wrapper
+
+
+def cProfile_decorator(sort_by: str):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            pr = cProfile.Profile()
+            pr.enable()
+            try:
+                return func(*args, **kwargs)
+            finally:
+                pr.disable()
+                pr.print_stats(sort=sort_by)
+
+        return wrapper
+
+    return decorator

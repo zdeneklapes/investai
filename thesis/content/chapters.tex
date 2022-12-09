@@ -1,6 +1,10 @@
+\if 0
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Introduction
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 \chapter{Introduction}\label{ch:introduction}
 
 % TODO: Purpose of RL
@@ -1077,9 +1081,118 @@ Performs policy based on new action-value function.
 % TODO: How to initilaize Q? We can start from everything...
 
 
+\section{Value Function Approximation}\label{sec:value-function-approximation}
+Large MDP can be approximated with function approximation.
+Many function approximators can be used, e.g. neural networks.
+
+\subsection{Gradient Descent}\label{subsec:gradient-descent}
+Goal is to find the minimum/maximum of a function $f(x)$.
+
+\subsubsection{Stochastic Gradient Descent}\label{subsubsec:stochastic-gradient-descent}
+
+\subsection{Feature Vectors}\label{subsec:feature-vectors}
+
+\subsection{Conveergence of Control Algorithms}\label{subsec:convergence-of-control-algorithms}
+To specific point we want in our space.
+
+
+\section{Policy Based Reinforcement Learning}\label{sec:policy-based-reinforcement-learning}
+
+\subsection{Parameterized Policies}\label{subsec:parameterized-policies}
+\[
+    \mathbb{P}(a|s,\theta) = \pi_\theta(a|s)
+\]
+
+\fi
+
+\begin{itemize}
+    \item Value Based: $V(s,\theta)$ \cite{sutton-2018}
+    \item Policy Based: $\pi_\theta(a|s)$
+    \item Actor-Critic: $V(s,\theta)$ and $\pi_\theta(a|s)$
+\end{itemize}
+
+
+% Now we can draw the sets:
+\def\firstcircle{(0,0) circle (2.5cm)}
+\def\secondcircle{(0:3cm) circle (2.5cm)}
+\begin{tikzpicture}
+    \draw (0,0) circle (3cm) node {
+        \begin{tabular}{c}
+            \color{blue}{Value Function} \\
+            \\
+            \\
+            \\
+            \color{red}{Value-Based}
+        \end{tabular}
+    };
+    \draw (0:2.1cm) node {
+        \begin{tabular}{c}
+            \\
+            \\
+            \\
+            \\
+            \color{red}{Actor} \\
+            \color{red}{Critic}
+        \end{tabular}
+    };
+    \draw (0:4.2cm) circle (3cm) node {
+        \begin{tabular}{c}
+            \color{blue}{Policy} \\
+            \\
+            \\
+            \\
+            \color{red}{Policy-Based}
+        \end{tabular}
+    };
+\end{tikzpicture}
+
+\subsection{Policy-Based RL}\label{subsec:policy-based-rl}
+\begin{itemize}
+    \item [\textbf{Advantages}]
+    \item Better convergence properties than value-based RL.
+    \item Effective in high-dimensional state spaces or continuous state spaces.
+    \item Can learn stochastic policies.
+    \item [\textbf{Disadvantages}]
+    \item Typically don't find globally optimum.
+    \item Can be inefficient and high variance.
+\end{itemize}
+
+\subsection{Policy Optimization}\label{subsec:policy-optimization}
+% WARN maybe BAD
+%\[
+%    \pi_\theta(a|s) = \frac{\exp\left(\frac{Q(s,a,\theta)}{\tau}\right)}{\sum_{a'\in\mathcal{A}}\exp\left(\frac{Q(s,a',\theta)}{\tau}\right)}
+%\]
+
+\subsubsection{Policy Gradient}\label{subsubsec:policy-gradient}
+% WARN maybe BAD
+%\[
+%    \nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta}\left[\sum_{t=0}^{\infty}\nabla_\theta\log\pi_\theta(A_t|S_t)G_t\right]
+%\]
+
+
+AIBO Walk Policies
+
+\subsection{Score Function}\label{subsec:score-function}
+Likelihod Ratios
+%\[
+%    \nabla_\theta J(\theta) = \mathbb{E}_{\pi_\theta}\left[\sum_{t=0}^{\infty}\nabla_\theta\log\pi_\theta(A_t|S_t)G_t\right]
+%\]
+
+\subsection{Softmax Policy}\label{subsec:softmax-policy}
+
+\subsection{Gaussian Policy}\label{subsec:gaussian-policy}
+
+\subsection{One Step MDPs}\label{subsec:one-step-mdps}
+
+\subsection{REINFORCE}\label{subsec:reinforce}
+
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Experiments
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\chapter{Experiments}\label{ch:experiments}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
