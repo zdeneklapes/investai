@@ -110,7 +110,10 @@ class Data:
         df.sort_values(["date", "tic"], ignore_index=True).head()
 
         #
-        url = "https://raw.githubusercontent.com/mariko-sawada/FinRL_with_fundamental_data/main/dow_30_fundamental_wrds.csv"
+        url = (
+            "https://raw.githubusercontent.com/mariko-sawada/"
+            "FinRL_with_fundamental_data/main/dow_30_fundamental_wrds.csv"
+        )
         fund = pd.read_csv(url)
 
         #

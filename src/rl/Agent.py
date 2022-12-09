@@ -3,11 +3,12 @@ import os
 from typing import Literal
 
 from rl.StockTradingEnv import StockTradingEnv
-from finrl.agents.stablebaselines3.models import DRLAgent
+
+# from finrl.agents.rllib.models import DRLAgent
+from agents.rllib_models import DRLAgent
 from finrl.plot import backtest_plot, backtest_stats, get_baseline
 from finrl.config import RESULTS_DIR, TEST_START_DATE, TEST_END_DATE, TRAINED_MODEL_DIR
 
-from stable_baselines3.common.logger import configure
 import pandas as pd
 
 from common.utils import now_time
@@ -66,22 +67,29 @@ class Agent:
         # Establish the training environment using StockTradingEnv() class
         e_train_gym = StockTradingEnv(df=self.train_data, **self.get_env_params())
 
-        env_train, _ = e_train_gym.get_sb_env()
+        # env_train, _ = e_train_gym.get_sb_env()
 
-        agent = DRLAgent(env=env_train)
+        # TODO: fill in the rest of the params
+        env_config = {
+            "price_array": [0],
+            "tech_array": [0],
+            "turbulence_array": [0],
+        }
+
+        agent = DRLAgent(env=e_train_gym, **env_config)
         return agent
 
     def train(self):
         agent = self.get_agent()
         A2C_PARAMS = {"n_steps": 1000, "ent_coef": 0.01, "learning_rate": 0.0007, "device": "cuda"}
-        model = agent.get_model(self.model_type, model_kwargs=A2C_PARAMS)
+        model, _ = agent.get_model(self.model_type)
 
         # set up logger
-        tmp_path = os.path.join(RESULTS_DIR, self.model_type)
-        new_logger = configure(tmp_path, ["stdout", "csv", "tensorboard"])
-        model.set_logger(new_logger)
+        # tmp_path = os.path.join(RESULTS_DIR, self.model_type)
+        # new_logger = configure(tmp_path, ["stdout", "csv", "tensorboard"])
+        # model.set_logger(new_logger)
 
-        trained = agent.train_model(model=model, tb_log_name=model, total_timesteps=A2C_PARAMS["n_steps"]*200)
+        trained = agent.train_model(model=model, model_name=self.model_type, model_config=A2C_PARAMS)
         #
         self.trained_agent = trained
 
@@ -99,7 +107,7 @@ class Agent:
         print("==============Get Baseline Stats===========")
         baseline_df = get_baseline(ticker="^DJI", start=TEST_START_DATE, end=TEST_END_DATE)
 
-        stats = backtest_stats(baseline_df, value_col_name="close")
+        _ = backtest_stats(baseline_df, value_col_name="close")
         backtest_plot(
             self.tested["account_value"],
             baseline_ticker="^DJI",

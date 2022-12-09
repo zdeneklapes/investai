@@ -43,12 +43,8 @@ sys.path.append("../../")
 sys.path.append("../../../")
 
 from common.Args import Args, argument_parser  # noqa: E402
-from config.settings import PROJECT_STUFF_DIR, AI_FINANCE_DIR  # noqa: E402
-from rl.StockTradingEnv import StockTradingEnv  # noqa: E402
-from rl.hyperparameter import HyperParameter  # noqas: E402
-from rl.Ratio import Ratio  # noqa: E402
-from data.Data import Data
-from rl.Agent import Agent
+from data.Data import Data  # noqas: E402
+from rl.Agent import Agent  # noqa: E402
 
 
 ##
