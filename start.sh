@@ -71,7 +71,12 @@ function clean_docker() {
 }
 
 function tags() {
-    ctags -R .
+	ctags -R --fields=+l  \
+			--exclude=.git \
+			--exclude=.idea \
+			--exclude=node_modules \
+			--exclude=tests* \
+			--exclude=venv* .
     cscope -Rb
 }
 
@@ -119,7 +124,7 @@ while [ "$#" -gt 0 ]; do
     '-sc' | '--sync-code') upload_code ;;
     '-sd' | '--sync-data') upload_data ;;
         #
-    '--tags') tags ;;
+    '-t' | '--tags') tags ;;
     '-h' | '--help') usage ;;
     esac
     shift

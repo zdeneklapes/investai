@@ -1,3 +1,4 @@
 {
-    "python.pythonPath": "./venv3.10/bin/python3"
+    "python.pythonPath": "./venv3.10/bin/python3",
+    "python.formatting.blackPath": "/Users/zlapik/my-drive-zlapik/0-todo/ai-investing/venv3.10/bin/black"
 }

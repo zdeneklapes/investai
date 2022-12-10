@@ -10,6 +10,9 @@ import matplotlib.pyplot as plt
 from stable_baselines3.common.vec_env import DummyVecEnv
 
 
+STOCK_MARKET_DAYS_PER_YEAR = 252
+
+
 class StockPortfolioEnv(gym.Env):
     """A single stock trading environment for OpenAI gym
 
@@ -113,11 +116,13 @@ class StockPortfolioEnv(gym.Env):
         )
         self.terminal = False
         self.turbulence_threshold = turbulence_threshold
+
         # initalize state: inital portfolio return + individual stock return + individual weights
         self.portfolio_value = self.initial_amount
 
         # memorize portfolio value each step
         self.asset_memory = [self.initial_amount]
+
         # memorize portfolio return each step
         self.portfolio_return_memory = [0]
         self.actions_memory = [[1 / self.stock_dim] * self.stock_dim]
@@ -146,7 +151,11 @@ class StockPortfolioEnv(gym.Env):
             df_daily_return = pd.DataFrame(self.portfolio_return_memory)
             df_daily_return.columns = ["daily_return"]
             if df_daily_return["daily_return"].std() != 0:
-                sharpe = (252**0.5) * df_daily_return["daily_return"].mean() / df_daily_return["daily_return"].std()
+                sharpe = (
+                    (STOCK_MARKET_DAYS_PER_YEAR**0.5)
+                    * df_daily_return["daily_return"].mean()
+                    / df_daily_return["daily_return"].std()
+                )
                 print("Sharpe: ", sharpe)
             print("=================================")
 
@@ -162,7 +171,6 @@ class StockPortfolioEnv(gym.Env):
             # else:
             #  norm_actions = actions
             weights = self.softmax_normalization(actions)
-            # print("Normalized actions: ", weights)
             self.actions_memory.append(weights)
             last_day_memory = self.data
 
@@ -175,10 +183,11 @@ class StockPortfolioEnv(gym.Env):
                 [self.data[tech].values.tolist() for tech in self.tech_indicator_list],
                 axis=0,
             )
-            # print(self.state)
+
             # calcualte portfolio return
             # individual stocks' return * weight
             portfolio_return = sum(((self.data.close.values / last_day_memory.close.values) - 1) * weights)
+
             # update portfolio value
             new_portfolio_value = self.portfolio_value * (1 + portfolio_return)
             self.portfolio_value = new_portfolio_value
@@ -190,8 +199,6 @@ class StockPortfolioEnv(gym.Env):
 
             # the reward is the new portfolio value or end portfolo value
             self.reward = new_portfolio_value
-            # print("Step reward: ", self.reward)
-            # self.reward = self.reward*self.reward_scaling
 
         return self.state, self.reward, self.terminal, {}
 
@@ -227,8 +234,6 @@ class StockPortfolioEnv(gym.Env):
     def save_asset_memory(self):
         date_list = self.date_memory
         portfolio_return = self.portfolio_return_memory
-        # print(len(date_list))
-        # print(len(asset_list))
         df_account_value = pd.DataFrame({"date": date_list, "daily_return": portfolio_return})
         return df_account_value
 
