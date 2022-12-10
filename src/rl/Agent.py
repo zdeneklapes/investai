@@ -95,7 +95,9 @@ class Agent:
 
     def test(self):
         e_trade_gym = StockTradingEnv(df=self.trade_data, **self.get_env_params())
-        df_account_value, df_actions = DRLAgent.DRL_prediction(model=self.trained_agent, environment=e_trade_gym)
+
+        # TODO: agent_path in calling DRLAgent.DRL_prediction()
+        df_account_value, df_actions = DRLAgent.DRL_prediction(model=self.trained_agent, env=e_trade_gym)
 
         self.tested["account_value"] = df_account_value
         self.tested["actions"] = df_actions
@@ -131,3 +133,8 @@ class Agent:
         for type_, model_ in {}:
             if type_ in filepath_split:
                 return model_.load(filepath)
+
+
+if __name__ == "__main__" and "__file__" in globals():
+    # TODO: Show usage here!
+    pass
