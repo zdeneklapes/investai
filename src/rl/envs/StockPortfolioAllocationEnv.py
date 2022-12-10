@@ -2,18 +2,17 @@
 """From FinRL https://github.com/AI4Finance-LLC/FinRL/tree/master/finrl/env"""
 
 import gym
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from gym import spaces
 from gym.utils import seeding
-import matplotlib.pyplot as plt
 from stable_baselines3.common.vec_env import DummyVecEnv
-
 
 STOCK_MARKET_DAYS_PER_YEAR = 252
 
 
-class StockPortfolioEnv(gym.Env):
+class StockPortfolioAllocationEnv(gym.Env):
     """A single stock trading environment for OpenAI gym
 
     Attributes
@@ -101,8 +100,8 @@ class StockPortfolioEnv(gym.Env):
             low=-np.inf,
             high=np.inf,
             shape=(
-                self.state_space + len(self.tech_indicator_list),
-                self.state_space,
+                self.state_space + len(self.tech_indicator_list),  # len(stocks) + len(tech_indicators)
+                self.state_space,  # len(stocks)
             ),
         )
 

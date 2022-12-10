@@ -106,5 +106,3 @@ if __name__ == "__main__" and "__file__" in globals():
         agent.save_trained_model()
         if args.test:
             agent.test()
-
-##
