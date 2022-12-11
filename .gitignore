@@ -1,16 +1,17 @@
 # macOS
 .DS_Store
 
-# Env files
-env/
+others/
 
-# Env variables
+# Env
+env/
 *.env*
 !sample.env*
 *.lock
 
-# Zip
+# Pack
 *.zip
+*.tar.*
 
 # Models
 **datasets/
@@ -29,8 +30,6 @@ doc/**
 !doc/Doxyfile
 
 # Documentation Latex
-# sablona
-docs/obrazky-figures/
 **out/
 *.dvi
 *.log
@@ -42,29 +41,22 @@ docs/obrazky-figures/
 *.lof
 *.ptc
 *.bcf
-#
 *.eps
 *.pdf
 !**/zadani.pdf
-#
 *.bak0
 
-# Materials
-others/
-
 # IDE
-.idea/
-.vscode/
+**.idea/
+**.vscode/
 
 # Caches
-.pytest_cache/
-__pycache__/
-.cache/
+**.cache**
 
-# Package code
+# Python
+**.pytest_cache**
+**__pycache__**
 *.egg-info/
-
-# venv
 **venv**/
 
 # Logs
@@ -74,3 +66,10 @@ logs/
 *.jpg
 *.jpeg
 *.png
+
+
+# Data
+**dataset**
+
+# Models
+**trained_models**
