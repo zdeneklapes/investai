@@ -45,7 +45,8 @@ sys.path.append("../../")
 sys.path.append("../../../")
 
 from common.Args import Args, argument_parser  # noqa: E402
-from data.DataPreprocessing import DataPreprocessing, DataTechnicalAnalysis  # noqas: E402
+from data.DataPreprocessing import DataPreprocessing  # noqa: E402
+from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis  # noqa: E402
 from rl.customagents.RayAgent import RayAgent  # noqa: E402
 from rl.customagents.Agent import Agent  # noqa: E402
 from rl.gym_envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv  # noqa: E402

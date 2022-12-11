@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 
 from finrl.meta.preprocessor.yahoodownloader import YahooDownloader
-from finrl.meta.preprocessor.preprocessors import FeatureEngineer
 
 from configuration.settings import DatasetDir
 from common.Args import Args
@@ -20,20 +19,22 @@ class DataPreprocessing:
         self,
         start_date: str,
         end_date: str,
-        non_preproccesed_data: str = None,
-        preprocessed_data: str = None,
+        non_preproccesed_data_filepath: str = None,
+        preprocessed_data_filepath: str = None,
         cb: Callable = pd.read_csv,
         ticker_list: list = None,
     ):
         """
-        :param non_preproccesed_data: relative path to data from PROJECT_STUFF_DIR
+        :param non_preproccesed_data_filepath: relative path to data from PROJECT_STUFF_DIR
         :param cb: callback to load data
         """
         self._non_preprocessed_data_filepath: str = os.path.join(
-            DatasetDir.ROOT, non_preproccesed_data if non_preproccesed_data else "dji30_fundamental_data.csv"
+            DatasetDir.ROOT,
+            non_preproccesed_data_filepath if non_preproccesed_data_filepath else "dji30_fundamental_data.csv",
         )
         self._preprocessed_data_filepath: str = os.path.join(
-            DatasetDir.ROOT, preprocessed_data if preprocessed_data else "dataset_fundament_20221027-01h18.csv"
+            DatasetDir.ROOT,
+            preprocessed_data_filepath if preprocessed_data_filepath else "dataset_fundament_20221027-01h18.csv",
         )
         self.cb: Callable = cb
         self.start_date: str = start_date
@@ -354,53 +355,4 @@ class DataPreprocessing:
         # print(len(trade_data))
 
         self.data_preprocessed = processed_full
-        return self.data_preprocessed
-
-
-class DataFundamentalAnalysis(DataPreprocessing):
-    def __init__(self):
-        super().__init__(**{})
-        raise NotImplementedError
-
-
-class DataTechnicalAnalysis(DataPreprocessing):
-    def __init__(
-        self,
-        start_date: str,
-        end_date: str,
-        non_preproccesed_data: str = None,
-        preprocessed_data: str = None,
-        cb: Callable = pd.read_csv,
-        ticker_list: list = None,
-    ):
-        super().__init__(start_date, end_date, non_preproccesed_data, preprocessed_data, cb, ticker_list)
-
-    def get_preprocessed_data(self) -> pd.DataFrame:
-        fe = FeatureEngineer(use_technical_indicator=True, use_turbulence=False, user_defined_feature=False)
-
-        df = fe.preprocess_data(self.change_date(self.fetch_data_from_yahoo_finance()))
-
-        # add covariance matrix as states
-        df = df.sort_values(["date", "tic"], ignore_index=True)
-        df.index = df.date.factorize()[0]
-
-        cov_list = []
-        return_list = []
-
-        # look back is one year
-        lookback = 252
-        for i in range(lookback, len(df.index.unique())):
-            data_lookback = df.loc[i - lookback : i, :]
-            price_lookback = data_lookback.pivot_table(index="date", columns="tic", values="close")
-            return_lookback = price_lookback.pct_change().dropna()
-            return_list.append(return_lookback)
-
-            covs = return_lookback.cov().values
-            cov_list.append(covs)
-
-        df_cov = pd.DataFrame({"date": df.date.unique()[lookback:], "cov_list": cov_list, "return_list": return_list})
-        df = df.merge(df_cov, on="date")
-        df = df.sort_values(["date", "tic"]).reset_index(drop=True)
-
-        self.data_preprocessed = df
         return self.data_preprocessed
