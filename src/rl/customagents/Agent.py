@@ -2,15 +2,12 @@
 import os
 from typing import Literal
 
-from rl.StockTradingEnv import StockTradingEnv
-
-# from finrl.agents.rllib.models import DRLAgent
+import pandas as pd
 from agents.rllib_models import DRLAgent
 from finrl.plot import backtest_plot, backtest_stats, get_baseline
 from finrl.config import RESULTS_DIR, TEST_START_DATE, TEST_END_DATE, TRAINED_MODEL_DIR
 
-import pandas as pd
-
+from rl.envs.StockTradingEnv import StockTradingEnv
 from common.utils import now_time
 
 

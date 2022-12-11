@@ -9,7 +9,8 @@ import pandas as pd
 
 from finrl.meta.preprocessor.yahoodownloader import YahooDownloader
 
-from config.settings import AI_FINANCE_DIR
+from configuration.settings import AI_FINANCE_DIR
+from common.Args import Args
 
 
 @dataclasses.dataclass(init=False)
@@ -38,6 +39,15 @@ class Data:
         self.end_date: str = end_date
         self.ticker_list: list = ticker_list
         self.data_preprocessed: pd.DataFrame = None
+
+    def retrieve_data(self, args: Args):
+        if args.default_dataset:
+            self.load_data()
+        elif args.input_dataset:
+            self.preprocessed_data_filepath = args.input_dataset
+            self.load_data()
+        else:
+            self.get_preprocessed_data()
 
     @property
     def preprocessed_data_filepath(self) -> str:

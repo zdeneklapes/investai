@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 import argparse
 import enum
 
-from config.settings import PROJECT_STUFF_DIR
+from configuration.settings import PROJECT_STUFF_DIR
 
 
 @dataclass
@@ -16,6 +16,8 @@ class Args:
     default_dataset: Optional[bool] = None
     models: List[str] = field(default_factory=list)
     config: Optional[str] = None
+    stable_baseline: Optional[bool] = False
+    ray_rllib: Optional[bool] = False
 
     def validate(self):
         """TODO"""
@@ -55,7 +57,9 @@ def argument_parser():
         input_dataset = "input-dataset"
         default_dataset = "default-dataset"
         models = "models"
-        config = "config"
+        config = "configuration"
+        stable_baseline = "stable-baselines3"
+        ray_rllib = "ray-rllib"
 
     def get_argparse() -> Dict[str, Any]:
         parser = argparse.ArgumentParser()
@@ -97,6 +101,18 @@ def argument_parser():
             nargs="+",  # 1 or more arguments
             type=str,
             default=[],
+        )
+        parser.add_argument(
+            f"--{Names.stable_baseline.value}",
+            dest=f"{Names.stable_baseline.name}",
+            help="Use stable-baselines3",
+            action="store_true",
+        )
+        parser.add_argument(
+            f"--{Names.ray_rllib.value}",
+            dest=f"{Names.ray_rllib.name}",
+            help="Use ray-rllib",
+            action="store_true",
         )
         parser.add_argument(f"--{Names.config.value}", dest=f"{Names.config.name}", type=open, action=_LoadFromFile)
         cli_args = vars(parser.parse_args())

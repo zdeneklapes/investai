@@ -20,6 +20,7 @@
 # ##############################################################################
 
 ##
+import os
 import sys
 import warnings
 
@@ -34,6 +35,7 @@ from finrl.config import (
     TRAIN_END_DATE,
     TEST_START_DATE,
     TEST_END_DATE,
+    TRAINED_MODEL_DIR,
 )
 from finrl.config_tickers import DOW_30_TICKER
 
@@ -44,7 +46,10 @@ sys.path.append("../../../")
 
 from common.Args import Args, argument_parser  # noqa: E402
 from data.Data import Data  # noqas: E402
-from rl.Agent import Agent  # noqa: E402
+from rl.customagents.RayAgent import RayAgent  # noqa: E402
+from rl.customagents.Agent import Agent  # noqa: E402
+from rl.envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv  # noqa: E402
+from common.utils import now_time  # noqa: E402
 
 
 ##
@@ -71,15 +76,67 @@ def config():
     )
 
 
+def run_stable_baseline(args: Args):
+    if args.train:
+        ##
+        data = Data(TRAIN_START_DATE, TRAIN_END_DATE, ticker_list=DOW_30_TICKER)
+        data.retrieve_data(args)
+        train_data = data_split(data.data_preprocessed, TRAIN_START_DATE, TRAIN_END_DATE)
+        trade_data = data_split(data.data_preprocessed, TEST_START_DATE, TEST_END_DATE)
+        ##
+        agent = Agent(train_data, trade_data)
+        agent.train()
+        agent.save_trained_model()
+        if args.test:
+            agent.test()
+
+
+def run_ray_rllib(args: Args):
+    if args.train:
+        ##
+        data = Data(TRAIN_START_DATE, TRAIN_END_DATE, ticker_list=DOW_30_TICKER)
+        data.retrieve_data(args)
+        train_data = data_split(data.data_preprocessed, TRAIN_START_DATE, TRAIN_END_DATE)
+        ##
+        stock_dimension = len(train_data.tic.unique())
+        state_space = stock_dimension
+        tech_indicator_list = ["macd", "rsi_30", "cci_30", "dx_30"]
+        # feature_dimension = len(tech_indicator_list)
+        env_kwargs = {
+            "hmax": 100,
+            "initial_amount": 1000000,
+            "transaction_cost_pct": 0,
+            "state_space": state_space,
+            "stock_dim": stock_dimension,
+            "tech_indicator_list": tech_indicator_list,
+            "action_space": stock_dimension,
+            "reward_scaling": 1e-1,
+        }
+        env = StockPortfolioAllocationEnv(df=train_data, **env_kwargs)
+        agent = RayAgent(env=env)
+        model_name = "ppo"
+
+        #
+        model, model_config = agent.get_model(model_name=model_name)
+        # configuration = PPOConfig()
+
+        #
+        trained_model = agent.train_model(
+            model=model,
+            model_name=model_name,
+            model_config=model_config,
+            total_episodes=100,
+        )
+
+        filename = os.path.join(TRAINED_MODEL_DIR, model_name, f"{now_time()}")
+        trained_model.save(filename)
+
+    if args.test:
+        # trade_data = data_split(data.data_preprocessed, TEST_START_DATE, TEST_END_DATE)
+        raise NotImplementedError
+
+
 ##
-# ##############################################################################
-# # Train/Test
-# ##############################################################################
-
-# ##############################################################################
-# ## Save/Load Helpers
-
-
 # ##############################################################################
 # # Main
 # ##############################################################################
@@ -87,22 +144,8 @@ if __name__ == "__main__" and "__file__" in globals():
     config()
     args: Args = argument_parser()
 
-    if args.train:
-        ##
-        data = Data(TRAIN_START_DATE, TRAIN_END_DATE, ticker_list=DOW_30_TICKER)
-        if args.default_dataset:
-            data.load_data()
-        elif args.input_dataset:
-            data.preprocessed_data_filepath = args.input_dataset
-            data.load_data()
-        else:
-            data.get_preprocessed_data()
+    if args.ray_rllib:
+        run_ray_rllib(args)
 
-        ##
-        train_data = data_split(data.data_preprocessed, TRAIN_START_DATE, TRAIN_END_DATE)
-        trade_data = data_split(data.data_preprocessed, TEST_START_DATE, TEST_END_DATE)
-        agent = Agent(train_data, trade_data)
-        agent.train()
-        agent.save_trained_model()
-        if args.test:
-            agent.test()
+    if args.stable_baseline:
+        run_stable_baseline(args)
