@@ -5,11 +5,11 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
-from data.Data import Data
+from data.DataPreprocessing import DataPreprocessing
 
 
 @dataclasses.dataclass
-class Ratio(Data):
+class CompanyRatios(DataPreprocessing):
     def __init__(self, non_preproccesed_data: str, cb: Callable):
         super().__init__(non_preproccesed_data, cb)
         self.data = self.get_fundament_data_from_csv()

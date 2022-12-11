@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 import argparse
 import enum
 
-from configuration.settings import PROJECT_STUFF_DIR
+from configuration.settings import ModelDir
 
 
 @dataclass
@@ -17,7 +17,7 @@ class Args:
     models: List[str] = field(default_factory=list)
     config: Optional[str] = None
     stable_baseline: Optional[bool] = False
-    ray_rllib: Optional[bool] = False
+    ray: Optional[bool] = False
 
     def validate(self):
         """TODO"""
@@ -51,15 +51,20 @@ class _LoadFromFile(argparse.Action):
 
 def argument_parser():
     class Names(enum.Enum):
+        #
+        config = "configuration"
+        #
         train = "train"
         test = "test"
+        #
         create_dataset = "create-dataset"
         input_dataset = "input-dataset"
         default_dataset = "default-dataset"
+        #
         models = "models"
-        config = "configuration"
+        #
         stable_baseline = "stable-baselines3"
-        ray_rllib = "ray-rllib"
+        ray = "ray"
 
     def get_argparse() -> Dict[str, Any]:
         parser = argparse.ArgumentParser()
@@ -78,7 +83,7 @@ def argument_parser():
         parser.add_argument(
             f"--{Names.create_dataset.value}",
             dest=f"{Names.create_dataset.name}",
-            help=f"Prepare and save dataset as csv into: {PROJECT_STUFF_DIR}",
+            help=f"Prepare and save dataset as csv into: {ModelDir.ROOT}",
             action="store_true",
         )
         parser.add_argument(
@@ -109,8 +114,8 @@ def argument_parser():
             action="store_true",
         )
         parser.add_argument(
-            f"--{Names.ray_rllib.value}",
-            dest=f"{Names.ray_rllib.name}",
+            f"--{Names.ray.value}",
+            dest=f"{Names.ray.name}",
             help="Use ray-rllib",
             action="store_true",
         )

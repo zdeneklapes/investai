@@ -1,7 +1,19 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 
-ROOT_DIR = Path(__file__).parent.parent.parent
-BASE_DIR = Path(__file__).parent.parent
-PROJECT_STUFF_DIR = Path().home().joinpath("my-drive-zlapik/1-todo-project-info/ai-investing-stuff")
-AI_FINANCE_DIR = "/Users/zlapik/my-drive-zlapik/1-todo-project-info/ai-investing-stuff/dataset/stock/ai4-finance"
+
+# Root
+class ProjectDir:
+    ROOT = Path(__file__).parent.parent.parent
+    ROOT_PARENT = Path(__file__).parent.parent.parent.parent
+    SRC = Path(__file__).parent.parent
+
+
+class DatasetDir:
+    ROOT = ProjectDir.ROOT.joinpath("dataset")
+    STOCK = ROOT.joinpath("stock")
+    AI4FINANCE = STOCK.joinpath("ai4finance")
+
+
+class ModelDir:
+    ROOT = ProjectDir.ROOT.joinpath("trained_models")

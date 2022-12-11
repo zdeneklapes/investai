@@ -7,7 +7,7 @@ from agents.rllib_models import DRLAgent
 from finrl.plot import backtest_plot, backtest_stats, get_baseline
 from finrl.config import RESULTS_DIR, TEST_START_DATE, TEST_END_DATE, TRAINED_MODEL_DIR
 
-from rl.envs.StockTradingEnv import StockTradingEnv
+from rl.gym_envs.StockTradingEnv import StockTradingEnv
 from common.utils import now_time
 
 

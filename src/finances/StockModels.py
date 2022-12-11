@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-class Models:
+class StockModels:
     def three_statement(self):
         pass
 

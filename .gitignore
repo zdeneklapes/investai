@@ -58,6 +58,7 @@ doc/**
 **__pycache__**
 *.egg-info/
 **venv**/
+**.ipynb_checkpoints**
 
 # Logs
 logs/
