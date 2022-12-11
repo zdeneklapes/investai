@@ -151,10 +151,10 @@ def run_ray_rllib(args: Args):
 # ##############################################################################
 if __name__ == "__main__" and "__file__" in globals():
     config()
-    args: Args = argument_parser()
+    _args: Args = argument_parser()
 
-    if args.ray:
-        run_ray_rllib(args)
+    if _args.ray:
+        run_ray_rllib(_args)
 
-    if args.stable_baseline:
-        run_stable_baseline(args)
+    if _args.stable_baseline:
+        run_stable_baseline(_args)
