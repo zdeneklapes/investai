@@ -23,10 +23,8 @@ class DataPreprocessing(Yahoofinance):
         self.cb_readfile: Callable = cb_readfile
         self.ticker_list = ticker_list
 
-    def save_preprocessed_data(self, df: pd.DataFrame, filepath: str) -> None:
-        if not df or not filepath:
-            raise ValueError("df, filepath can't be None")
-
+    @staticmethod
+    def save_preprocessed_data(df: pd.DataFrame, filepath: str) -> None:
         df.to_csv(filepath)
 
     def load_data(self, filepath: str) -> pd.DataFrame:
@@ -34,7 +32,7 @@ class DataPreprocessing(Yahoofinance):
 
     def retrieve_data(self, args: Args) -> pd.DataFrame:
         if args.input_dataset:
-            self.load_data(args.input_dataset)
+            return self.load_data(args.input_dataset)
         else:
             return self.preprocess_data()
 

@@ -21,9 +21,9 @@ class DataTechnicalAnalysis(DataPreprocessing):
 
     def preprocess_data(self) -> pd.DataFrame:
         # Data
-        df = self.download_data(self.ticker_list)
+        self.download_data(self.ticker_list)
         fe = FeatureEngineer(use_technical_indicator=True, use_turbulence=False, user_defined_feature=False)
-        df = fe.preprocess_data(df.dataframe)
+        df = fe.preprocess_data(self.dataframe)
 
         # add covariance matrix as states
         df = df.sort_values(["date", "tic"], ignore_index=True)

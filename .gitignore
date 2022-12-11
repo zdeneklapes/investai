@@ -13,15 +13,6 @@ env/
 *.zip
 *.tar.*
 
-# Models
-**datasets/
-**tensorboard_log/
-**trained_models/
-**train_model**
-**result_agent/
-**results/
-**result/
-
 # Vim
 tags
 
@@ -68,9 +59,15 @@ logs/
 *.jpeg
 *.png
 
-
 # Data
-**dataset**
+**datasets**/
+**dataset**/
 
 # Models
-**trained_models**
+**trained_models**/
+**tensorboard_log/
+**trained_models/
+**train_model**/
+**result_agent**/
+**results**/
+**result**/

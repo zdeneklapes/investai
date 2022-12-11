@@ -39,6 +39,7 @@ from finrl.config import (
 )
 from finrl.config_tickers import DOW_30_TICKER
 
+sys.path.append("./src/")
 sys.path.append("./")
 sys.path.append("../")
 sys.path.append("../../")
@@ -51,6 +52,7 @@ from rl.customagents.RayAgent import RayAgent  # noqa: E402
 from rl.customagents.Agent import Agent  # noqa: E402
 from rl.gym_envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv  # noqa: E402
 from common.utils import now_time  # noqa: E402
+from configuration.settings import ProjectDir  # noqa: E402
 
 
 ##
@@ -99,13 +101,16 @@ def run_ray_rllib(args: Args):
     ##
     data = DataTechnicalAnalysis(TRAIN_START_DATE, TRAIN_END_DATE, ticker_list=DOW_30_TICKER)
     processed_data = data.retrieve_data(args)
+    if args.create_dataset:
+        DataTechnicalAnalysis.save_preprocessed_data(
+            processed_data, os.path.join(ProjectDir.DATASET.AI4FINANCE, f"dji30_ta_data_{now_time()}.csv")
+        )
     train_data = data_split(processed_data, TRAIN_START_DATE, TRAIN_END_DATE)
-    # trade = data_split(df, '2020-01-01', config.END_DATE)
+
     ##
     stock_dimension = len(train_data.tic.unique())
     state_space = stock_dimension
     tech_indicator_list = ["macd", "rsi_30", "cci_30", "dx_30"]
-    # feature_dimension = len(tech_indicator_list)
     env_kwargs = {
         "hmax": 100,
         "initial_amount": 1000000,

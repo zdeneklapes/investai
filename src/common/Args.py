@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 import argparse
 import enum
 
-from configuration.settings import ModelDir
+from configuration.settings import ProjectDir
 
 
 @dataclass
@@ -83,7 +83,7 @@ def argument_parser():
         parser.add_argument(
             f"--{Names.create_dataset.value}",
             dest=f"{Names.create_dataset.name}",
-            help=f"Prepare and save dataset as csv into: {ModelDir.ROOT}",
+            help=f"Prepare and save dataset as csv into: {ProjectDir.MODEL.ROOT}",
             action="store_true",
         )
         parser.add_argument(
