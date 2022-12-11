@@ -45,7 +45,7 @@ sys.path.append("../../")
 sys.path.append("../../../")
 
 from common.Args import Args, argument_parser  # noqa: E402
-from data.DataPreprocessing import DataPreprocessing  # noqa: E402
+from rl.data.DataFundamentalAnalysis import DataFundamentalAnalysis  # noqa: E402
 from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis  # noqa: E402
 from rl.customagents.RayAgent import RayAgent  # noqa: E402
 from rl.customagents.Agent import Agent  # noqa: E402
@@ -80,10 +80,10 @@ def config():
 def run_stable_baseline(args: Args):
     if args.train:
         ##
-        data = DataPreprocessing(TRAIN_START_DATE, TRAIN_END_DATE, ticker_list=DOW_30_TICKER)
-        data.retrieve_data(args)
-        train_data = data_split(data.data_preprocessed, TRAIN_START_DATE, TRAIN_END_DATE)
-        trade_data = data_split(data.data_preprocessed, TEST_START_DATE, TEST_END_DATE)
+        data = DataFundamentalAnalysis(TRAIN_START_DATE, TRAIN_END_DATE, ticker_list=DOW_30_TICKER)
+        processed_data = data.retrieve_data(args)
+        train_data = data_split(processed_data, TRAIN_START_DATE, TRAIN_END_DATE)
+        trade_data = data_split(processed_data, TEST_START_DATE, TEST_END_DATE)
         ##
         agent = Agent(train_data, trade_data)
         agent.train()
@@ -98,8 +98,8 @@ def run_ray_rllib(args: Args):
 
     ##
     data = DataTechnicalAnalysis(TRAIN_START_DATE, TRAIN_END_DATE, ticker_list=DOW_30_TICKER)
-    data.retrieve_data(args)
-    train_data = data_split(data.data_preprocessed, TRAIN_START_DATE, TRAIN_END_DATE)
+    processed_data = data.retrieve_data(args)
+    train_data = data_split(processed_data, TRAIN_START_DATE, TRAIN_END_DATE)
     # trade = data_split(df, '2020-01-01', config.END_DATE)
     ##
     stock_dimension = len(train_data.tic.unique())
@@ -136,7 +136,7 @@ def run_ray_rllib(args: Args):
     trained_model.save(filename)
 
     if args.test:
-        # trade_data = data_split(data.data_preprocessed, TEST_START_DATE, TEST_END_DATE)
+        # trade_data = data_split(processed_data, TEST_START_DATE, TEST_END_DATE)
         raise NotImplementedError
 
 
