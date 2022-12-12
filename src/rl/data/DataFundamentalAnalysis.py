@@ -17,7 +17,7 @@ class DataFundamentalAnalysis(DataPreprocessing):
         ticker_list: list = None,
         time_interval: TimeInterval = "1d",
     ):
-        super().__init__(start_date, end_date, cb_readfile, ticker_list, time_interval=time_interval)
+        super().__init__(start_date, end_date, ticker_list, time_interval=time_interval)
 
     def get_fundament_data_from_csv(self, filepath) -> pd.DataFrame:
         # fundamenatal_data_filename = Path(

@@ -1,17 +1,13 @@
 # -*- coding: utf-8 -*-
 # DRL models from RLlib
 import ray
-from ray.rllib.algorithms.a2c import a2c
-from ray.rllib.algorithms.ddpg import ddpg
-from ray.rllib.algorithms.td3 import td3
-from ray.rllib.algorithms.ppo import (  # noqa
-    PPO as PPOTrainer,
-    ppo,
-    # DEFAULT_CONFIG,
-)
-from ray.rllib.algorithms.sac import sac
+from ray.rllib.algorithms.a2c import A2C
+from ray.rllib.algorithms.ddpg import DDPG
+from ray.rllib.algorithms.td3 import TD3
+from ray.rllib.algorithms.ppo import PPO
+from ray.rllib.algorithms.sac import SAC
 
-MODELS = {"a2c": a2c, "ddpg": ddpg, "td3": td3, "sac": sac, "ppo": ppo}
+MODELS = {"a2c": A2C, "ddpg": DDPG, "td3": TD3, "sac": SAC, "ppo": PPO}
 
 
 # MODEL_KWARGS = {x: configuration.__dict__[f"{x.upper()}_PARAMS"] for x in MODELS.keys()}
@@ -41,19 +37,14 @@ class RayAgent:
             make a prediction in a test dataset and get results
     """
 
-    def __init__(self, env, price_array=None, tech_array=None, turbulence_array=None):
+    def __init__(self, env, price_array=None, tech_array=None, turbulence_array=None, env_config: dict = None):
         self.env = env
         self.price_array = price_array
         self.tech_array = tech_array
         self.turbulence_array = turbulence_array
+        self.env_config: dict = env_config
 
-    def get_model(
-        self,
-        model_name,
-        # policy="MlpPolicy",
-        # policy_kwargs=None,
-        # model_kwargs=None,
-    ):
+    def get_model(self, model_name):
         if model_name not in MODELS:
             raise NotImplementedError("NotImplementedError")
 
@@ -62,21 +53,11 @@ class RayAgent:
 
         model = MODELS[model_name]
         # get algorithm default configration based on algorithm in RLlib
-        if model_name == "a2c":
-            model_config = model.A2C_DEFAULT_CONFIG.copy()
-        elif model_name == "td3":
-            model_config = model.TD3_DEFAULT_CONFIG.copy()
-        else:
-            model_config = model.DEFAULT_CONFIG.copy()
+        model_config = MODELS[model_name].get_default_config().copy()
         # pass env, log_level, price_array, tech_array, and turbulence_array to configuration
-        model_config["env"] = self.env
+        # model_config["env"] = self.env
         model_config["log_level"] = "WARN"
-        model_config["env_config"] = {
-            "price_array": self.price_array,
-            "tech_array": self.tech_array,
-            "turbulence_array": self.turbulence_array,
-            "if_train": True,
-        }
+        model_config["env_config"] = self.env_config
 
         return model, model_config
 
@@ -93,16 +74,20 @@ class RayAgent:
         if init_ray:
             ray.init(ignore_reinit_error=True)  # Other Ray APIs will not work until `ray.init()` is called.
 
-        if model_name == "ppo":
-            trainer = PPOTrainer(env=self.env, config=model_config)
-        elif model_name == "a2c":
-            trainer = model.A2CTrainer(env=self.env, config=model_config)
-        elif model_name == "ddpg":
-            trainer = model.DDPGTrainer(env=self.env, config=model_config)
-        elif model_name == "td3":
-            trainer = model.TD3Trainer(env=self.env, config=model_config)
-        elif model_name == "sac":
-            trainer = model.SACTrainer(env=self.env, config=model_config)
+        # self.env = ObservationWrapper(RewardWrapper(ActionWrapper(self.env)))
+        # register_env("StockPortfolioAllocationEnv-v0", lambda config: self.env)
+
+        trainer = MODELS[model_name](env=self.env, config=model_config)
+        # if model_name == "ppo":
+        #     trainer = PPO(env=self.env, config=model_config)
+        # elif model_name == "a2c":
+        #     trainer = model.A2CTrainer(env=self.env, config=model_config)
+        # elif model_name == "ddpg":
+        #     trainer = model.DDPGTrainer(env=self.env, config=model_config)
+        # elif model_name == "td3":
+        #     trainer = model.TD3Trainer(env=self.env, config=model_config)
+        # elif model_name == "sac":
+        #     trainer = model.SACTrainer(env=self.env, config=model_config)
 
         for _ in range(total_episodes):
             trainer.train()

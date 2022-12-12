@@ -48,7 +48,8 @@ sys.path.append("../../../")
 from common.Args import Args, argument_parser  # noqa: E402
 from rl.data.DataFundamentalAnalysis import DataFundamentalAnalysis  # noqa: E402
 from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis  # noqa: E402
-from rl.customagents.RayAgent import RayAgent  # noqa: E402
+
+# from rl.customagents.RayAgent import RayAgent  # noqa: E402
 from rl.customagents.Agent import Agent  # noqa: E402
 from rl.gym_envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv  # noqa: E402
 from common.utils import now_time  # noqa: E402
@@ -102,9 +103,7 @@ def run_ray_rllib(args: Args):
     data = DataTechnicalAnalysis(TRAIN_START_DATE, TRAIN_END_DATE, ticker_list=DOW_30_TICKER)
     processed_data = data.retrieve_data(args)
     if args.create_dataset:
-        DataTechnicalAnalysis.save_preprocessed_data(
-            processed_data, os.path.join(ProjectDir.DATASET.AI4FINANCE, f"dji30_ta_data_{now_time()}.csv")
-        )
+        processed_data.to_csv(os.path.join(ProjectDir.DATASET.AI4FINANCE, f"dji30_ta_data_{now_time()}.csv"))
     train_data = data_split(processed_data, TRAIN_START_DATE, TRAIN_END_DATE)
 
     ##
@@ -112,6 +111,7 @@ def run_ray_rllib(args: Args):
     state_space = stock_dimension
     tech_indicator_list = ["macd", "rsi_30", "cci_30", "dx_30"]
     env_kwargs = {
+        "df": train_data,
         "hmax": 100,
         "initial_amount": 1000000,
         "transaction_cost_pct": 0,
@@ -121,24 +121,40 @@ def run_ray_rllib(args: Args):
         "action_space": stock_dimension,
         "reward_scaling": 1e-1,
     }
-    env = StockPortfolioAllocationEnv(df=train_data, **env_kwargs)
-    agent = RayAgent(env=env)
+    # agent = RayAgent(env=StockPortfolioAllocationEnv, env_config=env_kwargs)
     model_name = "ppo"
+    # model, model_config = agent.get_model(model_name=model_name)
+
+    import ray
+    from ray.rllib.algorithms import ppo
+
+    from ray.tune.registry import register_env
+
+    register_env("StockPortfolioAllocationEnv-v0", lambda config: StockPortfolioAllocationEnv(**config))
+
+    ray.init()
+    algo = ppo.PPO(env="StockPortfolioAllocationEnv-v0", config={"env_config": env_kwargs})
+
+    # while True:
+    #     print(algo.train())
+
+    # algo = ppo.PPO(env=StockPortfolioAllocationEnv, config={"env_config": env_kwargs})
+    #
+    for _ in range(100):
+        algo.train()
+
+    ray.shutdown()
 
     #
-    model, model_config = agent.get_model(model_name=model_name)
-    # configuration = PPOConfig()
-
-    #
-    trained_model = agent.train_model(
-        model=model,
-        model_name=model_name,
-        model_config=model_config,
-        total_episodes=100,
-    )
+    # trained_model = agent.train_model(
+    #     model=model,
+    #     model_name=model_name,
+    #     model_config=model_config,
+    #     total_episodes=100,
+    # )
 
     filename = os.path.join(TRAINED_MODEL_DIR, model_name, f"{now_time()}")
-    trained_model.save(filename)
+    algo.save(filename)
 
     if args.test:
         # trade_data = data_split(processed_data, TEST_START_DATE, TEST_END_DATE)

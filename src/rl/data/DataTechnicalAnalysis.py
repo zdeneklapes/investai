@@ -17,7 +17,7 @@ class DataTechnicalAnalysis(DataPreprocessing):
         ticker_list: list = None,
         time_interval: TimeInterval = "1d",
     ):
-        super().__init__(start_date, end_date, cb_readfile, ticker_list, time_interval=time_interval)
+        super().__init__(start_date, end_date, ticker_list, time_interval=time_interval)
 
     def preprocess_data(self) -> pd.DataFrame:
         # Data
@@ -33,6 +33,7 @@ class DataTechnicalAnalysis(DataPreprocessing):
         return_list = []
 
         # look back is one year
+        # TODO: Is it correct?
         lookback = 252
         for i in range(lookback, len(df.index.unique())):
             data_lookback = df.loc[i - lookback : i, :]

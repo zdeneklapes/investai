@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 """From FinRL https://github.com/AI4Finance-LLC/FinRL/tree/master/finrl/env"""
 
+import ast
 import gym
+import re
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -108,11 +110,7 @@ class StockPortfolioAllocationEnv(gym.Env):
         # load data from a pandas dataframe
         self.data = self.df.loc[self.day, :]
         self.covs = self.data["cov_list"].values[0]
-        self.state = np.append(
-            np.array(self.covs),
-            [self.data[tech].values.tolist() for tech in self.tech_indicator_list],
-            axis=0,
-        )
+        self.state = self.get_state()
         self.terminal = False
         self.turbulence_threshold = turbulence_threshold
 
@@ -126,6 +124,16 @@ class StockPortfolioAllocationEnv(gym.Env):
         self.portfolio_return_memory = [0]
         self.actions_memory = [[1 / self.stock_dim] * self.stock_dim]
         self.date_memory = [self.data.date.unique()[0]]
+
+    def get_state(self):
+        tmp1 = re.sub("\n", "", self.covs)
+        tmp2 = re.sub("  ", " ", tmp1)
+        tmp3 = re.sub(" ", ", ", tmp2)
+        return np.append(
+            np.array(ast.literal_eval(tmp3)),
+            np.array([self.data[tech].values.tolist() for tech in self.tech_indicator_list]),
+            axis=0,
+        )
 
     def step(self, actions):
         # print(self.day)
@@ -177,11 +185,7 @@ class StockPortfolioAllocationEnv(gym.Env):
             self.day += 1
             self.data = self.df.loc[self.day, :]
             self.covs = self.data["cov_list"].values[0]
-            self.state = np.append(
-                np.array(self.covs),
-                [self.data[tech].values.tolist() for tech in self.tech_indicator_list],
-                axis=0,
-            )
+            self.state = self.get_state()
 
             # calcualte portfolio return
             # individual stocks' return * weight
@@ -207,11 +211,7 @@ class StockPortfolioAllocationEnv(gym.Env):
         self.data = self.df.loc[self.day, :]
         # load states
         self.covs = self.data["cov_list"].values[0]
-        self.state = np.append(
-            np.array(self.covs),
-            [self.data[tech].values.tolist() for tech in self.tech_indicator_list],
-            axis=0,
-        )
+        self.state = self.get_state()
         self.portfolio_value = self.initial_amount
         # self.cost = 0
         # self.trades = 0
