@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 """From FinRL https://github.com/AI4Finance-LLC/FinRL/tree/master/finrl/env"""
 
-import ast
 import gym
-import re
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -126,14 +124,14 @@ class StockPortfolioAllocationEnv(gym.Env):
         self.date_memory = [self.data.date.unique()[0]]
 
     def get_state(self):
-        tmp1 = re.sub("\n", "", self.covs)
-        tmp2 = re.sub("  ", " ", tmp1)
-        tmp3 = re.sub(" ", ", ", tmp2)
-        return np.append(
-            np.array(ast.literal_eval(tmp3)),
-            np.array([self.data[tech].values.tolist() for tech in self.tech_indicator_list]),
-            axis=0,
-        )
+        try:
+            indicators = np.array([self.data[tech].values.tolist() for tech in self.tech_indicator_list])
+            # indicators = np.hstack(
+            # (indicators, np.zeros((indicators.shape[0],self.covs.shape[1]-indicators.shape[1])))
+            # )
+            return np.append(self.covs, indicators, axis=0)
+        except ValueError as e:
+            raise ValueError("Invalid state! Please check your data.") from e
 
     def step(self, actions):
         # print(self.day)

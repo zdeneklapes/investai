@@ -62,6 +62,7 @@ logs/
 # Data
 **datasets**/
 **dataset**/
+*.csv
 
 # Models
 **trained_models**/

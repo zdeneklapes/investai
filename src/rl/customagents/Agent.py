@@ -3,7 +3,9 @@ import os
 from typing import Literal
 
 import pandas as pd
-from agents.rllib_models import DRLAgent
+
+# from agents.rllib_models import DRLAgent
+from agents.stablebaselines3_models import DRLAgent
 from finrl.plot import backtest_plot, backtest_stats, get_baseline
 from finrl.config import RESULTS_DIR, TEST_START_DATE, TEST_END_DATE, TRAINED_MODEL_DIR
 

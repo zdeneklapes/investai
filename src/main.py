@@ -20,24 +20,25 @@
 # ##############################################################################
 
 ##
+from enum import Enum
 import os
 import sys
 import warnings
 
+from pyfolio import timeseries
+
 import matplotlib
 from finrl import config as finrl_config
 
-# from finrl.meta.env_stock_trading.env_stocktrading import StockTradingEnv
 from finrl.meta.preprocessor.preprocessors import data_split
+from finrl.agents.stablebaselines3.models import DRLAgent
 from finrl.main import check_and_make_directories
 from finrl.config import (
-    TRAIN_START_DATE,
-    TRAIN_END_DATE,
-    TEST_START_DATE,
     TEST_END_DATE,
     TRAINED_MODEL_DIR,
 )
 from finrl.config_tickers import DOW_30_TICKER
+from finrl.plot import backtest_stats, convert_daily_return_to_pyfolio_ts, get_baseline
 
 sys.path.append("./src/")
 sys.path.append("./")
@@ -45,15 +46,20 @@ sys.path.append("../")
 sys.path.append("../../")
 sys.path.append("../../../")
 
-from common.Args import Args, argument_parser  # noqa: E402
-from rl.data.DataFundamentalAnalysis import DataFundamentalAnalysis  # noqa: E402
-from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis  # noqa: E402
+from common.Args import Args, argument_parser
 
-# from rl.customagents.RayAgent import RayAgent  # noqa: E402
-from rl.customagents.Agent import Agent  # noqa: E402
-from rl.gym_envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv  # noqa: E402
-from common.utils import now_time  # noqa: E402
-from configuration.settings import ProjectDir  # noqa: E402
+from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis
+
+# from rl.customagents.RayAgent import RayAgent
+# from rl.customagents.Agent import Agent
+from rl.gym_envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv
+from common.utils import now_time
+
+##
+_TRAIN_DATA_START = "2010-01-01"
+_TRAIN_DATA_END = "2021-12-31"
+_TEST_DATA_START = "2021-01-01"
+_TEST_DATA_END = "2021-12-31"
 
 
 ##
@@ -61,15 +67,17 @@ from configuration.settings import ProjectDir  # noqa: E402
 # FUNCTIONS
 # ##############################################################################
 def config():
-    #
+    # #
     warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
-    warnings.filterwarnings("ignore", category=FutureWarning)  # TODO: ?
-    warnings.filterwarnings("ignore", category=RuntimeWarning)  # TODO: ?
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=FutureWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+    # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # INFO, WARN are ignored and only ERROR messages will be printed
 
-    #
+    # #
     matplotlib.use("Agg")
 
-    #
+    # #
     check_and_make_directories(
         [
             finrl_config.DATA_SAVE_DIR,
@@ -80,85 +88,122 @@ def config():
     )
 
 
-def run_stable_baseline(args: Args):
-    if args.train:
+# def run_stable_baseline(args: Args):
+#     if args.train:
+#         ##
+#         data = DataFundamentalAnalysis(_TRAIN_DATA_START, _TRAIN_DATA_END, ticker_list=DOW_30_TICKER)
+#         processed_data = data.retrieve_data(args)
+#         train_data = data_split(processed_data, _TRAIN_DATA_START, _TRAIN_DATA_END)
+#         trade_data = data_split(processed_data, _TEST_DATA_START, TEST_END_DATE)
+#         ##
+#         agent = Agent(train_data, trade_data)
+#         agent.train()
+#         agent.save_trained_model()
+#         if args.test:
+#             agent.test()
+
+
+# class EnvHyperParams(Enum):
+#
+class Pipeline:
+    class DataType(Enum):
+        TRAIN = "train"
+        TEST = "test"
+
+    def __init__(self, args: Args):
+        self.args = args
+        self.trained_model = None
+
+    def run_framework(self):
+        if self.args.stable_baseline:
+            self.run_sb3()
+
+    def run_sb3(self):
+        if self.args.train:
+            self.train()
+
+        if self.args.test:
+            self.test()
+
+    def get_data(self, data_type: DataType):
         ##
-        data = DataFundamentalAnalysis(TRAIN_START_DATE, TRAIN_END_DATE, ticker_list=DOW_30_TICKER)
-        processed_data = data.retrieve_data(args)
-        train_data = data_split(processed_data, TRAIN_START_DATE, TRAIN_END_DATE)
-        trade_data = data_split(processed_data, TEST_START_DATE, TEST_END_DATE)
+        data = DataTechnicalAnalysis(_TRAIN_DATA_START, _TRAIN_DATA_END, ticker_list=DOW_30_TICKER)
+        processed_data = data.retrieve_data(self.args)
+        if data_type == Pipeline.DataType.TRAIN:
+            return data_split(processed_data, _TRAIN_DATA_START, _TRAIN_DATA_END)
+        elif data_type == Pipeline.DataType.TEST:
+            return data_split(processed_data, _TEST_DATA_START, TEST_END_DATE)
+
+        raise ValueError(f"Unknown data type: {data_type}")
+
+    def get_env_kwargs(self, data) -> dict:
+        stock_dimension = len(data.tic.unique())
+        state_space = stock_dimension
+        tech_indicator_list = ["macd", "rsi_30", "cci_30", "dx_30"]
+        env_kwargs = {
+            "df": data,
+            "hmax": 100,
+            "initial_amount": 1000000,
+            "transaction_cost_pct": 0,
+            "state_space": state_space,
+            "stock_dim": stock_dimension,
+            "tech_indicator_list": tech_indicator_list,
+            "action_space": stock_dimension,
+            "reward_scaling": 1e-1,
+        }
+        return env_kwargs
+
+    def get_agent_kwargs(self) -> dict:
+        A2C_PARAMS = {"n_steps": 5, "ent_coef": 0.005, "learning_rate": 0.0002}
+        return A2C_PARAMS
+
+    def train(self):
         ##
-        agent = Agent(train_data, trade_data)
-        agent.train()
-        agent.save_trained_model()
-        if args.test:
-            agent.test()
+        # Data, Hyperparams
+        train_data = self.get_data(Pipeline.DataType.TRAIN)
+        env_kwargs = self.get_env_kwargs(data=train_data).copy()
 
+        ##
+        # Prepare Env, Model agent and policy
+        gym_train_env = StockPortfolioAllocationEnv(**env_kwargs)
+        env_train, _ = gym_train_env.get_sb_env()
+        agent = DRLAgent(env=env_train)
+        model_a2c = agent.get_model(model_name="a2c", model_kwargs=self.get_agent_kwargs())
 
-def run_ray_rllib(args: Args):
-    if not args.train:
-        return
+        ##
+        # Train
+        trained = agent.train_model(model=model_a2c, tb_log_name="a2c", total_timesteps=5000)
+        self.trained_model = trained
 
-    ##
-    data = DataTechnicalAnalysis(TRAIN_START_DATE, TRAIN_END_DATE, ticker_list=DOW_30_TICKER)
-    processed_data = data.retrieve_data(args)
-    if args.create_dataset:
-        processed_data.to_csv(os.path.join(ProjectDir.DATASET.AI4FINANCE, f"dji30_ta_data_{now_time()}.csv"))
-    train_data = data_split(processed_data, TRAIN_START_DATE, TRAIN_END_DATE)
+        ##
+        # Save
+        self.trained_model.save(os.path.join(TRAINED_MODEL_DIR, "a2c_{}".format(now_time())))
 
-    ##
-    stock_dimension = len(train_data.tic.unique())
-    state_space = stock_dimension
-    tech_indicator_list = ["macd", "rsi_30", "cci_30", "dx_30"]
-    env_kwargs = {
-        "df": train_data,
-        "hmax": 100,
-        "initial_amount": 1000000,
-        "transaction_cost_pct": 0,
-        "state_space": state_space,
-        "stock_dim": stock_dimension,
-        "tech_indicator_list": tech_indicator_list,
-        "action_space": stock_dimension,
-        "reward_scaling": 1e-1,
-    }
-    # agent = RayAgent(env=StockPortfolioAllocationEnv, env_config=env_kwargs)
-    model_name = "ppo"
-    # model, model_config = agent.get_model(model_name=model_name)
+    def test(self):
+        ##
+        # Data, Hyperparams
+        test_data = self.get_data(Pipeline.DataType.TEST)
+        env_kwargs = self.get_env_kwargs(data=test_data).copy()
 
-    import ray
-    from ray.rllib.algorithms import ppo
+        ##
+        # Get trained model results
+        gym_test_env = StockPortfolioAllocationEnv(**env_kwargs)
+        test_daily_return, _ = DRLAgent.DRL_prediction(model=self.trained_model, environment=gym_test_env)
+        # TODO: save results and actions
+        DRL_strat = convert_daily_return_to_pyfolio_ts(test_daily_return)
+        perf_stats_all = timeseries.perf_stats(
+            returns=DRL_strat, factor_returns=DRL_strat, positions=None, transactions=None, turnover_denom="AGB"
+        )
+        print(f"==============STATS: Portfolio of ticker: {test_data.tic.unique()}===========")
+        print(perf_stats_all)
 
-    from ray.tune.registry import register_env
-
-    register_env("StockPortfolioAllocationEnv-v0", lambda config: StockPortfolioAllocationEnv(**config))
-
-    ray.init()
-    algo = ppo.PPO(env="StockPortfolioAllocationEnv-v0", config={"env_config": env_kwargs})
-
-    # while True:
-    #     print(algo.train())
-
-    # algo = ppo.PPO(env=StockPortfolioAllocationEnv, config={"env_config": env_kwargs})
-    #
-    for _ in range(100):
-        algo.train()
-
-    ray.shutdown()
-
-    #
-    # trained_model = agent.train_model(
-    #     model=model,
-    #     model_name=model_name,
-    #     model_config=model_config,
-    #     total_episodes=100,
-    # )
-
-    filename = os.path.join(TRAINED_MODEL_DIR, model_name, f"{now_time()}")
-    algo.save(filename)
-
-    if args.test:
-        # trade_data = data_split(processed_data, TEST_START_DATE, TEST_END_DATE)
-        raise NotImplementedError
+        ##
+        # Compare with the market
+        index_compare = "^DJI"
+        baseline_df = get_baseline(ticker=index_compare, start=_TEST_DATA_START, end=_TEST_DATA_END)
+        stats = backtest_stats(baseline_df, value_col_name="close")
+        print(f"==============STATS {index_compare}===========")
+        print(stats)
 
 
 ##
@@ -169,8 +214,5 @@ if __name__ == "__main__" and "__file__" in globals():
     config()
     _args: Args = argument_parser()
 
-    if _args.ray:
-        run_ray_rllib(_args)
-
-    if _args.stable_baseline:
-        run_stable_baseline(_args)
+    pipeline = Pipeline(_args)
+    pipeline.run_framework()

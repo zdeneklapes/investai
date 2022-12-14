@@ -11,7 +11,7 @@ from configuration.settings import ProjectDir
 class Args:
     train: Optional[bool] = False
     test: Optional[bool] = False
-    create_dataset: Optional[bool] = False
+    save_dataset: Optional[bool] = False
     input_dataset: Optional[str] = None
     default_dataset: Optional[bool] = None
     models: List[str] = field(default_factory=list)
@@ -57,14 +57,14 @@ def argument_parser():
         train = "train"
         test = "test"
         #
-        create_dataset = "create-dataset"
+        save_dataset = "save-dataset"
         input_dataset = "input-dataset"
         default_dataset = "default-dataset"
         #
-        models = "models"
+        models = "m", "models"
         #
-        stable_baseline = "stable-baselines3"
-        ray = "ray"
+        stable_baseline = "sb3", "stable-baselines3"
+        ray = "r", "ray"
 
     def get_argparse() -> Dict[str, Any]:
         parser = argparse.ArgumentParser()
@@ -81,8 +81,8 @@ def argument_parser():
             action="store_true",
         )
         parser.add_argument(
-            f"--{Names.create_dataset.value}",
-            dest=f"{Names.create_dataset.name}",
+            f"--{Names.save_dataset.value}",
+            dest=f"{Names.save_dataset.name}",
             help=f"Prepare and save dataset as csv into: {ProjectDir.MODEL.ROOT}",
             action="store_true",
         )
@@ -108,7 +108,8 @@ def argument_parser():
             default=[],
         )
         parser.add_argument(
-            f"--{Names.stable_baseline.value}",
+            f"-{Names.stable_baseline.value[0]}",
+            f"--{Names.stable_baseline.value[1]}",
             dest=f"{Names.stable_baseline.name}",
             help="Use stable-baselines3",
             action="store_true",
