@@ -131,7 +131,7 @@ class StockPortfolioAllocationEnv(gym.Env):
             # )
             return np.append(self.covs, indicators, axis=0)
         except ValueError as e:
-            raise ValueError("Invalid state! Please check your data.") from e
+            raise ValueError(f"Invalid state! Please check your data: {e}") from e
 
     def step(self, actions):
         # print(self.day)

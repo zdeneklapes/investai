@@ -4,11 +4,11 @@ import pandas as pd
 import numpy as np
 import itertools
 
-from rl.data import DataPreprocessing
+from rl.data import DataBase
 from rl.data.types import TimeInterval
 
 
-class DataFundamentalAnalysis(DataPreprocessing):
+class DataFundamentalAnalysis(DataBase):
     def __init__(
         self,
         start_date: str,

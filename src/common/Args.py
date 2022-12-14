@@ -83,7 +83,7 @@ def argument_parser():
         parser.add_argument(
             f"--{Names.save_dataset.value}",
             dest=f"{Names.save_dataset.name}",
-            help=f"Prepare and save dataset as csv into: {ProjectDir.MODEL.ROOT}",
+            help=f"Prepare and save dataset as csv into: {ProjectDir().MODEL.ROOT}",
             action="store_true",
         )
         parser.add_argument(

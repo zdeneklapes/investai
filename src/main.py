@@ -27,13 +27,9 @@ import warnings
 from pyfolio import timeseries
 
 import matplotlib
-from finrl import config as finrl_config
 
-from finrl.meta.preprocessor.preprocessors import data_split
 from finrl.agents.stablebaselines3.models import DRLAgent
-from finrl.main import check_and_make_directories
 from finrl.config import (
-    TEST_END_DATE,
     TRAINED_MODEL_DIR,
 )
 from finrl.config_tickers import DOW_30_TICKER
@@ -47,9 +43,10 @@ sys.path.append("../../../")
 
 from common.Args import Args, argument_parser
 
-from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis, DataPreprocessing
+from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis, DataBase
 from rl.gym_envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv
 from common.utils import now_time
+from configuration.settings import ProjectDir
 
 ##
 _TRAIN_DATA_START = "2010-01-01"
@@ -63,25 +60,18 @@ _TEST_DATA_END = "2021-12-31"
 # FUNCTIONS
 # ##############################################################################
 def config():
-    # #
+    ##
     warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=FutureWarning)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # INFO, WARN are ignored and only ERROR messages will be printed
 
-    # #
+    ##
     matplotlib.use("Agg")
 
-    # #
-    check_and_make_directories(
-        [
-            finrl_config.DATA_SAVE_DIR,
-            finrl_config.TRAINED_MODEL_DIR,
-            finrl_config.TENSORBOARD_LOG_DIR,
-            finrl_config.RESULTS_DIR,
-        ]
-    )
+    ##
+    ProjectDir().check_and_create_dirs()
 
 
 # def run_stable_baseline(args: Args):
@@ -117,17 +107,6 @@ class Pipeline:
         if self.args.test:
             self.test()
 
-    def get_data(self, data_type: DataPreprocessing.DataType):
-        ##
-        data = DataTechnicalAnalysis(_TRAIN_DATA_START, _TRAIN_DATA_END, ticker_list=DOW_30_TICKER)
-        processed_data = data.retrieve_data(self.args)
-        if data_type == DataPreprocessing.DataType.TRAIN:
-            return data_split(processed_data, _TRAIN_DATA_START, _TRAIN_DATA_END)
-        elif data_type == DataPreprocessing.DataType.TEST:
-            return data_split(processed_data, _TEST_DATA_START, TEST_END_DATE)
-
-        raise ValueError(f"Unknown data type: {data_type}")
-
     def get_env_kwargs(self, data) -> dict:
         stock_dimension = len(data.tic.unique())
         state_space = stock_dimension
@@ -152,7 +131,11 @@ class Pipeline:
     def train(self):
         ##
         # Data, Hyperparams
-        train_data = self.get_data(DataPreprocessing.DataType.TRAIN)
+        data = DataTechnicalAnalysis(_TRAIN_DATA_START, _TEST_DATA_END, ticker_list=DOW_30_TICKER)
+        data.load_data(args=self.args)
+        train_data = data.get_data_type(
+            df=data.dataframe, data_type=DataBase.DataType.TRAIN, date_divider=_TEST_DATA_START
+        )
         env_kwargs = self.get_env_kwargs(data=train_data).copy()
 
         ##
@@ -174,7 +157,7 @@ class Pipeline:
     def test(self):
         ##
         # Data, Hyperparams
-        test_data = self.get_data(DataPreprocessing.DataType.TEST)
+        test_data = self.get_data(DataBase.DataType.TEST)  # TODO: fixme # pylint: disable=no-member
         env_kwargs = self.get_env_kwargs(data=test_data).copy()
 
         ##
@@ -205,6 +188,5 @@ class Pipeline:
 if __name__ == "__main__" and "__file__" in globals():
     config()
     _args: Args = argument_parser()
-
     pipeline = Pipeline(_args)
     pipeline.run_framework()
