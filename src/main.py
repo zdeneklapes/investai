@@ -20,7 +20,6 @@
 # ##############################################################################
 
 ##
-from enum import Enum
 import os
 import sys
 import warnings
@@ -48,10 +47,7 @@ sys.path.append("../../../")
 
 from common.Args import Args, argument_parser
 
-from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis
-
-# from rl.customagents.RayAgent import RayAgent
-# from rl.customagents.Agent import Agent
+from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis, DataPreprocessing
 from rl.gym_envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv
 from common.utils import now_time
 
@@ -106,10 +102,6 @@ def config():
 # class EnvHyperParams(Enum):
 #
 class Pipeline:
-    class DataType(Enum):
-        TRAIN = "train"
-        TEST = "test"
-
     def __init__(self, args: Args):
         self.args = args
         self.trained_model = None
@@ -125,13 +117,13 @@ class Pipeline:
         if self.args.test:
             self.test()
 
-    def get_data(self, data_type: DataType):
+    def get_data(self, data_type: DataPreprocessing.DataType):
         ##
         data = DataTechnicalAnalysis(_TRAIN_DATA_START, _TRAIN_DATA_END, ticker_list=DOW_30_TICKER)
         processed_data = data.retrieve_data(self.args)
-        if data_type == Pipeline.DataType.TRAIN:
+        if data_type == DataPreprocessing.DataType.TRAIN:
             return data_split(processed_data, _TRAIN_DATA_START, _TRAIN_DATA_END)
-        elif data_type == Pipeline.DataType.TEST:
+        elif data_type == DataPreprocessing.DataType.TEST:
             return data_split(processed_data, _TEST_DATA_START, TEST_END_DATE)
 
         raise ValueError(f"Unknown data type: {data_type}")
@@ -160,7 +152,7 @@ class Pipeline:
     def train(self):
         ##
         # Data, Hyperparams
-        train_data = self.get_data(Pipeline.DataType.TRAIN)
+        train_data = self.get_data(DataPreprocessing.DataType.TRAIN)
         env_kwargs = self.get_env_kwargs(data=train_data).copy()
 
         ##
@@ -182,7 +174,7 @@ class Pipeline:
     def test(self):
         ##
         # Data, Hyperparams
-        test_data = self.get_data(Pipeline.DataType.TEST)
+        test_data = self.get_data(DataPreprocessing.DataType.TEST)
         env_kwargs = self.get_env_kwargs(data=test_data).copy()
 
         ##
