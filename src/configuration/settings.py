@@ -14,7 +14,7 @@ class ProjectDir:
         def __init__(self, root: Path):
             self.ROOT = root.joinpath("trained_models")
 
-    def __init__(self, root: Path):
+    def __init__(self, root: Path = None):
         if not root:
             root = Path(__file__).parent.parent.parent
 

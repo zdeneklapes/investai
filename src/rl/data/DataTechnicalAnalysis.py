@@ -17,7 +17,7 @@ class DataTechnicalAnalysis(DataBase):
         ticker_list: list = None,
         time_interval: TimeInterval = "1d",
     ):
-        super().__init__(start_date, end_date, ticker_list, time_interval=time_interval)
+        super().__init__("yahoofinance", start_date, end_date, ticker_list, time_interval=time_interval)
 
     def preprocess_data(self) -> pd.DataFrame:
         # Data

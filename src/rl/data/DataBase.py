@@ -18,8 +18,15 @@ class DataBase(Yahoofinance):
         TRAIN = "train"
         TEST = "test"
 
-    def __init__(self, start_date: str, end_date: str, ticker_list: list = None, time_interval: TimeInterval = "1d"):
-        super().__init__("yahoofinance", start_date, end_date, time_interval)
+    def __init__(
+        self,
+        data_source: str,
+        start_date: str,
+        end_date: str,
+        ticker_list: list = None,
+        time_interval: TimeInterval = "1d",
+    ):
+        super().__init__(data_source, start_date, end_date, time_interval)
         self.ticker_list = ticker_list
 
     def save_dataset(self, df: pd.DataFrame):

@@ -107,8 +107,14 @@ class StockPortfolioAllocationEnv(gym.Env):
 
         # load data from a pandas dataframe
         self.data = self.df.loc[self.day, :]
-        self.covs = self.data["cov_list"].values[0]
+
+        ##
+        # TODO: Uncomment
+        # self.covs = self.data["cov_list"].values[0]
+        # self.state = self.get_state()
         self.state = self.get_state()
+
+        ##
         self.terminal = False
         self.turbulence_threshold = turbulence_threshold
 
@@ -129,7 +135,7 @@ class StockPortfolioAllocationEnv(gym.Env):
             # indicators = np.hstack(
             # (indicators, np.zeros((indicators.shape[0],self.covs.shape[1]-indicators.shape[1])))
             # )
-            return np.append(self.covs, indicators, axis=0)
+            return indicators  # np.append(self.covs, indicators, axis=0)
         except ValueError as e:
             raise ValueError(f"Invalid state! Please check your data: {e}") from e
 
@@ -182,7 +188,7 @@ class StockPortfolioAllocationEnv(gym.Env):
             # load next state
             self.day += 1
             self.data = self.df.loc[self.day, :]
-            self.covs = self.data["cov_list"].values[0]
+            # self.covs = self.data["cov_list"].values[0]
             self.state = self.get_state()
 
             # calcualte portfolio return
@@ -208,7 +214,7 @@ class StockPortfolioAllocationEnv(gym.Env):
         self.day = 0
         self.data = self.df.loc[self.day, :]
         # load states
-        self.covs = self.data["cov_list"].values[0]
+        # self.covs = self.data["cov_list"].values[0]
         self.state = self.get_state()
         self.portfolio_value = self.initial_amount
         # self.cost = 0
