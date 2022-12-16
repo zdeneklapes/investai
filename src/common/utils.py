@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-import sys
+##
 from os import path
-from typing import (
-    Dict,
-)
+import sys
+from typing import Dict
 import cProfile
 import pstats
 
+##
 from common.baseexitcode import BaseExitCode
 
 

@@ -6,13 +6,14 @@ from pathlib import Path
 class ProjectDir:
     class _DatasetDir:
         def __init__(self, root: Path):
-            self.ROOT = root.joinpath("dataset")
-            self.STOCK = self.ROOT.joinpath("stock")
-            self.AI4FINANCE = self.STOCK.joinpath("ai4finance")
+            self.root = root.joinpath("dataset")
+            self.stock = self.root.joinpath("stock")
+            self.ai4finance = self.stock.joinpath("ai4finance")
+            self.financial_modeling_prep = self.root.joinpath("financialmodelingprep")
 
     class _ModelDir:
         def __init__(self, root: Path):
-            self.ROOT = root.joinpath("trained_models")
+            self.root = root.joinpath("trained_models")
 
     def __init__(self, root: Path = None):
         if not root:
@@ -21,10 +22,10 @@ class ProjectDir:
         if not root.exists():
             raise FileNotFoundError(f"Root directory does not exist: {root}")
 
-        self.ROOT = root
-        self.PARENT = root.parent
-        self.DATASET = self._DatasetDir(self.ROOT)
-        self.MODEL = self._ModelDir(self.ROOT)
+        self.root = root
+        self.parent = root.parent
+        self.dataset = self._DatasetDir(self.root)
+        self.model = self._ModelDir(self.root)
 
     def check_and_create_dirs(self):
         # print("Checking and creating directories...")
@@ -34,5 +35,5 @@ class ProjectDir:
         # print(f"Created {self.DATASET.STOCK}")
         # self.DATASET.AI4FINANCE.mkdir(parents=True, exist_ok=True)
         # print(f"Created {self.DATASET.AI4FINANCE}")
-        self.MODEL.ROOT.mkdir(parents=True, exist_ok=True)
-        print(f"Created {self.MODEL.ROOT}")
+        self.model.root.mkdir(parents=True, exist_ok=True)
+        print(f"Created {self.model.root}")

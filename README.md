@@ -9,8 +9,6 @@
 - **Student**: Zdeněk Lapeš <lapes.zdenek@gmail.com>
 - **Superviser**: Milan Češka <ceskam@fit.vut.cz>
 
-### BUGS
-
 ### DEPENDENCIES
 
 - swig
@@ -18,10 +16,7 @@
 
 ### CONTRIBUTING
 
-Please be patent what you are doing and why. If you are not sure, ask.
-The `main` and `dev` branches are considered as protected. You can not
-push directly to them. You have to create a pull request and wait for
-review. If you are not sure, ask.
+TODO
 
 #### Before pull request
 
@@ -44,6 +39,6 @@ source venv/bin/activate
 pip3 install -r requirements.txt
 ```
 
-### [TODOS](./TODOS.md)
+### [TODO](./TODO.md)
 
 ### [MATERIALS](./MATERIALS.md)

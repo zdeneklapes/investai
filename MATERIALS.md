@@ -3,6 +3,7 @@
 ## MATERIALS
 
 ---
+
 ---
 
 ## POKYNY BP
@@ -14,6 +15,7 @@
 - [Bibliography generator latex][46]
 
 ---
+
 ---
 
 ## LATEX
@@ -21,6 +23,15 @@
 - [drawink-tikz][47]
 
 ---
+
+---
+
+## Finance
+
+- [Discounting Cash Flow Model (DCF)][47]
+
+---
+
 ---
 
 ## MATERIALS: AI + INVESTING
@@ -218,3 +229,5 @@
 [46]: https://www.scribbr.com/citation/generator/apa/
 
 [47]: https://latexdraw.com/petri-nets-tikz/
+
+[48]: https://www.ersj.eu/repec/ers/papers/11_2_p2.pdf

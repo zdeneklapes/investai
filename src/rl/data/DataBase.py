@@ -71,7 +71,7 @@ class DataBase(Yahoofinance):
         print(f"Data saved to json: {_filename}")
 
     def get_filename(self, prj_dir: ProjectDir, name: str = "data") -> Path:
-        filename = prj_dir.DATASET.AI4FINANCE.joinpath(f"{name}_{now_time()}.json")
+        filename = prj_dir.dataset.ai4finance.joinpath(f"{name}_{now_time()}.json")
         return filename
 
     def load_data(self, args: Args) -> pd.DataFrame:
@@ -183,3 +183,19 @@ def get_count_miss_tics(df: pd.DataFrame):
         occurences = (grouped_by_size == i).sum()
         counts = counts.append(pd.Series(occurences))
         print(f"{i} : {occurences}")
+
+
+def print_info(df: pd.DataFrame):
+    ##
+    print(f"{df.shape=}")
+    print(f"Start date: {df['date'].iloc[0]}")
+    print(f"End date: {df['date'].iloc[-1]}")
+
+    print(f"Stocks: {df['tic'].unique().size}")
+
+    ##
+    grouped_data_size = df.groupby(by=["date"]).size()
+    if grouped_data_size.nunique() == 1:
+        print(f"OK: All dates have same row count: {grouped_data_size.unique()}")
+    else:
+        print(f"ERROR: Different size for each date: {grouped_data_size.unique()}")
