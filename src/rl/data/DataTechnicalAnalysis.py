@@ -5,10 +5,11 @@ import pandas as pd
 from finrl.meta.preprocessor.preprocessors import FeatureEngineer
 
 from rl.data import DataBase
-from rl.data.types import TimeInterval
 
 
 class DataTechnicalAnalysis(DataBase):
+    from rl.data.types import TimeInterval
+
     def __init__(
         self,
         start_date: str,

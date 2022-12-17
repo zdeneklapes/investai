@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 from typing import Optional
 import dataclasses
 import pandas as pd
@@ -14,3 +15,16 @@ class Company:
     financial_ratios: pd.DataFrame
     growth: pd.DataFrame
     dcf: Optional[pd.DataFrame] = None
+
+    def __json__(self):
+        return {
+            "symbol": self.symbol,
+        }
+
+
+class CompanyEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, complex):
+            return [o.real, o.imag]
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, o)

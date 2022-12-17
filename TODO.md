@@ -1,15 +1,40 @@
 # AI-INVESTING: Bachelor Thesis
 
+-------------------- -------------------- --------------------
+-------------------- -------------------- --------------------
+
 ## TODO
 
-- [ ] Update forked finrl-meta to latest version
-- [ ] Clean up the code
-- [ ] Add more comments
-- [ ] Add more tests
-- [ ] Add more documentation
-- [ ] Add more examples
+- Create Data Sets
+  - Evaluate 2 FinRL-Meta examples
+  - 1st Experiment - Make data set bigger
+    - Create Data Set
+    - Create Environment
+    - Evaluate (Train + Test)
+  - 2st Experiment - Add more Ratios into original data set
+    - Create Data Set
+    - Create Environment
+    - Evaluate (Train + Test)
+  - 3st Experiment - Make bigger data set + Add more Ratios into original data set
+    - Create Data Set
+    - Create Environment
+    - Evaluate (Train + Test)
+  - 4st Experiment - Averaged Price Data along the time
+    - Create Data Set
+    - Create Environment
+    - Evaluate (Train + Test)
 
 -------------------- -------------------- --------------------
+-------------------- -------------------- --------------------
+
+## BASICS
+
+- Update forked finrl-meta to latest version
+- Clean up the code
+- Add more comments
+- Add more tests
+- Add more documentation
+- Add more examples
 
 ### IDEAS
 

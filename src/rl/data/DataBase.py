@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import dataclasses
-import enum
 from pathlib import Path
 
 import tqdm
@@ -11,23 +10,11 @@ from meta.data_processors.yahoofinance import Yahoofinance
 from configuration.settings import ProjectDir
 from common.Args import Args
 from common.utils import now_time
-from rl.data.types import TimeInterval
-
-
-class FileType(enum.Enum):
-    @classmethod
-    def list(cls):
-        return [e.value for e in cls]
-
-    JSON = "json"
-    CSV = "csv"
 
 
 @dataclasses.dataclass(init=False)
 class DataBase(Yahoofinance):
-    class DataType(enum.Enum):
-        TRAIN = "train"
-        TEST = "test"
+    from rl.data.types import TimeInterval, FileType, DataType
 
     def __init__(
         self,
@@ -48,6 +35,8 @@ class DataBase(Yahoofinance):
             raise NotADirectoryError(f"ERROR: Dir does not exist {directory}")
 
     def get_file_type(self, filename: Path) -> FileType:
+        from rl.data.types import FileType
+
         if filename.suffix == ".json":
             return FileType.JSON
         elif filename.suffix == ".csv":
@@ -56,6 +45,8 @@ class DataBase(Yahoofinance):
             raise ValueError(f"Unknown file type: {filename}")
 
     def save_dataset(self, df: pd.DataFrame, _filename: Path):
+        from rl.data.types import FileType
+
         self.check_dir_exists(_filename)
 
         print(f"Saving data into: {_filename}")

@@ -5,10 +5,11 @@ import numpy as np
 import itertools
 
 from rl.data import DataBase
-from rl.data.types import TimeInterval
 
 
 class DataFundamentalAnalysis(DataBase):
+    from rl.data.types import TimeInterval
+
     def __init__(
         self,
         start_date: str,
