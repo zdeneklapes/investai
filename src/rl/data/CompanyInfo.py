@@ -6,7 +6,7 @@ import pandas as pd
 
 
 @dataclasses.dataclass
-class Company:
+class CompanyInfo:
     symbol: str
     balance_sheet: pd.DataFrame
     income_statement: pd.DataFrame
@@ -14,6 +14,7 @@ class Company:
     key_metrics: pd.DataFrame
     financial_ratios: pd.DataFrame
     growth: pd.DataFrame
+    prices_detailed: pd.DataFrame
     dcf: Optional[pd.DataFrame] = None
 
     def __json__(self):

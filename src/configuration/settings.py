@@ -11,6 +11,7 @@ class ProjectDir:
             self.ai4finance = self.stock.joinpath("ai4finance")
             self.financial_modeling_prep = self.root.joinpath("financialmodelingprep")
             self.indexes = self.financial_modeling_prep.joinpath("indexes")
+            self.tickers = self.root.joinpath("tickers")
             self.all_companies = self.financial_modeling_prep.joinpath("all_companies")
 
     class _ModelDir:
