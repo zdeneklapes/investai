@@ -60,8 +60,8 @@ logs/
 *.png
 
 # Data
-**datasets**/
-**dataset**/
+**datasets/
+**dataset/
 *.csv
 
 # Models

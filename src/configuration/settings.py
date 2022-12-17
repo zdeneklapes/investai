@@ -10,6 +10,8 @@ class ProjectDir:
             self.stock = self.root.joinpath("stock")
             self.ai4finance = self.stock.joinpath("ai4finance")
             self.financial_modeling_prep = self.root.joinpath("financialmodelingprep")
+            self.indexes = self.financial_modeling_prep.joinpath("indexes")
+            self.all_companies = self.financial_modeling_prep.joinpath("all_companies")
 
     class _ModelDir:
         def __init__(self, root: Path):
@@ -28,12 +30,5 @@ class ProjectDir:
         self.model = self._ModelDir(self.root)
 
     def check_and_create_dirs(self):
-        # print("Checking and creating directories...")
-        # self.DATASET.ROOT.mkdir(parents=True, exist_ok=True)
-        # print(f"Created {self.DATASET.ROOT}")
-        # self.DATASET.STOCK.mkdir(parents=True, exist_ok=True)
-        # print(f"Created {self.DATASET.STOCK}")
-        # self.DATASET.AI4FINANCE.mkdir(parents=True, exist_ok=True)
-        # print(f"Created {self.DATASET.AI4FINANCE}")
         self.model.root.mkdir(parents=True, exist_ok=True)
         print(f"Created {self.model.root}")
