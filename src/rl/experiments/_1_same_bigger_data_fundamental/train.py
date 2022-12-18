@@ -82,8 +82,6 @@ ratios_cols = [
     "dividendYield",
 ]
 
-DATASET_SPLIT_CONSTANT = 0.8
-
 
 # ######################################################################################################################
 # Helpers
@@ -158,14 +156,14 @@ def train(program):
 
     # Train
     trained_algorithm = drl_agent.train_model(
-        model=algorithm, tb_log_name=f"tb_run_{algorithm_name}", total_timesteps=100000
+        model=algorithm, tb_log_name=f"tb_run_{algorithm_name}", total_timesteps=70000
     )
 
     # Save
     trained_algorithm.save(learned_algorithm_path.as_posix())
 
 
-def get_dataset(df, purpose: Literal["train", "test"], split_constant: int = 0.8) -> pd.DataFrame:
+def get_dataset(df, purpose: Literal["train", "test"], split_constant: int = 0.75) -> pd.DataFrame:
     date_split = df.iloc[int(df.index.size * split_constant)]["date"]
     if purpose == "train":
         return df[df["date"] < date_split]
@@ -184,8 +182,11 @@ if __name__ == "__main__":
         exp_dir=ExperimentDir(root=Path(__file__).parent),
         DEBUG=False,
     )
-    program.dataset = get_dataset(pd.read_csv(program.prj_dir.data.joinpath(f"{dataset_name}.csv")), purpose="train")
+    program.dataset = get_dataset(
+        pd.read_csv(program.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv"), index_col=0), purpose="train"
+    )
     program.exp_dir.check_and_create_dirs()
 
     #
+    print(f"Start: {program.dataset['date'].min()}, End: {program.dataset['date'].max()}")
     train(program)
