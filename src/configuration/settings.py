@@ -33,7 +33,7 @@ class ExperimentDir:
 class ProjectDir:
     class _DatasetDir:
         def __init__(self, root: Path):
-            self.root = root.joinpath("dataset")
+            self.root = root.joinpath("data")
             self.stock = self.root.joinpath("stock")
             self.ai4finance = self.stock.joinpath("ai4finance")
             self.financial_modeling_prep = self.root.joinpath("financialmodelingprep")
@@ -60,7 +60,7 @@ class ProjectDir:
 
         self.root = root
         self.parent = root.parent
-        self.dataset = self._DatasetDir(self.root)
+        self.data = self._DatasetDir(self.root)
         self.model = self._ModelDir(self.root)
 
     def check_and_create_dirs(self):

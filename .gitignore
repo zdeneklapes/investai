@@ -62,6 +62,7 @@ logs/
 # Data
 **datasets/
 **dataset/
+**data/
 *.csv
 
 # Models

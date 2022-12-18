@@ -13,7 +13,7 @@ class StockTradingEnv(gym.Env):
 
     metadata = {"render.modes": ["human"]}
 
-    def __init__(
+    def __init__(  # pylint: disable=dangerous-default-value
         self,
         df,
         stock_dim,
@@ -31,7 +31,7 @@ class StockTradingEnv(gym.Env):
         print_verbosity=10,
         day=0,
         initial=True,
-        previous_state=[],
+        previous_state=[],  # noqa: B006
         model_name="",
         mode="",
         iteration="",
@@ -47,7 +47,7 @@ class StockTradingEnv(gym.Env):
         self.state_space = state_space
         self.action_space = action_space
         self.tech_indicator_list = tech_indicator_list
-        self.action_space = spaces.Box(low=-1, high=1, shape=(self.action_space,))
+        self.action_space = spaces.Box(low=-1, high=1, shape=(self.action_space,))  # stock_dim
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.state_space,))
         self.data = self.df.loc[self.day, :]
         self.terminal = False
@@ -231,9 +231,8 @@ class StockTradingEnv(gym.Env):
 
             actions = actions * self.hmax  # actions initially is scaled between 0 to 1
             actions = actions.astype(int)  # convert into integer because we can't by fraction of shares
-            if self.turbulence_threshold is not None:
-                if self.turbulence >= self.turbulence_threshold:
-                    actions = np.array([-self.hmax] * self.stock_dim)
+            if self.turbulence_threshold is not None and self.turbulence >= self.turbulence_threshold:
+                actions = np.array([-self.hmax] * self.stock_dim)
             begin_total_asset = self.state[0] + sum(
                 np.array(self.state[1 : (self.stock_dim + 1)])
                 * np.array(self.state[(self.stock_dim + 1) : (self.stock_dim * 2 + 1)])
@@ -417,6 +416,6 @@ class StockTradingEnv(gym.Env):
         return [seed]
 
     def get_sb_env(self):
-        e = DummyVecEnv([lambda: self])
-        obs = e.reset()
-        return e, obs
+        environment = DummyVecEnv([lambda: self])
+        observations = environment.reset()
+        return environment, observations

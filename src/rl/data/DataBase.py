@@ -62,7 +62,7 @@ class DataBase(Yahoofinance):
         print(f"Data saved to json: {_filename}")
 
     def get_filename(self, prj_dir: ProjectDir, name: str = "data") -> Path:
-        filename = prj_dir.dataset.ai4finance.joinpath(f"{name}_{now_time()}.json")
+        filename = prj_dir.data.ai4finance.joinpath(f"{name}_{now_time()}.json")
         return filename
 
     def load_data(self, args: Args) -> pd.DataFrame:

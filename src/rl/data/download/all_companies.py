@@ -54,7 +54,7 @@ class Program:
 
 
 def get_dir_path(program: Program) -> Path:
-    return program.prj_dir.dataset.test_tickers if program.DEBUG else program.prj_dir.dataset.tickers
+    return program.prj_dir.data.test_tickers if program.DEBUG else program.prj_dir.data.tickers
 
 
 def config(program: Program):
@@ -208,14 +208,13 @@ def save_downloaded_data(symbols: tickers_type, program: Program):
                     update_downloaded_data(k, v, filepath)
 
 
-def remove_already_downloaded_tickers(tickers_bunches: List[List[str]], program: Program) -> List[List[str]]:
+def remove_already_downloaded_tickers(tickers: List[List[str]], program: Program) -> List[List[str]]:
     directory = get_dir_path(program)
 
-    for ticker_bunch in tickers_bunches:
-        for ticker in ticker_bunch:
-            if directory.joinpath(ticker).exists():
-                ticker_bunch.remove(ticker)
-    return tickers_bunches
+    for ticker in tickers:
+        if directory.joinpath(ticker).exists():
+            tickers.remove(ticker)
+    return tickers
 
 
 # ######################################################################################################################
@@ -224,7 +223,7 @@ def remove_already_downloaded_tickers(tickers_bunches: List[List[str]], program:
 if __name__ == "__main__":
     program = Program(prj_dir=ProjectDir(root=Path(__file__).parent.parent.parent.parent.parent), DEBUG=False)
 
-    if program.prj_dir.root != "ai-investing":
+    if program.prj_dir.root.name != "ai-investing":
         raise Exception(f"Wrong project directory {program.prj_dir.root}")
 
     config(program)
@@ -233,6 +232,7 @@ if __name__ == "__main__":
     ##
     if not program.DEBUG:
         tickers = fa.available_companies(program.api_key).index.tolist()
+        tickers = remove_already_downloaded_tickers(tickers, program)
         stop = tickers.__len__()
         step = 40
         processes = 4
@@ -255,7 +255,6 @@ if __name__ == "__main__":
         tickers_bunches = [tickers[b[0] : b[1]] for b in bunches]
         # print(tickers_bunches)
         # continue
-        tickers_bunches = remove_already_downloaded_tickers(tickers_bunches, program)
 
         ##
         symbols: tickers_type = download_subprocess(tickers_bunches, program)
