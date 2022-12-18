@@ -90,7 +90,7 @@ class RayAgent:
         #     trainer = model.SACTrainer(env=self.env, config=model_config)
 
         for _ in range(total_episodes):
-            trainer.train()
+            trainer.train(Program)
 
         ray.shutdown()
 
