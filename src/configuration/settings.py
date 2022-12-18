@@ -14,6 +14,7 @@ class ProjectDir:
             self.tickers = self.root.joinpath("tickers")
             self.test_tickers = self.root.joinpath("test_tickers")
             self.all_companies = self.financial_modeling_prep.joinpath("all_companies")
+            self.experiments = self.root.joinpath("experiments")
 
     class _ModelDir:
         def __init__(self, root: Path):

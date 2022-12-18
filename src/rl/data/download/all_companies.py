@@ -223,6 +223,10 @@ def remove_already_downloaded_tickers(tickers_bunches: List[List[str]], program:
 # ######################################################################################################################
 if __name__ == "__main__":
     program = Program(prj_dir=ProjectDir(root=Path(__file__).parent.parent.parent.parent.parent), DEBUG=False)
+
+    if program.prj_dir.root != "ai-investing":
+        raise Exception(f"Wrong project directory {program.prj_dir.root}")
+
     config(program)
     program.api_key = os.getenv("FINANCIAL_MODELING_PREP_API")
 
