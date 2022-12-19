@@ -157,39 +157,58 @@ def download_subprocess(companies_lists: List[List], program: Program) -> ticker
     return all_symbols
 
 
-def update_downloaded_data(key: str, data: pd.DataFrame, filepath: Path):
-    old_data = pd.read_csv(filepath.as_posix(), index_col=0)
+@dataclasses.dataclass
+class SaveData:
+    key: str
+    data: pd.DataFrame
+    filepath: Path
 
-    # Create new data
-    if key in ["data_detailed"]:
-        binary = data.index != old_data.index
-        new_data = old_data.append(data[binary])
-    else:
-        #
-        old_data.rename(columns={c: str(c) for c in old_data.columns}, inplace=True)
-        data.rename(columns={c: str(c) for c in data.columns}, inplace=True)
-        #
-        for i in data.columns.difference(old_data.columns).values:
-            old_data.insert(0, i, data[i])
-        #
-        new_data = old_data.sort_index(axis=1, ascending=False)
+    def _update_data_detailed(self) -> pd.DataFrame:
+        old_data = pd.read_csv(self.filepath.as_posix(), index_col=0)
 
-    new_path = copy.deepcopy(filepath)
+        try:
+            binary = self.data.index != old_data.index
+            return old_data.append(self.data[binary])
+        except Exception as e:
+            raise ValueError(f"ERROR: {e} ({self.filepath})") from e
 
-    # Handle old path
-    old_path = filepath.parent.joinpath("old", filepath.with_suffix(f".{now_time()}.csv").name)
-    old_path.parent.mkdir(parents=True, exist_ok=True)
-    filepath.rename(old_path.as_posix())
+    def _update_others(self) -> pd.DataFrame:
+        old_data = pd.read_csv(self.filepath.as_posix(), index_col=0)
 
-    # Handle new path
-    new_data.to_csv(new_path.as_posix())
+        try:
+            old_data.rename(columns={c: str(c) for c in old_data.columns}, inplace=True)
+            self.data.rename(columns={c: str(c) for c in self.data.columns}, inplace=True)
 
+            for i in self.data.columns.difference(old_data.columns).values:
+                old_data.insert(0, i, self.data[i])
 
-def new_downloaded_data(key: str, data: pd.DataFrame, filepath: Path):
-    if key in ["data_detailed"]:
-        data.to_csv(filepath.as_posix())
-    else:
-        data.to_csv(filepath.as_posix())
+            return old_data.sort_index(axis=1, ascending=False)
+        except Exception as e:
+            raise ValueError(f"ERROR: {e} ({self.filepath})") from e
+
+    def update_symbol_data(self):
+        # Create new data
+        if self.key in ["data_detailed"]:
+            new_data = self._update_data_detailed()
+        else:
+            new_data = self._update_others()
+
+        # Save new data
+        new_path = copy.deepcopy(self.filepath)
+
+        # Handle old path
+        old_path = self.filepath.parent.joinpath("old", self.filepath.with_suffix(f".{now_time()}.csv").name)
+        old_path.parent.mkdir(parents=True, exist_ok=True)
+        self.filepath.rename(old_path.as_posix())
+
+        # Handle new path
+        new_data.to_csv(new_path.as_posix())
+
+    def save_symbol_data(self):
+        if self.key in ["data_detailed"]:
+            self.data.to_csv(self.filepath.as_posix())
+        else:
+            self.data.to_csv(self.filepath.as_posix())
 
 
 def save_downloaded_data(symbols: tickers_type, program: Program):
@@ -202,10 +221,11 @@ def save_downloaded_data(symbols: tickers_type, program: Program):
                     directory.joinpath(v).mkdir(parents=True, exist_ok=True)
             else:
                 filepath = directory.joinpath(symbol_data["symbol"], k + ".csv")
+                save_data = SaveData(k, v, filepath)
                 if not filepath.exists():
-                    new_downloaded_data(k, v, filepath)
+                    save_data.save_symbol_data()
                 else:
-                    update_downloaded_data(k, v, filepath)
+                    save_data.update_symbol_data()
 
 
 def remove_already_downloaded_tickers(tickers: List[List[str]], program: Program) -> List[List[str]]:
@@ -221,7 +241,10 @@ def remove_already_downloaded_tickers(tickers: List[List[str]], program: Program
 # Main
 # ######################################################################################################################
 if __name__ == "__main__":
-    program = Program(prj_dir=ProjectDir(root=Path(__file__).parent.parent.parent.parent.parent), DEBUG=False)
+    program = Program(
+        prj_dir=ProjectDir(root=Path(__file__).parent.parent.parent.parent.parent),
+        DEBUG=False,
+    )
 
     if program.prj_dir.root.name != "ai-investing":
         raise Exception(f"Wrong project directory {program.prj_dir.root}")
