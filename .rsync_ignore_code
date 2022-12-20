@@ -14,4 +14,9 @@
 *.bst
 *.json
 **/static/**
-**/dataset/**
+**/algorithms/**
+**/progress.csv/**
+**/progress.json/**
+**/results/**
+**/tensorboard/**
+

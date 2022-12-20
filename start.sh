@@ -71,13 +71,20 @@ function clean_docker() {
 }
 
 function tags() {
-	ctags -R --fields=+l  \
-			--exclude=.git \
-			--exclude=.idea \
-			--exclude=node_modules \
-			--exclude=tests* \
-			--exclude=venv* .
+    ctags -R --fields=+l \
+        --exclude=.git \
+        --exclude=.idea \
+        --exclude=node_modules \
+        --exclude=tests* \
+        --exclude=venv* .
     cscope -Rb
+}
+
+function upload_code() {
+    rsync -avPz \
+        --exclude-from=.rsync_ignore_code \
+        ./src ./requirements.txt \
+        xlapes02@sc-gpu1.fit.vutbr.cz:/home/xlapes02/ai-investing
 }
 
 function usage() {
@@ -89,25 +96,17 @@ function usage() {
     '-dsip' | '--install-docker-deploy') docker_show_ipaddress ;;
         #
     '--create-samples-env') create_env_samples ;;
-    '-s' | '--sync') sync_gpu_server ;;
+    '-sc' | '--sync-code') upload_code ;;
         #
-    '--tags') tags ;;
+    '-t' | '--tags') tags ;;
     '-h' | '--help') usage ;;"
 }
 
-function upload_code() {
-#    rsync -avh -u \
-    rsync -avPz \
-        --exclude-from=.rsync_ignore_code \
-        ./src ./requirements.txt \
-        xlapes02@sc-gpu1.fit.vutbr.cz:/home/xlapes02/ai-investing-code
-}
-
-function upload_data() {
-    rsync -avh -u \
-        --exclude-from=.rsync_ignore_data \
-        $HOME/my-drive-zlapik/1-todo-project-info/ai-investing-stuff \
-        xlapes02@sc-gpu1.fit.vutbr.cz:/home/xlapes02/ai-investing-data
+function pack() {
+    zip -r thesis.zip \
+        thesis \
+        -x "*out*" \
+        -x "*others*"
 }
 
 ##### PARSE CLI-ARGS
@@ -122,10 +121,10 @@ while [ "$#" -gt 0 ]; do
         #
     '--create-samples-env') create_env_samples ;;
     '-sc' | '--sync-code') upload_code ;;
-    '-sd' | '--sync-data') upload_data ;;
         #
     '-t' | '--tags') tags ;;
     '-h' | '--help') usage ;;
+    '-p' | '--pack') pack ;;
     esac
     shift
 done

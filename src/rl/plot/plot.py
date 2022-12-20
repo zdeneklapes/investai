@@ -9,7 +9,7 @@ import pandas as pd
 import pyfolio
 from pyfolio import timeseries
 from meta import config
-import meta
+import yfinance as yf
 
 
 def get_daily_return(df, value_col_name="account_value"):
@@ -38,7 +38,7 @@ def backtest_stats(account_value, value_col_name="account_value"):
         transactions=None,
         turnover_denom="AGB",
     )
-    print(perf_stats_all)
+    # print(perf_stats_all)
     return perf_stats_all
 
 
@@ -68,11 +68,27 @@ def backtest_plot(
         )
 
 
-def get_baseline(ticker, start, end, time_zone: str = None, time_interval="1d"):
+def get_baseline(ticker, start, end, time_interval="1d", time_zone: str = None):
+    # TODO: time_zone is not used
+
+    tic = yf.Ticker(ticker)
+    baseline_df = tic.history(interval=time_interval, start=start, end=end)
+    date_format = "%Y-%m-%d"
+    baseline_df.index = baseline_df.index.strftime(date_format)
+    baseline_df.insert(0, "date", baseline_df.index)
+    baseline_df.columns = baseline_df.columns.str.lower()
+    return baseline_df
+
+
+def get_baseline_finrl(ticker, start, end, time_interval="1d", time_zone: str = None):
+    # TODO: fixme FinRL-Meta Yahoofinance.download_data() is not working
+    from meta.data_processors.yahoofinance import Yahoofinance
+    import meta
+
     if time_zone:
         meta.config.TIME_ZONE_SELFDEFINED = meta.config.TIME_ZONE_PARIS
         meta.config.USE_TIME_ZONE_SELFDEFINED = 1
-    meta_yf = meta.data_processors.yahoofinance.Yahoofinance("yahoofinance", start, end, time_interval)
+    meta_yf = Yahoofinance("yahoofinance", start, end, time_interval)
     meta_yf.download_data([ticker])
     return meta_yf.dataframe
 
