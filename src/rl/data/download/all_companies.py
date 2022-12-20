@@ -163,35 +163,36 @@ class SaveData:
     data: pd.DataFrame
     filepath: Path
 
-    def _update_data_detailed(self) -> pd.DataFrame:
+    def _concat_rows(self, old_df1: pd.DataFrame, new_df2: pd.DataFrame) -> pd.DataFrame:
+        binary = pd.concat([old_df1, new_df2]).index.duplicated(keep="first")
+        return pd.concat([old_df1, new_df2])[~binary]
+
+    def _concat_columns(self, old_df1: pd.DataFrame, new_df2: pd.DataFrame) -> pd.DataFrame:
+        df = pd.concat([old_df1, new_df2], axis=1)
+        df.rename(columns={col: str(col) for col in df.columns})
+        binary = df.columns.duplicated(keep="first")
+        new_df = df.loc[:, binary]
+        return new_df
+
+    def _update_data(self) -> pd.DataFrame:
         old_data = pd.read_csv(self.filepath.as_posix(), index_col=0)
 
         try:
-            binary = self.data.index != old_data.index
-            return old_data.append(self.data[binary])
-        except Exception as e:
-            raise ValueError(f"ERROR: {e} ({self.filepath})") from e
+            df_row_concatenated = self._concat_rows(old_data, self.data)
+            new_data = self._concat_columns(df_row_concatenated, self.data)
 
-    def _update_others(self) -> pd.DataFrame:
-        old_data = pd.read_csv(self.filepath.as_posix(), index_col=0)
+            if self.key in ["data_detailed", "dividends", "ratings"]:
+                new_data = new_data.sort_index(axis=0, ascending=False)
+            else:
+                new_data = new_data.sort_index(axis=1, ascending=False)
 
-        try:
-            old_data.rename(columns={c: str(c) for c in old_data.columns}, inplace=True)
-            self.data.rename(columns={c: str(c) for c in self.data.columns}, inplace=True)
-
-            for i in self.data.columns.difference(old_data.columns).values:
-                old_data.insert(0, i, self.data[i])
-
-            return old_data.sort_index(axis=1, ascending=False)
+            return new_data
         except Exception as e:
             raise ValueError(f"ERROR: {e} ({self.filepath})") from e
 
     def update_symbol_data(self):
         # Create new data
-        if self.key in ["data_detailed"]:
-            new_data = self._update_data_detailed()
-        else:
-            new_data = self._update_others()
+        new_data = self._update_data()
 
         # Save new data
         new_path = copy.deepcopy(self.filepath)
@@ -230,11 +231,7 @@ def save_downloaded_data(symbols: tickers_type, program: Program):
 
 def remove_already_downloaded_tickers(tickers: List[List[str]], program: Program) -> List[List[str]]:
     directory = get_dir_path(program)
-
-    for ticker in tickers:
-        if directory.joinpath(ticker).exists():
-            tickers.remove(ticker)
-    return tickers
+    return [ticker for ticker in tickers if not directory.joinpath(ticker).exists()]
 
 
 # ######################################################################################################################
@@ -243,7 +240,7 @@ def remove_already_downloaded_tickers(tickers: List[List[str]], program: Program
 if __name__ == "__main__":
     program = Program(
         prj_dir=ProjectDir(root=Path(__file__).parent.parent.parent.parent.parent),
-        DEBUG=False,
+        DEBUG=True,
     )
 
     if program.prj_dir.root.name != "ai-investing":
@@ -260,7 +257,7 @@ if __name__ == "__main__":
         step = 40
         processes = 4
     else:
-        tickers = ["AAPL", "MSFT", "TSLA", "FB"]
+        tickers = ["AAPL", "MSFT", "TSLA", "AMZN"]
         stop = 4
         step = 4
         processes = 4
