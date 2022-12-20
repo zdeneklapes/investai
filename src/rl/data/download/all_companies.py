@@ -240,7 +240,7 @@ def remove_already_downloaded_tickers(tickers: List[List[str]], program: Program
 if __name__ == "__main__":
     program = Program(
         prj_dir=ProjectDir(root=Path(__file__).parent.parent.parent.parent.parent),
-        DEBUG=True,
+        DEBUG=False,
     )
 
     if program.prj_dir.root.name != "ai-investing":
