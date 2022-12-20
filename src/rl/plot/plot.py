@@ -68,7 +68,7 @@ def backtest_plot(
         )
 
 
-def get_baseline(ticker, start, end, time_interval="1d", time_zone: str = None):
+def get_baseline(ticker, start, end, time_interval="1d", time_zone: str = None) -> pd.DataFrame:
     # TODO: time_zone is not used
 
     tic = yf.Ticker(ticker)
@@ -80,7 +80,7 @@ def get_baseline(ticker, start, end, time_interval="1d", time_zone: str = None):
     return baseline_df
 
 
-def get_baseline_finrl(ticker, start, end, time_interval="1d", time_zone: str = None):
+def get_baseline_finrl(ticker, start, end, time_interval="1d", time_zone: str = None) -> pd.DataFrame:
     # TODO: fixme FinRL-Meta Yahoofinance.download_data() is not working
     from meta.data_processors.yahoofinance import Yahoofinance
     import meta
