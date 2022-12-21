@@ -1,15 +1,15 @@
-\if 0
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Introduction
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ITT START
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 \chapter{Introduction}\label{ch:introduction}
 
-% TODO: Purpose of RL
-% TODO: Purpose of MDP
-% TODO
+
+The Stock Market Environment is
 
 % Overview of what this thesis is about
 The stock market is a wide and quickly changing environment.
@@ -34,6 +34,11 @@ reward by trial and error~\cite[p.~1]{sutton-2018}.
 Based on this rewards and losses, the agent improves its decision-making
 to get more rewards and fewer losses in the future
 in interaction with the environment.
+
+
+
+
+
 
 % MC & MDP
 The relationship between Markov Decision Process (MDP) and RL is
@@ -68,6 +73,9 @@ in order to maximize the profit by allocating the portfolio.
 
 % TODO: Thesis Structure
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% ITT END
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \if 0
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -124,7 +132,7 @@ Even if envitonemt in current state $S_{t}^{e}$ is visible, it may contain irrel
     \item observations
     \item actions
     \item rewards
-\end{}
+\end{itemize}
 
 \textbf{foo}
 \textrm{fff}
@@ -133,8 +141,6 @@ Even if envitonemt in current state $S_{t}^{e}$ is visible, it may contain irrel
 \begin{definition}
     \textit{history} is the sequence of observations, actions, and rewards that the agent has experienced.
 \end{definition}
-
-\fi
 
 
 \section{Classical Reinforcement Learning}\label{sec:classical-reinforcement-learning}
@@ -1072,6 +1078,7 @@ All state-action pairs are explored infinitely many times
     Q(S_t,A_t) \leftarrow Q(S_t,A_t) + \frac{1}{N(S_t,A_t)}\left(G_t - Q(S_t,A_t)\right)
 \]
 
+
 Performs policy based on new action-value function.
 \begin{align}
     \epsilon &\leftarrow \frac{1}{k} \\
@@ -1102,8 +1109,6 @@ To specific point we want in our space.
 \[
     \mathbb{P}(a|s,\theta) = \pi_\theta(a|s)
 \]
-
-\fi
 
 \begin{itemize}
     \item Value Based: $V(s,\theta)$ \cite{sutton-2018}
@@ -1319,3 +1324,5 @@ TODO
 
 \chapter{Conclusion}\label{ch:conclusion}
 TODO
+
+\fi

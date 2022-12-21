@@ -5,26 +5,6 @@
 # ######################################################################################################################
 #
 import sys
-import dataclasses
-import pandas as pd
-from pathlib import Path
-from typing import Any, Dict, Literal, Union
-
-#
-import numpy as np
-import torch
-
-#
-from stable_baselines3.common.logger import configure
-from finrl.agents.stablebaselines3.models import DRLAgent, TensorboardCallback
-from finrl.config import A2C_PARAMS
-from finrl.meta.preprocessor.preprocessors import data_split
-
-#
-from stable_baselines3.common.callbacks import ProgressBarCallback, CallbackList, BaseCallback
-from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
-from stable_baselines3.common.noise import NormalActionNoise
-from stable_baselines3.common.noise import OrnsteinUhlenbeckActionNoise
 
 #
 sys.path.append("./src/")
@@ -34,20 +14,28 @@ sys.path.append("../../")
 sys.path.append("../../../")
 
 #
+from pathlib import Path
+from typing import Any, Dict, Literal, Union
+
+#
+import pandas as pd
+import numpy as np
+import torch
+
+#
+from finrl.agents.stablebaselines3.models import DRLAgent, TensorboardCallback
+from finrl.config import A2C_PARAMS
+from finrl.meta.preprocessor.preprocessors import data_split
+from stable_baselines3.common.logger import configure
+from stable_baselines3.common.callbacks import ProgressBarCallback, CallbackList, BaseCallback
+from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
+from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
+
+#
 from common.utils import now_time
 from configuration.settings import ProjectDir, ExperimentDir
 from rl.envs.StockTradingEnv import StockTradingEnv
-
-
-# ######################################################################################################################
-# Classes
-# ######################################################################################################################
-@dataclasses.dataclass
-class Program:
-    prj_dir: ProjectDir
-    exp_dir: ExperimentDir
-    dataset: pd.DataFrame = None
-    DEBUG: bool = False
+from rl.experiments.common.classes import Program
 
 
 class CheckpointCallback(BaseCallback):
@@ -216,7 +204,7 @@ def train(program):
     algorithm_params = get_algorithm_params()
     algorithm = drl_agent.get_model(
         model_kwargs=algorithm_params,
-        tensorboard_log=program.exp_dir.out.tensorboard.as_posix() + "/",
+        tensorboard_log=program.exp_dir.out.tensorboard.as_posix(),
         verbose=0,
         device="cpu",
     )
