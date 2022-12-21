@@ -38,6 +38,7 @@ from rl.experiments._1_same_bigger_data_fundamental.train import (
     ratios_cols,
 )
 from rl.experiments.common.classes import Program, LearnedAlgorithm
+from rl.experiments.common.classes import TestProgram
 
 
 # ######################################################################################################################
@@ -78,7 +79,7 @@ def get_start_end(df: pd.DataFrame) -> dict:
     return {"start": start, "end": end}
 
 
-def get_learned_algos(program: Program) -> List[LearnedAlgorithm]:
+def get_learned_algos(program: TestProgram) -> List[LearnedAlgorithm]:
     def get_algorithm(filename: Path):
         if "a2c" in filename.as_posix():
             return LearnedAlgorithm(algorithm="a2c", filename=filename, learned_algorithm=A2C.load(filename))
@@ -109,7 +110,7 @@ def init_program() -> Program:
     return program
 
 
-def predicate(program: Program) -> List[LearnedAlgorithm]:
+def predicate(program: TestProgram) -> List[LearnedAlgorithm]:
     algos = get_learned_algos(program)
     for algo in algos:
         env_kwargs = get_env_kwargs(program.dataset)
@@ -120,10 +121,10 @@ def predicate(program: Program) -> List[LearnedAlgorithm]:
     return algos
 
 
-def calc_performance_statistics(algos: List[LearnedAlgorithm], program: Program):
-    for algo in algos:
+def calc_performance_statistics(program: TestProgram):
+    for algo in program.algos:
         perf_stats_all = backtest_stats(account_value=algo.df_account_value, value_col_name="account_value")
         algo.perf_stats_all = pd.DataFrame(perf_stats_all)
 
-    sorted_list = sorted(algos, key=lambda x: x.perf_stats_all.loc[program.metric_name][0])
+    sorted_list = sorted(program.algos, key=lambda x: x.perf_stats_all.loc[program.metric][0])
     return sorted_list

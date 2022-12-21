@@ -15,7 +15,7 @@ sys.path.append("../../../")
 
 #
 from pathlib import Path
-from typing import Any, Dict, Literal, Union
+from typing import Any, Dict, Union
 
 #
 import pandas as pd
@@ -25,7 +25,6 @@ import torch
 #
 from finrl.agents.stablebaselines3.models import DRLAgent, TensorboardCallback
 from finrl.config import A2C_PARAMS
-from finrl.meta.preprocessor.preprocessors import data_split
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.callbacks import ProgressBarCallback, CallbackList, BaseCallback
 from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
@@ -36,8 +35,39 @@ from common.utils import now_time
 from configuration.settings import ProjectDir, ExperimentDir
 from rl.envs.StockTradingEnv import StockTradingEnv
 from rl.experiments.common.classes import Program
+from rl.experiments.common.utils import get_dataset
+
+# ######################################################################################################################
+# Configurations
+# ######################################################################################################################
+algorithm_name = "a2c"
+
+# Dataset
+dataset_name = "experiment_same_bigger_fundamental"
+base_cols = ["date", "tic"]
+data_cols = ["open", "high", "low", "close", "volume"]
+ratios_cols = [
+    "operatingProfitMargin",
+    "netProfitMargin",
+    "returnOnAssets",
+    "returnOnEquity",
+    "currentRatio",
+    "quickRatio",
+    "cashRatio",
+    "inventoryTurnover",
+    "receivablesTurnover",
+    "payablesTurnover",
+    "debtRatio",
+    "debtEquityRatio",
+    "priceEarningsRatio",
+    "priceBookValueRatio",
+    "dividendYield",
+]
 
 
+# ######################################################################################################################
+# Classes
+# ######################################################################################################################
 class CheckpointCallback(BaseCallback):
     """
     A custom callback that saves a model every ``save_freq`` steps.
@@ -117,34 +147,6 @@ class CustomDRLAgent(DRLAgent):
 
 
 # ######################################################################################################################
-# Configurations
-# ######################################################################################################################
-algorithm_name = "a2c"
-
-# Dataset
-dataset_name = "experiment_same_bigger_fundamental"
-base_cols = ["date", "tic"]
-data_cols = ["open", "high", "low", "close", "volume"]
-ratios_cols = [
-    "operatingProfitMargin",
-    "netProfitMargin",
-    "returnOnAssets",
-    "returnOnEquity",
-    "currentRatio",
-    "quickRatio",
-    "cashRatio",
-    "inventoryTurnover",
-    "receivablesTurnover",
-    "payablesTurnover",
-    "debtRatio",
-    "debtEquityRatio",
-    "priceEarningsRatio",
-    "priceBookValueRatio",
-    "dividendYield",
-]
-
-
-# ######################################################################################################################
 # Helpers
 # ######################################################################################################################
 def configure_output(exp_dir: ExperimentDir):
@@ -213,18 +215,6 @@ def train(program):
     drl_agent.train_model(
         model=algorithm, tb_log_name=f"tb_run_{algorithm_name}", checkpoint_freq=10_000, total_timesteps=200_000
     )
-
-
-def get_dataset(
-    df, purpose: Literal["train", "test"], date_col_name: str = "date", split_constant: int = 0.75
-) -> pd.DataFrame:
-    split_date = df.iloc[int(df.index.size * split_constant)]["date"]
-    if purpose == "train":
-        return data_split(df, df[date_col_name].min(), split_date, date_col_name)  # df[df["date"] >= date_split]
-    elif purpose == "test":
-        return data_split(df, split_date, df[date_col_name].max(), date_col_name)  # df[df["date"] >= date_split]
-    else:
-        raise ValueError(f"Unknown purpose: {purpose}")
 
 
 # ######################################################################################################################
