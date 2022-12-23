@@ -9,40 +9,83 @@
 \chapter{Introduction}\label{ch:introduction}
 
 
-The Stock Market Environment is
-
-% Overview of what this thesis is about
-The stock market is a wide and quickly changing environment.
-A lot of people are interested in it and a lot of people are trying to make money from it.
-How to make money from it in the long or short term?
-This thesis will focus on long-term investing, also called Portfolio Allocation~\cite[p.~67--69]{rao-2022}.
-
-% Main goal of this thesis
-The goal is to do the right decision at the right time, which in the Stock market means, when and at what price we should buy this stock or another.
-This is more complicated than it seems because we are emotionally
-based, and not every person is able to make rational decisions.
-
-% RL
-Here come into play Artificial Intelligence (AI) and Reinforcement Learning (RL).
-Reinforcement Learning (RL) is one of three types of Artificial Intelligence.
-
-RL is learning what to do, how to map situations to actions, to maximize a numerical reward signal.
-RL differs from supervised learning in that the agent is not told what to do,
-but instead must discover for itself what actions yield the most
-reward by trial and error~\cite[p.~1]{sutton-2018}.
-
-Based on this rewards and losses, the agent improves its decision-making
-to get more rewards and fewer losses in the future
-in interaction with the environment.
+% Portfolio Allocation
 
 
+% RL in Portfolio Allocation
+
+
+% Portfolio Allocation
+The portfolio allocation is a problem that has been studied for a long time. The
+problem is to find the optimal allocation of the portfolio, given a
+specific set of securities.
+
+The portfolio management task is basically the most important to the
+finance institutions, like banks, hedge funds and asset management companies.
+It help traders understand the market and its risks.\cite{finrl-portfolio-allocation-2020}
+
+The portfolio allocation was widely studied in a standart ways, like the
+Markowitz portfolio theory\cite[p.~4]{sirucek-2015}, the CAPM model and the Black-Litterman model.
+
+The stock market is a wide and quick changing environment and people are
+emotionally based, which means, that behave based on their emotions and only
+a few people can do rational decisions. This could be problem, specifically
+when you need to decide based on what you know about given asset.
+
+% RL all
+In this thesis, I will focus on the application of RL in the field
+of finance, specifically in
+portfolio allocation. The goal of portfolio allocation is to find the optimal
+portfolio of assets that maximizes the expected return for a given level of
+risk.\cite{finrl-portfolio-allocation-2020}
+
+Deep Reinforcement Learning (DRL) methods have been used in many different
+fields, such as robotics, video games, and finance. And studied how much a change
+in input would influence the output is important to understand what
+contributes to the decision making process of the DRL agents.\cite{finrl-portfolio-allocation-2020}
+
+
+\chapter{Gaps and Goals}\label{ch:gaps-and-goals}
+TODO
+
+Maybe that they don't use current portfolio value as states and observations.
+
+They just take actions normalized (using softmax) and then use current portfolio value
+and calculate reward.
+
+As the main problem I see that agent actions don't have any effect on he
+state space as well as on the observation space, because they are defines
+before as a part of the Data engineering process.
+
+So the each actions are just have effect on the reward function.
+
+Next gap what can be seen is that they use as reward the current whole portfolio value
+and not just reward for the actions like $\pm\1$ of the portfolio value or
+something that kind...
+
+
+\section{Gaps}\label{sec:gaps}
+TODO
+
+
+\section{Goals}\label{sec:goals}
+TODO
+
+Using programming language python3 and its frameworks, like pandas, numpy, stable-baselines3, gym, etc.
+I will implement the DRL agent, that will be able to learn how to allocate the portfolio.
+The current solutions are not effective enough to be used in real world, so I will try to improve them.
+I will try to find out what is the best way to represent the state and observation space.
+I will try to find out what is the best way to represent the reward function.
+I will try to find out what is the best way to represent the action space.
+And I will benchmark and compare the results with the baseline indexes.
 
 
 
 
+\if 0
 % MC & MDP
 The relationship between Markov Decision Process (MDP) and RL is
-that RL problem could be well described im MDP\@.
+that RL problem could be well described in MDP\@.
 And more precisely is problem described in MDP,
 the better and faster could RL agent learn.
 
@@ -73,10 +116,10 @@ in order to maximize the profit by allocating the portfolio.
 
 % TODO: Thesis Structure
 
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % ITT END
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\if 0
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Preliminaries

@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 import attr
+import dataclasses
 from pathlib import Path
 from typing import List, Union
 
-#
 import pandas as pd
-
-#
 from stable_baselines3 import A2C, DDPG, PPO, TD3
 
 #
 from configuration.settings import ProjectDir, ExperimentDir
 from rl.plot.plot import backtest_plot, backtest_stats, get_baseline
-from rl.experiments.common.utils import get_dataset
 
 
 @attr.define
@@ -26,6 +23,8 @@ class Program:
         self.exp_dir.check_and_create_dirs()
 
     def init_dataset(self, dataset_name: str):
+        from rl.experiments.common.utils import get_dataset
+
         self.dataset = get_dataset(
             pd.read_csv(self.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv"), index_col=0), purpose="test"
         )
@@ -45,7 +44,7 @@ class Baseline:
         print(self.baseline_df.index.max())
 
 
-@attr.define
+@dataclasses.dataclass
 class LearnedAlgorithm:
     algorithm: str
     filename: Path

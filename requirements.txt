@@ -44,6 +44,7 @@ pygame==2.1.2
 pylint==2.15.8
 pymdstat==0.4.2
 pympler==1.0.1
+pyportfolioopt==1.5.4
 pysnmp==4.4.12
 pytest-xdist==3.1.0
 rfc3339-validator==0.1.4

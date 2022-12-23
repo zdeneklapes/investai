@@ -5,13 +5,6 @@
 # ######################################################################################################################
 #
 import sys
-import pandas as pd
-from pathlib import Path
-from typing import Any, Dict
-
-#
-from stable_baselines3.common.logger import configure
-from finrl.config import A2C_PARAMS
 
 #
 sys.path.append("./src/")
@@ -21,9 +14,20 @@ sys.path.append("../../")
 sys.path.append("../../../")
 
 #
+from pathlib import Path
+from typing import Any, Dict
+
+#
+import pandas as pd
+
+#
+from finrl.config import A2C_PARAMS
+from finrl import config
+from stable_baselines3.common.logger import configure
+
+#
 from configuration.settings import ProjectDir, ExperimentDir
 from rl.envs.StockTradingEnv import StockTradingEnv
-from rl.experiments.common.utils import get_dataset
 from rl.experiments.common.classes import Program
 from rl.experiments.common.agents import CustomDRLAgent
 
@@ -33,68 +37,24 @@ from rl.experiments.common.agents import CustomDRLAgent
 algorithm_name = "a2c"
 
 # Dataset
-dataset_name = "key_metrics_fundamental"
+dataset_name = "ta_orig"
 base_cols = ["date", "tic"]
 data_cols = ["open", "high", "low", "close", "volume"]
-ratios_cols = [
-    "revenuePerShare",
-    "netIncomePerShare",
-    "operatingCashFlowPerShare",
-    "freeCashFlowPerShare",
-    "cashPerShare",
-    "bookValuePerShare",
-    "tangibleBookValuePerShare",
-    "shareholdersEquityPerShare",
-    "interestDebtPerShare",
-    "marketCap",
-    "enterpriseValue",
-    "peRatio",
-    "priceToSalesRatio",
-    "pocfratio",
-    "pfcfRatio",
-    "pbRatio",
-    "ptbRatio",
-    "evToSales",
-    "enterpriseValueOverEBITDA",
-    "evToFreeCashFlow",
-    "evToOperatingCashFlow",
-    "earningsYield",
-    "freeCashFlowYield",
-    "debtToEquity",
-    "debtToAssets",
-    "netDebtToEBITDA",
-    "currentRatio",
-    "interestCoverage",
-    "incomeQuality",
-    "dividendYield",
-    "payoutRatio",
-    "salesGeneralAndAdministrativeToRevenue",
-    "researchAndDdevelopementToRevenue",
-    "intangiblesToTotalAssets",
-    "capexToOperatingCashFlow",
-    "capexToRevenue",
-    "capexToDepreciation",
-    "stockBasedCompensationToRevenue",
-    "grahamNumber",
-    "roic",
-    "returnOnTangibleAssets",
-    "grahamNetNet",
-    "workingCapital",
-    "tangibleAssetValue",
-    "netCurrentAssetValue",
-    "investedCapital",
-    "averageReceivables",
-    "averagePayables",
-    "averageInventory",
-    "daysSalesOutstanding",
-    "daysPayablesOutstanding",
-    "daysOfInventoryOnHand",
-    "receivablesTurnover",
-    "payablesTurnover",
-    "inventoryTurnover",
-    "roe",
-    "capexPerShare",
+features_cols = [
+    "macd",
+    "boll_ub",
+    "boll_lb",
+    "rsi_30",
+    "cci_30",
+    "dx_30",
+    "close_30_sma",
+    "close_60_sma",
 ]
+
+
+# ######################################################################################################################
+# Classes
+# ######################################################################################################################
 
 
 # ######################################################################################################################
@@ -107,23 +67,24 @@ def configure_output(exp_dir: ExperimentDir):
 
 def get_env_kwargs(dataset: pd.DataFrame) -> Dict[str, Any]:
     # Env
+    # state_space = (
+    #     1
+    #     + 2 * stock_dimension  # portfolio value
+    #     + len(features_cols) * stock_dimension  # stock price & stock owned  # len(fundamental ratios) * len(stocks)
+    # )
+
     stock_dimension = len(dataset["tic"].unique())
-    state_space = (
-        1
-        + 2 * stock_dimension  # portfolio value
-        + len(ratios_cols) * stock_dimension  # stock price & stock owned  # len(fundamental ratios) * len(stocks)
-    )
+    state_space = stock_dimension
     print(f"Stock Dimension: {stock_dimension}, State Space: {state_space}")
 
     # Parameters for the environment
     ENV_KWARGS = {
         "hmax": 100,
         "initial_amount": 1000000,
-        "buy_cost_pct": 0.001,
-        "sell_cost_pct": 0.001,
+        "transaction_cost_pct": 0.001,
         "state_space": state_space,
         "stock_dim": stock_dimension,
-        "tech_indicator_list": ratios_cols,
+        "tech_indicator_list": config.INDICATORS,
         "action_space": stock_dimension,
         "reward_scaling": 1e-4,
     }
@@ -177,8 +138,10 @@ if __name__ == "__main__":
         exp_dir=ExperimentDir(root=Path(__file__).parent),
         DEBUG=False,
     )
+    from rl.experiments.common.utils import get_dataset
+
     program.dataset = get_dataset(
-        pd.read_csv(program.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv"), index_col=0), purpose="train"
+        pd.read_json(program.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv")), purpose="train"
     )
     program.exp_dir.check_and_create_dirs()
 

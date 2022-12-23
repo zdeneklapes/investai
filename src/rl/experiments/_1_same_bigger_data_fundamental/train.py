@@ -15,27 +15,20 @@ sys.path.append("../../../")
 
 #
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
 #
 import pandas as pd
-import numpy as np
-import torch
 
 #
-from finrl.agents.stablebaselines3.models import DRLAgent, TensorboardCallback
 from finrl.config import A2C_PARAMS
 from stable_baselines3.common.logger import configure
-from stable_baselines3.common.callbacks import ProgressBarCallback, CallbackList, BaseCallback
-from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
-from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 
 #
-from common.utils import now_time
 from configuration.settings import ProjectDir, ExperimentDir
 from rl.envs.StockTradingEnv import StockTradingEnv
 from rl.experiments.common.classes import Program
-from rl.experiments.common.utils import get_dataset
+from rl.experiments.common.agents import CustomDRLAgent
 
 # ######################################################################################################################
 # Configurations
@@ -68,82 +61,6 @@ ratios_cols = [
 # ######################################################################################################################
 # Classes
 # ######################################################################################################################
-class CheckpointCallback(BaseCallback):
-    """
-    A custom callback that saves a model every ``save_freq`` steps.
-    :param save_freq:
-    :param save_path:
-    """
-
-    def __init__(self, save_freq: int, save_path: Union[Path]):
-        super(CheckpointCallback, self).__init__()
-        self.save_freq = save_freq
-        self.save_path = save_path
-        if not self.save_path.parent.exists():  # check directory exists
-            raise FileNotFoundError(f"Directory not found: {self.save_path.parent.as_posix()}")
-        else:
-            print(f"Learned algorithm will be saved to: {self.save_path.as_posix()}")
-
-    def _on_step(self) -> bool:
-        if self.n_calls % self.save_freq == 0:
-            self.model.save(self.save_path.as_posix() + f"_{self.n_calls}")
-        return True
-
-    def _on_training_end(self) -> None:
-        self.model.save(self.save_path.as_posix() + f"_{self.n_calls}")
-
-
-class CustomDRLAgent(DRLAgent):
-    def __init__(self, env, program: Program):
-        super().__init__(env)
-        self.program: Program = program
-
-    def train_model(
-        self, model, tb_log_name="run", total_timesteps=1000000, checkpoint_freq: int = 10000, **kwargs
-    ) -> Union[A2C, DDPG, PPO, SAC, TD3]:
-        callback_list = CallbackList(
-            [
-                TensorboardCallback(),
-                ProgressBarCallback(),
-                CheckpointCallback(
-                    checkpoint_freq, program.exp_dir.out.algorithms.joinpath(f"{algorithm_name}_{now_time()}")
-                ),
-            ]
-        )
-        learned_algo = model.learn(
-            total_timesteps=total_timesteps, tb_log_name=tb_log_name, callback=callback_list, **kwargs
-        )
-        return learned_algo
-
-    def get_model(
-        self,
-        policy="MlpPolicy",
-        policy_kwargs=None,
-        model_kwargs=None,
-        verbose=1,
-        seed=None,
-        device: Union[torch.device, "str"] = "cpu",
-        tensorboard_log=None,
-    ):
-        #
-        if "action_noise" in model_kwargs:
-            NOISE = {"normal": NormalActionNoise, "ornstein_uhlenbeck": OrnsteinUhlenbeckActionNoise}
-            n_actions = self.env.action_space.shape[-1]
-            model_kwargs["action_noise"] = NOISE[model_kwargs["action_noise"]](
-                mean=np.zeros(n_actions), sigma=0.1 * np.ones(n_actions)
-            )
-
-        #
-        return A2C(
-            policy=policy,
-            env=self.env,
-            tensorboard_log=tensorboard_log,
-            verbose=verbose,
-            policy_kwargs=policy_kwargs,
-            seed=seed,
-            device=device,
-            **model_kwargs,
-        )
 
 
 # ######################################################################################################################
@@ -226,6 +143,8 @@ if __name__ == "__main__":
         exp_dir=ExperimentDir(root=Path(__file__).parent),
         DEBUG=False,
     )
+    from rl.experiments.common.utils import get_dataset
+
     program.dataset = get_dataset(
         pd.read_csv(program.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv"), index_col=0), purpose="train"
     )
