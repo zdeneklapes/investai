@@ -10,6 +10,7 @@ import concurrent.futures
 from typing import Dict, List, Optional
 import dataclasses
 from pathlib import Path
+from datetime import datetime
 
 ##
 import pandas as pd
@@ -271,7 +272,8 @@ if __name__ == "__main__":
 
         ##
         bunches = [(i, i + _step) for i in range(_start, _stop, _step)]
-        print(bunches)
+        current_time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
+        print(current_time, bunches)
         tickers_bunches = [tickers[b[0] : b[1]] for b in bunches]
         # print(tickers_bunches)
         # continue
