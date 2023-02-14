@@ -44,7 +44,7 @@ sys.path.append("../../../")
 from common.Args import Args, argument_parser
 
 from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis, DataBase
-from rl.gym_envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv
+from rl.envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv
 from common.utils import now_time
 from configuration.settings import ProjectDir
 

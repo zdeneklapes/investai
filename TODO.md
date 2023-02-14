@@ -4,6 +4,13 @@
 -------------------- -------------------- --------------------
 
 ## TODO
+-
+- - jak predikovat navratnost vzhledem k propadu
+- - jak zajistit aktualizaci portfolia?
+- - jak zajistit, kdy je lepsi drzet cash?
+- - jak trenovat 500 akcii ale vybrat potom pouze 20?
+- - zkusit ruzne hyperparameters
+- - zkusit ruzne hyperparameters
 
 - Create Data Sets
   - Evaluate 2 FinRL-Meta examples
@@ -19,7 +26,7 @@
     - Create Data Set
     - Create Environment
     - Evaluate (Train + Test)
-  - 4st Experiment - Averaged Price Data along the time
+  - 4th Experiment - Averaged Price Data along the time
     - Create Data Set
     - Create Environment
     - Evaluate (Train + Test)
