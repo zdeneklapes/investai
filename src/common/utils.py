@@ -64,3 +64,9 @@ def cProfile_decorator(sort_by: str):
         return wrapper
 
     return decorator
+
+
+# This function reload the module
+def reload_module(module):
+    import importlib
+    importlib.reload(module)

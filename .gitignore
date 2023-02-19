@@ -63,6 +63,7 @@ logs/
 **datasets/
 **dataset/
 /data/
+src/rl/examples/mnist/data/
 *.csv
 
 # Models
