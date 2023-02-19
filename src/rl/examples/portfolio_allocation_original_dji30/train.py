@@ -143,7 +143,7 @@ if __name__ == "__main__":
     program.dataset = get_dataset(
         pd.read_json(program.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv")), purpose="train"
     )
-    program.exp_dir.check_and_create_dirs()
+    program.exp_dir.create_dirs()
 
     #
     print(f"Start: {program.dataset['date'].min()}, End: {program.dataset['date'].max()}")

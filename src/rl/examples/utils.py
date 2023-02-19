@@ -89,7 +89,7 @@ def get_learned_algos(program: TestProgram) -> List[LearnedAlgorithm]:
         if "a2c" in filename.as_posix():
             return LearnedAlgorithm(algorithm="a2c", filename=filename, learned_algorithm=A2C.load(filename))
 
-    return [get_algorithm(filepath) for filepath in program.exp_dir.out.algorithms.glob("*")]
+    return [get_algorithm(filepath) for filepath in program.exp_dir.out.models.glob("*")]
 
 
 # ######################################################################################################################
@@ -112,7 +112,7 @@ def init_program(dataset_name: str = None) -> Program:
         program.dataset = get_dataset(
             pd.read_csv(program.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv"), index_col=0), purpose="test"
         )
-    program.exp_dir.check_and_create_dirs()
+    program.exp_dir.create_dirs()
     return program
 
 

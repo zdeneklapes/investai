@@ -133,7 +133,7 @@ def get_algorithm_params() -> Dict[str, Any]:
 # ######################################################################################################################
 def train(program):
     # path to save learned algorithm
-    learned_algorithm_path = program.exp_dir.out.algorithms.joinpath(f"{algorithm_name}_{now_time()}")
+    learned_algorithm_path = program.exp_dir.out.models.joinpath(f"{algorithm_name}_{now_time()}")
     if not learned_algorithm_path.parent.exists():  # check directory exists
         raise FileNotFoundError(f"Directory not found: {learned_algorithm_path.parent.as_posix()}")
     else:
@@ -188,7 +188,7 @@ if __name__ == "__main__":
     program.dataset = get_dataset(
         pd.read_csv(program.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv"), index_col=0), purpose="train"
     )
-    program.exp_dir.check_and_create_dirs()
+    program.exp_dir.create_dirs()
 
     #
     print(f"Start: {program.dataset['date'].min()}, End: {program.dataset['date'].max()}")

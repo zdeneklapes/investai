@@ -20,7 +20,7 @@ class Program:
     DEBUG: bool = False
 
     def __attrs_post_init__(self):
-        self.exp_dir.check_and_create_dirs()
+        self.exp_dir.create_dirs()
 
     def init_dataset(self, dataset_name: str):
         from rl.experiments.common.utils import get_dataset

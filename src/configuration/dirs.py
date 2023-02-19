@@ -1,16 +1,9 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
+import shutil
 
 
 class ExperimentDir:
-    class _OutDir:
-        def __init__(self, root: Path):
-            self.root = root.joinpath("out")
-            self.datasets = self.root.joinpath("datasets")
-            self.algorithms = self.root.joinpath("algorithms")
-            self.tensorboard = self.root.joinpath("tensorboard")
-            self.results = self.root.joinpath("results")
-
     def __init__(self, root: Path = None):
         if not root:
             root = Path(__file__).parent.parent.parent
@@ -19,14 +12,32 @@ class ExperimentDir:
             raise FileNotFoundError(f"Root directory does not exist: {root}")
 
         self.root = root
-        self.out = self._OutDir(root)
+        self.out = self.root.joinpath("out")
+        self.datasets = self.out.joinpath("datasets")
+        self.models = self.out.joinpath("models")
+        self.algo = None
+        self.tensorboard = None
+        self.results = None
 
-    def check_and_create_dirs(self):
-        self.out.root.mkdir(parents=True, exist_ok=True)
-        self.out.datasets.mkdir(parents=True, exist_ok=True)
-        self.out.algorithms.mkdir(parents=True, exist_ok=True)
-        self.out.tensorboard.mkdir(parents=True, exist_ok=True)
-        self.out.results.mkdir(parents=True, exist_ok=True)
+    def add_attributes_for_models(self, algo: str, try_number: str):
+        self.algo.joinpath(algo).mkdir(parents=True, exist_ok=True)
+        self.tensorboard = self.algo.joinpath(try_number).joinpath("tensorboard")
+        self.results = self.algo.joinpath(try_number).joinpath("results")
+
+    def create_dirs(self):
+        self.root.mkdir(parents=True, exist_ok=True)
+        self.out.mkdir(parents=True, exist_ok=True)
+        self.datasets.mkdir(parents=True, exist_ok=True)
+        self.models.mkdir(parents=True, exist_ok=True)
+
+    def create_specific_dirs(self, algo: str, try_number: str):
+        tensorboard_dir = self.tensorboard(try_number)
+        tensorboard_dir.mkdir(parents=True, exist_ok=True)
+        results_dir = self.results(algo, try_number)
+        results_dir.mkdir(parents=True, exist_ok=True)
+
+    def delete_out_dir(self):
+        shutil.rmtree(self.out)  # Force delete even if dir is not empty
 
 
 # Root
@@ -74,3 +85,8 @@ class ProjectDir:
     def check_and_create_dirs(self):
         self.model.root.mkdir(parents=True, exist_ok=True)
         print(f"Created {self.model.root}")
+
+
+if __name__ == "__main__":
+    experiment_dir = ExperimentDir(Path(__file__).parent)
+    experiment_dir.delete_out_dir()

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from os import getenv
+from pathlib import Path
 from typing import Literal
 
 import pandas as pd
@@ -9,6 +10,7 @@ from tvDatafeed import TvDatafeed, Interval
 
 from common.Args import get_argparse
 from common.utils import reload_module  # noqa # pylint: disable=unused-import
+from configuration.dirs import ExperimentDir
 
 TRAIN_DATE_START = '2019-01-01'
 TRAIN_DATE_END = '2020-01-01'
@@ -46,9 +48,18 @@ class ForexDataset:
 
     def preprocess(self) -> pd.DataFrame:
         """Return dataset"""
-        # Download raw data
-        df = self.download("EURUSD", exchange='OANDA', interval=Interval.in_1_minute, n_bars=1000)  # FIXME
+        #
+        df = self.download("EURUSD", exchange='OANDA', interval=Interval.in_1_minute, n_bars=1000)
+        df = self.add_ta_features(df)
+        df = self.add_candlestick_features(df)
 
+        # save dataset
+        df.to_csv(DATASET_PATH, index=False)
+        self.dataset = df
+        return df
+
+    def add_ta_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Add technical analysis features to dataset"""
         # Add features
         df["macd"] = TA.MACD(df).SIGNAL
         df["boll_ub"] = TA.BBANDS(df).BB_UPPER
@@ -58,10 +69,6 @@ class ForexDataset:
         # df["close_30_sma"] = TA.SMA(df, period=30) # Unnecessary correlated with boll_lb
         # df["close_60_sma"] = TA.SMA(df, period=60) # Unnecessary correlated with close_30_sma
         df = df.fillna(0)  # Nan will be replaced with 0
-        df = self.add_candlestick_features(df)
-
-        # save dataset
-        df.to_csv(DATASET_PATH, index=False)
         return df
 
     def add_candlestick_features(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -96,14 +103,13 @@ class ForexDataset:
                  period: str = '',  # FIXME: not used
                  n_bars: int = 10) -> pd.DataFrame:
         """Return raw data"""
-        # data = TvDatafeed().get_hist(symbol=tickers, interval=Interval.in_1_minute, n_bars=nbars)  # TradingView
-        # data = TvDatafeed().get_hist(symbol=tickers, interval=Interval.in_1_minute, n_bars=nbars)  # TradingView
+        # df = yf.download(tickers=tickers, period=period, interval=interval) # BUG: yfinance bad candlestick data
 
         tv = TvDatafeed()
-        data = tv.get_hist(symbol=ticker, exchange=exchange, interval=interval, n_bars=n_bars)
+        df = tv.get_hist(symbol=ticker, exchange=exchange, interval=interval, n_bars=n_bars)
+        df = df.fillna(0)  # Nan will be replaced with 0
 
-        # data = yf.download(tickers=tickers, period=period, interval=interval) # BUG: yfinance bad candlestick data
-        return data
+        return df
 
     def save(self) -> None:
         """Save dataset"""
@@ -188,6 +194,8 @@ def t3():
 
 if __name__ == "__main__":
     args_vars, args = get_argparse()
+    experiment_dir = ExperimentDir(Path(__file__).parent)
+    experiment_dir.create_dirs()
     # TODO: Create all unnesessary folders
 
     if DEBUG:

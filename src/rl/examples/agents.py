@@ -28,7 +28,7 @@ class CustomDRLAgent(DRLAgent):
                 TensorboardCallback(),
                 ProgressBarCallback(),
                 CheckpointCallback(
-                    checkpoint_freq, self.program.exp_dir.out.algorithms.joinpath(f"{self.algorithm_name}_{now_time()}")
+                    checkpoint_freq, self.program.exp_dir.out.models.joinpath(f"{self.algorithm_name}_{now_time()}")
                 ),
             ]
         )
