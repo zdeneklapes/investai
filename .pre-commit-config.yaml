@@ -217,7 +217,7 @@ repos:
       - id: editorconfig-checker
         language: python
         files: ^(src/|docs/)
-        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.ipynb|\.bib)$
+        exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.py|\.ipynb|\.bib)$
 
   ##########################################################################################
   # Dockerfile

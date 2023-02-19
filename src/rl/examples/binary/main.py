@@ -1,15 +1,36 @@
 # -*- coding: utf-8 -*-
+from os import getenv
+from typing import Literal
 
 import pandas as pd
-import yfinance as yf
+import numpy as np
+from finta import TA
+from tvDatafeed import TvDatafeed, Interval
 
 from common.Args import get_argparse
+from common.utils import reload_module  # noqa # pylint: disable=unused-import
 
 TRAIN_DATE_START = '2019-01-01'
 TRAIN_DATE_END = '2020-01-01'
 TEST_DATE_START = '2020-01-01'
 TEST_DATE_END = '2021-01-01'
 DATASET_PATH = 'out/dataset.csv'
+DEBUG = getenv('DEBUG', False)
+
+
+def calculate_binary_profit(trades_amount: int, payout_rate: float, success_rate: float):
+    # Trading stats
+    profit_trades = success_rate * trades_amount
+    loss_trades = (1 - success_rate) * trades_amount
+
+    # Calculate profit and loss
+    profit = profit_trades * (1 + payout_rate)
+    loss = loss_trades * 1
+
+    # Results
+    print(f"{profit=}")
+    print(f"{loss=}")
+    print(f"{profit-loss=}")
 
 
 class ForexDataset:
@@ -25,17 +46,59 @@ class ForexDataset:
 
     def preprocess(self) -> pd.DataFrame:
         """Return dataset"""
-        # load
-        data = self.download("EURUSD=X", "1w", "1m")  # noqa
+        # Download raw data
+        df = self.download("EURUSD", interval=Interval.in_1_minute, n_bars=1000)  # FIXME
 
-        # ADD features
-        dataset = None  # noqa
+        # Add features
+        df["macd"] = TA.MACD(df).SIGNAL
+        df["boll_ub"] = TA.BBANDS(df).BB_UPPER
+        df["boll_lb"] = TA.BBANDS(df).BB_LOWER
+        df["rsi_30"] = TA.RSI(df, period=30)
+        df["dx_30"] = TA.ADX(df, period=30)
+        # df["close_30_sma"] = TA.SMA(df, period=30) # Unnecessary correlated with boll_lb
+        # df["close_60_sma"] = TA.SMA(df, period=60) # Unnecessary correlated with close_30_sma
 
-        # save
+        # Nan will be replaced with 0
+        df = df.fillna(0)
 
-    def download(self, tickers, period, interval) -> pd.DataFrame:
+        # save dataset
+        return df
+
+    def candlestick_features(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Add candlestick features to dataset"""
+        candle_size = abs(df["High"] - df["Low"]) # noqa
+        body_size = abs(df["Close"] - df["Open"]) # noqa
+        upper_shadow = abs(df["High"] - df["Close"]) # noqa
+        lower_shadow = abs(df["Open"] - df["Low"]) # noqa
+        df["candle_body"] = df["Close"] - df["Open"]
+        df["candle_upper_shadow"] = df["High"] - df["Close"]
+        df["candle_lower_shadow"] = df["Open"] - df["Low"]
+        df["candle_direction"] = np.where(df["candle_body"] > 0, 1, 0)
+        return df
+
+    def feature_correlation_drop(self, df: pd.DataFrame, threshold: float = 0.6,
+                                 method: Literal['pearson', 'kendall', 'spearman'] = 'pearson') -> pd.DataFrame:
+        """Drop features with correlation higher than threshold"""
+        corr = df.corr(method=method)
+        triu = pd.DataFrame(np.triu(corr.T).T, corr.columns, corr.columns)
+        threshhold = triu[(triu > threshold) & (triu < 1)]
+        return threshhold
+
+    # TODO: Create function for downloading data using yfinance and another one for TradingView
+    def download(self, ticker,
+                 exchange: str,
+                 interval: Interval | str,
+                 period: str = '',  # FIXME: not used
+                 n_bars: int = 10) -> pd.DataFrame:
         """Return raw data"""
-        return yf.download(tickers=tickers, period=period, interval=interval)
+        # data = TvDatafeed().get_hist(symbol=tickers, interval=Interval.in_1_minute, n_bars=nbars)  # TradingView
+        # data = TvDatafeed().get_hist(symbol=tickers, interval=Interval.in_1_minute, n_bars=nbars)  # TradingView
+
+        tv = TvDatafeed()
+        data = tv.get_hist(symbol=ticker, exchange=exchange, interval=interval, n_bars=n_bars)
+
+        # data = yf.download(tickers=tickers, period=period, interval=interval) # BUG: yfinance bad candlestick data
+        return data
 
     def save(self) -> None:
         """Save dataset"""
@@ -83,17 +146,49 @@ class Test:
         pass
 
 
+def t1():
+    forex_dataset = ForexDataset()
+    data = forex_dataset.preprocess()
+    corr_pearson = data.corr(method='pearson')
+    corr_kendall = data.corr(method='kendall')
+    corr_spearman = data.corr(method='spearman')
+    pearson_triu = pd.DataFrame(np.triu(corr_pearson.T).T, corr_spearman.columns, corr_pearson.columns)
+    pearson_threshhold = pearson_triu[(pearson_triu > 0.7) & (pearson_triu < 1)]
+
+    return {
+        'data': data,
+        'pearson': corr_pearson,
+        'kendall': corr_kendall,
+        'spearman': corr_spearman,
+        'pearson_triu': pearson_triu,
+        'pearson_threshold': pearson_threshhold,
+    }
+
+
+def t2():
+    forex_dataset = ForexDataset()
+    data = forex_dataset.download("EURUSD", exchange='OANDA', interval=Interval.in_1_minute, n_bars=1000)
+    return {
+        'data': data,
+    }
+
+
 if __name__ == "__main__":
     args_vars, args = get_argparse()
     # TODO: Create all unnesessary folders
 
-    if args.dataset:
+    if DEBUG:
         forex_dataset = ForexDataset()
         forex_dataset.preprocess()
-        forex_dataset.save()
-    if args.train:
-        train = Train()
-        train.train()
-    if args.test:
-        test = Test()
-        test.test()
+
+    if not DEBUG:
+        if args.dataset:
+            forex_dataset = ForexDataset()
+            forex_dataset.preprocess()
+            forex_dataset.save()
+        if args.train:
+            train = Train()
+            train.train()
+        if args.test:
+            test = Test()
+            test.test()
