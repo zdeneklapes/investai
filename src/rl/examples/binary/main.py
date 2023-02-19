@@ -47,7 +47,7 @@ class ForexDataset:
     def preprocess(self) -> pd.DataFrame:
         """Return dataset"""
         # Download raw data
-        df = self.download("EURUSD", interval=Interval.in_1_minute, n_bars=1000)  # FIXME
+        df = self.download("EURUSD", exchange='OANDA', interval=Interval.in_1_minute, n_bars=1000)  # FIXME
 
         # Add features
         df["macd"] = TA.MACD(df).SIGNAL
@@ -57,23 +57,28 @@ class ForexDataset:
         df["dx_30"] = TA.ADX(df, period=30)
         # df["close_30_sma"] = TA.SMA(df, period=30) # Unnecessary correlated with boll_lb
         # df["close_60_sma"] = TA.SMA(df, period=60) # Unnecessary correlated with close_30_sma
-
-        # Nan will be replaced with 0
-        df = df.fillna(0)
+        df = df.fillna(0)  # Nan will be replaced with 0
+        df = self.add_candlestick_features(df)
 
         # save dataset
+        df.to_csv(DATASET_PATH, index=False)
         return df
 
-    def candlestick_features(self, df: pd.DataFrame) -> pd.DataFrame:
+    def add_candlestick_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Add candlestick features to dataset"""
-        candle_size = abs(df["High"] - df["Low"]) # noqa
-        body_size = abs(df["Close"] - df["Open"]) # noqa
-        upper_shadow = abs(df["High"] - df["Close"]) # noqa
-        lower_shadow = abs(df["Open"] - df["Low"]) # noqa
-        df["candle_body"] = df["Close"] - df["Open"]
-        df["candle_upper_shadow"] = df["High"] - df["Close"]
-        df["candle_lower_shadow"] = df["Open"] - df["Low"]
-        df["candle_direction"] = np.where(df["candle_body"] > 0, 1, 0)
+        # get candlestick features
+        candle_size = abs(df["high"] - df["low"])  # noqa
+        body_size = abs(df["close"] - df["open"])  # noqa
+
+        # get upper and lower shadow
+        upper_shadow = np.where((df["close"] > df["open"]), df["high"] - df["close"], df["high"] - df["open"])
+        lower_shadow = np.where((df["close"] > df["open"]), df["open"] - df["low"], df["close"] - df["low"])
+
+        df["candle_size"] = candle_size
+        df["body_size"] = body_size / candle_size  # pertentage of body size in candle size
+        df["candle_upper_shadow"] = upper_shadow / candle_size  # pertentage of upper shadow in candle size
+        df["candle_lower_shadow"] = lower_shadow / candle_size  # pertentage of lower shadow in candle size
+        df["candle_direction"] = np.where((df["close"] - df["open"]) > 0, 1, 0)  # 1 - up, 0 - down
         return df
 
     def feature_correlation_drop(self, df: pd.DataFrame, threshold: float = 0.6,
@@ -173,14 +178,21 @@ def t2():
     }
 
 
+def t3():
+    forex_dataset = ForexDataset()
+    df = forex_dataset.preprocess()
+    return {
+        'data': df,
+    }
+
+
 if __name__ == "__main__":
     args_vars, args = get_argparse()
     # TODO: Create all unnesessary folders
 
     if DEBUG:
         forex_dataset = ForexDataset()
-        forex_dataset.preprocess()
-
+        df = forex_dataset.preprocess()
     if not DEBUG:
         if args.dataset:
             forex_dataset = ForexDataset()

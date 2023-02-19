@@ -30,7 +30,7 @@ sys.path.append("../../")
 sys.path.append("../../../")
 
 ##
-from configuration.settings import ProjectDir
+from configuration.dirs import ProjectDir
 from common.utils import now_time
 from rl.data.CompanyInfo import CompanyInfo
 

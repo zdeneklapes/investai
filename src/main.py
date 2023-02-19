@@ -46,7 +46,7 @@ from common.Args import Args, argument_parser
 from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis, DataBase
 from rl.envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv
 from common.utils import now_time
-from configuration.settings import ProjectDir
+from configuration.dirs import ProjectDir
 
 ##
 _TRAIN_DATA_START = "2010-01-01"

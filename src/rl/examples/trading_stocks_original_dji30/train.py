@@ -25,7 +25,7 @@ from finrl.config import A2C_PARAMS
 from stable_baselines3.common.logger import configure
 
 #
-from configuration.settings import ProjectDir, ExperimentDir
+from configuration.dirs import ProjectDir, ExperimentDir
 from rl.envs.StockTradingEnv import StockTradingEnv
 from rl.experiments.common.classes import Program
 from rl.experiments.common.agents import CustomDRLAgent

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from configuration.settings import ProjectDir
+from configuration.dirs import ProjectDir
 
 
 def dji30_tickers(): pass

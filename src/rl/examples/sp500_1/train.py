@@ -33,7 +33,7 @@ sys.path.append("../../../")
 
 #
 from common.utils import now_time
-from configuration.settings import ProjectDir, ExperimentDir
+from configuration.dirs import ProjectDir, ExperimentDir
 from rl.experiments._1_same_bigger_data_fundamental.StockTradingEnv import StockTradingEnv
 
 

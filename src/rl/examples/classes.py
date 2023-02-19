@@ -8,7 +8,7 @@ import pandas as pd
 from stable_baselines3 import A2C, DDPG, PPO, TD3
 
 #
-from configuration.settings import ProjectDir, ExperimentDir
+from configuration.dirs import ProjectDir, ExperimentDir
 from rl.plot.plot import backtest_plot, backtest_stats, get_baseline
 
 

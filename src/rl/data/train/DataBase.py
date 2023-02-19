@@ -7,7 +7,7 @@ import tqdm
 import pandas as pd
 from meta.data_processors.yahoofinance import Yahoofinance
 
-from configuration.settings import ProjectDir
+from configuration.dirs import ProjectDir
 from common.Args import Args
 from common.utils import now_time
 

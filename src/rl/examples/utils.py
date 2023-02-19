@@ -23,7 +23,7 @@ import pandas as pd
 from stable_baselines3 import A2C
 
 #
-from configuration.settings import ProjectDir, ExperimentDir
+from configuration.dirs import ProjectDir, ExperimentDir
 from rl.plot.plot import backtest_stats
 from rl.envs.StockTradingEnv import StockTradingEnv
 from rl.experiments._1_same_bigger_data_fundamental.train import CustomDRLAgent, get_env_kwargs

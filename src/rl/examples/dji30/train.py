@@ -21,7 +21,7 @@ sys.path.append("../../")
 sys.path.append("../../../")
 
 #
-from configuration.settings import ProjectDir, ExperimentDir
+from configuration.dirs import ProjectDir, ExperimentDir
 from rl.envs.StockTradingEnv import StockTradingEnv
 from rl.experiments.common.utils import get_dataset
 from rl.experiments.common.classes import Program
