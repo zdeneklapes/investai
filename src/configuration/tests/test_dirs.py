@@ -5,10 +5,22 @@ from configuration.dirs import ExperimentDir
 
 
 class TestExperimentDir:
+    # TODO: When multiprocess testing, this some test in this class fail.
+    def setup_class(self):
+        """Delete out directory after all tests are done."""
+        experiment_dir = ExperimentDir(root=Path(__file__).parent)
+        try:
+            experiment_dir.delete_out_dir()
+        except Exception:
+            pass
+
     def teardown_class(self):
         """Delete out directory after all tests are done."""
         experiment_dir = ExperimentDir(root=Path(__file__).parent)
-        experiment_dir.delete_out_dir()
+        try:
+            experiment_dir.delete_out_dir()
+        except Exception:
+            pass
 
     def test_create_dirs(self):
         experiment_dir = ExperimentDir(root=Path(__file__).parent)

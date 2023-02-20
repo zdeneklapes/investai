@@ -11,7 +11,9 @@ EMAIL='lapes.zdenek@gmail.com'
 
 PROJECT_NAME='pawnshop'
 
-##### FUNCTIONS
+################################################################################
+# Functions
+################################################################################
 function error_exit() {
     printf "${RED}ERROR: $1${NC}\n"
     usage
@@ -22,52 +24,14 @@ function clean() {
     ${RM} *.zip
 
     # Folders
-    for folder in "venv" "__pycache__" "migrations"; do
+    for folder in "venv" "venv3.10" "__pycache__" "migrations"; do
         find . -type d -iname "${folder}" | xargs "${RM}"
     done
 
     # Files
-    for file in ".DS_Store" "*.log"; do
+    for file in ".DS_Store"; do
         find . -type f -iname "${file}" | xargs "${RM}"
     done
-}
-
-function install_docker() {
-    docker-compose up --build -d
-}
-
-function create_env_samples() {
-    cd env || error_exit "cd"
-
-    # Clean all samples
-    find . -type f -iname "sample*" | xargs "${RM}"
-
-    # Create new samples
-    for f in $(find . -type f -iname ".env*" | cut -d/ -f2); do
-        cat "${f}" | cut -d "=" -f1 >"sample${f}"
-    done
-
-    cd .. || error_exit "cd"
-}
-
-function install_docker_deploy() {
-    docker-compose up --build -d -f docker-compose-build.yml
-}
-
-function docker_show_ipaddress() {
-    for docker_container in $(docker ps -aq); do
-        CMD1="$(docker ps -a | grep "$docker_container" | grep --invert-match "Exited\|Created" | awk '{print $2}'): "
-        if [ "$CMD1" != ": " ]; then
-            printf "$CMD1"
-            printf "$(docker inspect ${docker_container} | grep "IPAddress" | tail -n 1)\n"
-        fi
-    done
-}
-
-function clean_docker() {
-    docker stop $(docker ps -aq)
-    docker system prune -a -f
-    docker volume prune -f
 }
 
 function tags() {
@@ -109,22 +73,94 @@ function pack() {
         -x "*others*"
 }
 
+function create_env_samples() {
+    cd env || error_exit "cd"
+
+    # Clean all samples
+    find . -type f -iname "sample*" | xargs "${RM}"
+
+    # Create new samples
+    for f in $(find . -type f -iname ".env*" | cut -d/ -f2); do
+        cat "${f}" | cut -d "=" -f1 >"sample${f}"
+    done
+
+    cd .. || error_exit "cd"
+}
+
+################################################################################
+# DOCKER
+################################################################################
+DOCKER_CONTAINER_VERSION="0.5"
+DOCKER_NAME="python/testing_env"
+DOCKER_CONTAINER_NAME="python_testing_env"
+
+function docker_build() {
+    docker build -t "${DOCKER_NAME}:${DOCKER_CONTAINER_VERSION}" -f Dockerfile .
+}
+
+function docker_run() {
+    docker run -itd --cap-add sys_ptrace -p 127.0.0.1:2222:22 --name ${DOCKER_CONTAINER_NAME} -v "$(pwd)":/home/user/project "${DOCKER_NAME}:${DOCKER_CONTAINER_VERSION}"
+}
+
+function docker_start() {
+    docker start "${DOCKER_CONTAINER_NAME}"
+}
+
+function docker_stop() {
+    docker stop "${DOCKER_CONTAINER_NAME}"
+}
+
+function docker_stop_remove_container() {
+    docker stop $(docker ps -q) && docker rm clion_remote_env
+}
+
+function docker_show_ipaddress() {
+    for docker_container in $(docker ps -aq); do
+        CMD1="$(docker ps -a | grep "$docker_container" | grep --invert-match "Exited\|Created" | awk '{print $2}'): "
+        if [ "$CMD1" != ": " ]; then
+            printf "$CMD1"
+            printf "$(docker inspect ${docker_container} | grep "IPAddress" | tail -n 1)\n"
+        fi
+    done
+}
+
+function docker_clean() {
+    docker stop ${DOCKER_CONTAINER_NAME}
+    docker rm ${DOCKER_CONTAINER_NAME}
+    docker rmi ${DOCKER_NAME}:${DOCKER_CONTAINER_VERSION}
+}
+function docker_clean_all() {
+    docker stop $(docker ps -aq)
+    docker system prune -a -f
+    docker volume prune -f
+}
+
 ##### PARSE CLI-ARGS
 [[ "$#" -eq 0 ]] && usage && exit 0
 while [ "$#" -gt 0 ]; do
     case "$1" in
-    '-c' | '--clean') clean ;;
-    '-cd' | '--clean-docker') clean_docker ;;
-    '-id' | '--install-docker') install_docker ;;
-    '-idd' | '--install-docker-deploy') install_docker_deploy ;;
-    '-dsip' | '--install-docker-deploy') docker_show_ipaddress ;;
-        #
-    '--create-samples-env') create_env_samples ;;
-    '-sc' | '--sync-code') upload_code ;;
-        #
-    '-t' | '--tags') tags ;;
-    '-h' | '--help') usage ;;
-    '-p' | '--pack') pack ;;
+    # "-p.*" prefix all project commands
+    '-pc' | '--clean') clean ;;
+        # "-d.*" prefix all docker commands
+    '-dr' | '--docker-run') docker_run ;;
+    '--docker-start') docker_start ;;
+    '--docker-stop') docker_stop ;;
+    '-db' | '--docker-build') docker_build ;;
+    '-dc' | '--docker-clean') docker_clean ;;
+    '-dca' | '--docker-clean-all') docker_clean_all ;;
+    '-dsrc' | '--docker-stop-remove-container') docker_stop_remove_container ;;
+
+        #    '-cd' | '--clean-docker') clean_docker ;;
+        #    '-id' | '--install-docker') install_docker_compose ;;
+        #    '-idd' | '--install-docker-deploy') install_docker_deploy ;;
+        #    '-dsip' | '--install-docker-deploy') docker_show_ipaddress ;;
+        #        #
+        #    '--create-samples-env') create_env_samples ;;
+        #    '-sc' | '--sync-code') upload_code ;;
+        #        #
+        #    '-t' | '--tags') tags ;;
+        #    '-h' | '--help') usage ;;
+        #    '-p' | '--pack') pack ;;
     esac
     shift
 done
