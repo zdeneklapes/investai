@@ -19,8 +19,16 @@ class ExperimentDir:
         self.tensorboard = None
         self.results = None
 
-    def add_attributes_for_models(self, algo: str, try_number: str):
-        self.algo.joinpath(algo).mkdir(parents=True, exist_ok=True)
+    def _get_next_algo_folder_id(self) -> str:
+        try:
+            return str(len(list(self.algo.iterdir())) + 1)
+        except Exception:
+            return "1"
+
+    def add_attributes_for_models(self, algo: str, try_number: str = None):
+        self.algo = self.models.joinpath(algo)
+        if not try_number:
+            try_number = self._get_next_algo_folder_id()
         self.tensorboard = self.algo.joinpath(try_number).joinpath("tensorboard")
         self.results = self.algo.joinpath(try_number).joinpath("results")
 
@@ -30,11 +38,10 @@ class ExperimentDir:
         self.datasets.mkdir(parents=True, exist_ok=True)
         self.models.mkdir(parents=True, exist_ok=True)
 
-    def create_specific_dirs(self, algo: str, try_number: str):
-        tensorboard_dir = self.tensorboard(try_number)
-        tensorboard_dir.mkdir(parents=True, exist_ok=True)
-        results_dir = self.results(algo, try_number)
-        results_dir.mkdir(parents=True, exist_ok=True)
+    def create_specific_dirs(self):
+        self.algo.mkdir(parents=True, exist_ok=True)
+        self.tensorboard.mkdir(parents=True, exist_ok=True)
+        self.results.mkdir(parents=True, exist_ok=True)
 
     def delete_out_dir(self):
         shutil.rmtree(self.out)  # Force delete even if dir is not empty
