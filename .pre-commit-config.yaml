@@ -1,7 +1,7 @@
 #default_language_version:
 #  python: python3.9
 default_stages: [ commit, push ]
-files: '^(src/)|(thesis/)|(.github/workflows/.*.yml)$|(^\.circleci/.*.yml$)'
+files: '^(src/)|(thesis/)|(.github/workflows/.*.yml)$'
 #exclude: '^(venv.*/)|(env/)|(\.pytest_caches/)|(third_party/)|(.*__pycache__.*/)|()'
 fail_fast: false
 minimum_pre_commit_version: '0'
@@ -38,16 +38,16 @@ repos:
         always_run: true
 
   ##########################################################################################
-  # CircleCI
+  # Pipeline hooks
   ##########################################################################################
-  - repo: https://github.com/zahorniak/pre-commit-circleci.git
-    rev: v0.6 # Ensure this is the latest tag, comparing to the Releases tab
-    hooks:
-      - id: circleci_validate
-        files: ^(.circleci/.*.yml)$
+  #  - repo: https://github.com/zahorniak/pre-commit-circleci.git
+  #    rev: v0.6 # Ensure this is the latest tag, comparing to the Releases tab
+  #    hooks:
+  #      - id: circleci_validate
+  #        files: ^(.circleci/.*.yml)$
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.19.2
+    rev: 0.21.0
     hooks:
       - id: check-github-workflows
         files: ^(.github/workflows/.*.yml)$
@@ -226,11 +226,3 @@ repos:
     rev: v0.1.0
     hooks:
       - id: dockerfilelint
-
-  ##########################################################################################
-  # Github
-  ##########################################################################################
-  - repo: https://github.com/python-jsonschema/check-jsonschema
-    rev: 0.21.0
-    hooks:
-      - id: check-github-workflows
