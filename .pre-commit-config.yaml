@@ -37,6 +37,17 @@ repos:
         pass_filenames: false
         always_run: true
 
+  - repo: local
+    hooks:
+      - id: create-requirements_for_workflows.txt
+        stages: [ commit ]
+        name: Create requirements_for_workflows.txt
+        entry: bash -c "source venv3.10/bin/activate && pip-chill > requirements.txt && ./start.sh -prfw"
+        language: system
+        pass_filenames: false
+        always_run: true
+
+
   ##########################################################################################
   # Pipeline hooks
   ##########################################################################################
