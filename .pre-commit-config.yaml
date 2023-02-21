@@ -42,7 +42,8 @@ repos:
       - id: create-requirements_for_workflows.txt
         stages: [ commit ]
         name: Create requirements_for_workflows.txt
-        entry: bash -c "source venv3.10/bin/activate && pip-chill > requirements.txt && ./start.sh -prfw"
+        # "if" just to make sure that on the GitHub we don't run this hook
+        entry: bash -c "if [ -d venv3.10 ]; then source venv3.10/bin/activate && pip-chill > requirements.txt && ./start.sh -prfw; fi"
         language: system
         pass_filenames: false
         always_run: true
