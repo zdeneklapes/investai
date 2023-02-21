@@ -135,12 +135,18 @@ function docker_clean_all() {
     docker volume prune -f
 }
 
+function requirement_for_workflow() {
+    # Because "tvdatafeed" is not available on PyPi for Python 3.10
+    cat requirements.txt | grep --invert-match "tvdatafeed" >requirements_for_workflow.txt
+}
+
 ##### PARSE CLI-ARGS
 [[ "$#" -eq 0 ]] && usage && exit 0
 while [ "$#" -gt 0 ]; do
     case "$1" in
     # "-p.*" prefix all project commands
-    '-pc' | '--clean') clean ;;
+    '-pc' | '--project-clean') clean ;;
+    '-prfw' | '--project-requirements-for-workflow') requirement_for_workflow ;;
         # "-d.*" prefix all docker commands
     '-dr' | '--docker-run') docker_run ;;
     '--docker-start') docker_start ;;

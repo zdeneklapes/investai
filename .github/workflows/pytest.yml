@@ -15,6 +15,6 @@ jobs:
       - name: Install requirements
         run: |
           pip install --upgrade pip
-          pip3 install -r requirements.txt
+          pip3 install -r requirements_for_workflows.txt
       - name: Run pytest
         run: pytest
