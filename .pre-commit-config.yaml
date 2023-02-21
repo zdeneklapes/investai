@@ -1,7 +1,7 @@
 #default_language_version:
 #  python: python3.9
 default_stages: [ commit, push ]
-files: '^(src/)|(thesis/)'
+files: '^(src/)|(thesis/)|(.github/workflows/.*.yml)$|(^\.circleci/.*.yml$)'
 #exclude: '^(venv.*/)|(env/)|(\.pytest_caches/)|(third_party/)|(.*__pycache__.*/)|()'
 fail_fast: false
 minimum_pre_commit_version: '0'
@@ -226,3 +226,11 @@ repos:
     rev: v0.1.0
     hooks:
       - id: dockerfilelint
+
+  ##########################################################################################
+  # Github
+  ##########################################################################################
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.21.0
+    hooks:
+      - id: check-github-workflows
