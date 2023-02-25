@@ -89,17 +89,18 @@ def get_argparse() -> Tuple[vars, Namespace]:
     parser = argparse.ArgumentParser()
     parser.add_argument("--train", help="Will train models based on hyper parameters",
                         action="store_true", )
-    parser.add_argument("--test", help="Will test trained models.",
+    parser.add_argument("--test", help="Will test trained models",
                         action="store_true", )
-    parser.add_argument("--dataset", help="Will test trained models.",
-                        nargs="?",
+    parser.add_argument("--dataset", help="Will test trained models",
+                        nargs="?", default="dataset.csv")
+    parser.add_argument("--prepare-dataset", help="Prepare and save dataset as csv",
                         action="store_true", )
-    parser.add_argument("--save_dataset", help="Prepare and save dataset as csv into: {ProjectDir().model.root}",
-                        action="store_true", )
-    parser.add_argument("--input_dataset", help="Use already prepared dataset.",
-                        nargs="?", )  # 1 optional argument type=str, )
-    parser.add_argument("--default_dataset", help="Default preprocessed dataset will be used",
-                        action="store_true", )
+    # parser.add_argument("--save_dataset", help="Prepare and save dataset as csv into: {ProjectDir().model.root}",
+    #                     action="store_true", )
+    # parser.add_argument("--input_dataset", help="Use already prepared dataset.",
+    #                     nargs="?", )  # 1 optional argument type=str, )
+    # parser.add_argument("--default_dataset", help="Default preprocessed dataset will be used",
+    #                     action="store_true", )
     parser.add_argument("--models", help="Already trained model",
                         nargs="+", )  # 1 or more arguments type=str, default=[], )
     parser.add_argument("--stable_baseline", help="Use stable-baselines3",

@@ -8,16 +8,17 @@ import numpy as np
 from finta import TA
 from tvDatafeed import TvDatafeed, Interval
 from meta.config_tickers import DOW_30_TICKER
+from tqdm import tqdm
 
 from utils.project import get_argparse
 from project_configs.experiment_dir import ExperimentDir
 from project_configs.project_dir import ProjectDir
 from project_configs.program import Program
 from data.train.company_info import CompanyInfo
+from agent.custom_drl_agent import CustomDRLAgent
+from .PortfolioAllocationEnv import PortfolioAllocationEnv
 
-
-
-# from model_config.utils import load_all_initial_symbol_data
+from utils.project import reload_module  # noqa # pylint: disable=unused-import
 
 
 class StockDataset:
@@ -27,7 +28,8 @@ class StockDataset:
         #
         self.program: Program = program
         self.tickers = TICKERS
-        self.base_cols = ["date", "tic", "open", "high", "low", "close", "volume"]
+        self.unique_columns = ["date", "tic"]
+        self.base_columns = ["open", "high", "low", "close", "volume"]
         # Technical analysis indicators
         self.ta_indicators = None
         # Fundamental analysis indicators
@@ -59,14 +61,13 @@ class StockDataset:
         """Return dataset"""
         #
         # df = self.download("EURUSD", exchange='OANDA', interval=Interval.in_1_minute, n_bars=1000)
-        df = self.load_raw(self.tickers, )
+        df = self.load_raw()
         # df = self.add_ta_features(df)
         df = self.add_fa_features(df)
         # df = self.add_candlestick_features(df)
 
         # save dataset
         self.dataset = df
-        self.save()
         return df
 
     def add_fa_features(self, tickers_data: Dict[str, CompanyInfo]) -> pd.DataFrame:
@@ -76,9 +77,9 @@ class StockDataset:
         """
         df = pd.DataFrame()
         # for k, v in [("DIS", tickers_data["DIS"])]:
-        for k, v in tickers_data.items():
+        for k, v in tqdm(tickers_data.items()):
             # Prices
-            data = v.data_detailed[self.base_cols]
+            data = v.data_detailed[self.base_columns]
             data.insert(0, "tic", k)
 
             # Fill before or forward
@@ -96,11 +97,11 @@ class StockDataset:
             merge = pd.merge(data, ratios, how="outer", left_index=True, right_index=True)
             filled = merge.fillna(method="bfill")
             filled = filled.fillna(method="ffill")
-            clean = filled.drop(filled[~filled.index.str.contains("\d{4}-\d{2}-\d{2}")].index)
+            clean = filled.drop(filled[~filled.index.str.contains(r"\d{4}-\d{2}-\d{2}")].index)
             df = pd.concat([clean, df])
 
         df.insert(0, "date", df.index)
-        assert df.isna().any().any() is False  # Can't be any Nan/np.inf values
+        assert not df.isna().any().any()  # Can't be any Nan/np.inf values
         return df
 
     def clean_dataset_from_missing_stock_in_some_days(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -182,20 +183,19 @@ class StockDataset:
 
     def save(self) -> None:
         """Save dataset"""
-        self.dataset.to_csv(self.program.dataset_path, index=False)
+        file_name = self.program.experiment_dir.datasets.joinpath(self.program.args.dataset)
+        print(f"Saving dataset to: {file_name}")
+        self.dataset.to_csv(file_name, index=False)
 
-    def load_raw(self,
-                 tickers: list,
-                 directory: Path
-                 ) -> Dict[str, CompanyInfo]:
+    def load_raw(self) -> Dict[str, CompanyInfo]:
         """Check if folders with tickers exists and load all data from them into CompanyInfo class"""
         tickers_data: Dict[str, CompanyInfo] = {}
-        for tic in tickers:
+        for tic in tqdm(self.tickers):
             data = {"symbol": tic}
             files = deepcopy(CompanyInfo.Names.list())
             files.remove("symbol")
             for f in files:
-                tic_file = directory.joinpath(tic).joinpath(f + ".csv")
+                tic_file = self.program.project_dir.data.tickers.joinpath(tic).joinpath(f + ".csv")
                 if tic_file.exists():
                     data[f] = pd.read_csv(tic_file, index_col=0)
                 else:
@@ -206,21 +206,66 @@ class StockDataset:
 
     def load_dataset(self) -> None:
         """Load dataset"""
-        self.dataset = pd.read_csv(self.program.dataset_path)
+        file_name = self.program.experiment_dir.datasets.joinpath(self.program.args.dataset)
+        print(f"Loading dataset from: {file_name}")
+        self.dataset = pd.read_csv(file_name)
 
 
 class Train:
-    def __init__(self):
+    def __init__(self, stock_dataset: StockDataset, program: Program, algorithm_name: str = "ppo"):
         # TODO: load dataset
-        self.dataset: StockDataset = None
+        self.stock_dataset: StockDataset = stock_dataset
+        self.program: Program = program
         self.model = None
-
-        # TODO: train
-
-        # TODO: save model
+        self.env: PortfolioAllocationEnv | None = None
+        self.algorithm_name = algorithm_name
 
     def train(self) -> None:
-        pass
+        # Agent
+        self.env = PortfolioAllocationEnv(df=self.stock_dataset.dataset,
+                                          **self.get_env_kwargs())
+        env_train, _ = self.env.get_sb_env()
+        drl_agent = CustomDRLAgent(env=env_train, program=self.program)
+
+        ALGORITHM_PARAMS = {  # noqa: F841 # pylint: disable=unused-variable
+            "n_steps": 2048,
+            "ent_coef": 0.01,
+            "learning_rate": 0.00025,
+            "batch_size": 128,
+        }
+        # Parameter for algorithm
+        algorithm = drl_agent.get_model(
+            model_kwargs=ALGORITHM_PARAMS,
+            tensorboard_log=self.program.experiment_dir.out.tensorboard.as_posix(),
+            verbose=0,
+            device="cpu",
+        )
+
+        # Train
+        self.model = drl_agent.train_model(
+            model=algorithm, tb_log_name=f"tb_run_{self.algorithm_name}", checkpoint_freq=10_000,
+            total_timesteps=200_000
+        )
+
+    def get_env_kwargs(self) -> vars:
+        stock_dimension = len(self.stock_dataset.dataset["tic"].unique())
+        environment_kwargs = {
+            "hmax": 100,
+            "initial_amount": 1000000,
+            "buy_cost_pct": 0.001,
+            "sell_cost_pct": 0.001,
+            "state_space": (1
+                            # portfolio value
+                            + 2 * stock_dimension
+                            # stock price & stock owned  # len(fa_ratios) * len(stocks)
+                            + len(self.stock_dataset.fa_indicators) * stock_dimension
+                            ),
+            "stock_dim": stock_dimension,
+            "tech_indicator_list": self.stock_dataset.fa_indicators,
+            "action_space": stock_dimension,
+            "reward_scaling": 1e-4,
+        }
+        return environment_kwargs
 
     def save_model(self) -> None:
         pass
@@ -248,45 +293,52 @@ class Test:
         pass
 
 
-def initilisation() -> Program:
+def initialisation(arg_parse: bool = True) -> Program:
     prj_dir = ProjectDir(root=Path("/Users/zlapik/my-drive-zlapik/0-todo/ai-investing"))
-    _, args = get_argparse()
     experiment_dir = ExperimentDir(Path(__file__).parent)
     experiment_dir.create_dirs()
     return Program(
         project_dir=prj_dir,
         experiment_dir=experiment_dir,
-        args=args,
+        args=get_argparse()[1] if arg_parse else None,
         train_date_start='2019-01-01',
         train_date_end='2020-01-01',
         test_date_start='2020-01-01',
         test_date_end='2021-01-01',
-        dataset_path='out/dataset.csv',
     )
 
 
 def t1():
-    program = initilisation()
+    program = initialisation(False)
     d = StockDataset(program)
+    df = d.preprocess()
     return {
+        1: 1,
         "d": d,
+        "df": df,
     }
 
 
 if __name__ == "__main__":
-    program = initilisation()
+    program_init = initialisation()
 
-    if program.DEBUG is not None:
-        forex_dataset = StockDataset(program)
-        df = forex_dataset.preprocess()
-    if program.DEBUG is None:
-        if program.args.dataset:
-            forex_dataset = StockDataset(program)
-            forex_dataset.preprocess()
-            forex_dataset.save()
-        if program.args.train:
-            train = Train()
+    #
+    if program_init.debug is not None:
+        stock_dataset = StockDataset(program_init)
+        df = stock_dataset.preprocess()
+
+    #
+    if program_init.debug is None:
+        if program_init.args.prepare_dataset:  # Dataset is not provided create it
+            stock_dataset = StockDataset(program_init)
+            stock_dataset.preprocess()
+            stock_dataset.save()
+        else:
+            stock_dataset = StockDataset(program_init)
+            stock_dataset.load_dataset()
+        if program_init.args.train:
+            train = Train(stock_dataset=stock_dataset)
             train.train()
-        if program.args.test:
+        if program_init.args.test:
             test = Test()
             test.test()

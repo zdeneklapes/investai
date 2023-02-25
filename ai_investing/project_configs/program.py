@@ -18,5 +18,4 @@ class Program:
     train_date_end: str = attr.field(default='2020-01-01')
     test_date_start: str = attr.field(default='2020-01-01')
     test_date_end: str = attr.field(default='2021-01-01')
-    dataset_path: str = attr.field(default='out/dataset.csv')
     debug = getenv('DEBUG', None)

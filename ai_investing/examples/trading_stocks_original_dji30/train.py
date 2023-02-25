@@ -73,28 +73,23 @@ def configure_output(exp_dir: ExperimentDir):
 
 
 def get_env_kwargs(dataset: pd.DataFrame) -> Dict[str, Any]:
-    # Env
     stock_dimension = len(dataset["tic"].unique())
-    state_space = (
-        1
-        + 2 * stock_dimension  # portfolio value
-        + len(ratios_cols) * stock_dimension  # stock price & stock owned  # len(fundamental ratios) * len(stocks)
-    )
-    print(f"Stock Dimension: {stock_dimension}, State Space: {state_space}")
-
-    # Parameters for the environment
     ENV_KWARGS = {
         "hmax": 100,
         "initial_amount": 1000000,
         "buy_cost_pct": 0.001,
         "sell_cost_pct": 0.001,
-        "state_space": state_space,
+        "state_space": (1
+                        # portfolio value
+                        + 2 * stock_dimension
+                        # stock price & stock owned  # len(fa_ratios) * len(stocks)
+                        + len(ratios_cols) * stock_dimension
+                        ),
         "stock_dim": stock_dimension,
         "tech_indicator_list": ratios_cols,
         "action_space": stock_dimension,
         "reward_scaling": 1e-4,
     }
-
     return ENV_KWARGS
 
 
