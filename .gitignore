@@ -63,7 +63,7 @@ logs/
 **datasets/
 **dataset/
 /data/
-src/rl/examples/mnist/data/
+ai_investing/rl/examples/mnist/data/
 *.csv
 
 # Models

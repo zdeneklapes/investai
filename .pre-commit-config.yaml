@@ -1,7 +1,7 @@
 #default_language_version:
 #  python: python3.9
 default_stages: [ commit, push ]
-files: '^(src/)|(thesis/)|(.github/workflows/.*.yml)$'
+files: '^(ai_investing/)|(extra/)|(thesis/)|(.github/workflows/.*.yml)$'
 #exclude: '^(venv.*/)|(env/)|(\.pytest_caches/)|(third_party/)|(.*__pycache__.*/)|()'
 fail_fast: false
 minimum_pre_commit_version: '0'
@@ -170,7 +170,7 @@ repos:
   #    hooks:
   #      - id: pylint
   #        args: [ "--rcfile=./.pylintrc" ]
-  #        files: src/
+  #        files: ai_investing/
   #        language_version: python3.10
   #        additional_dependencies: [ "pylint" ]
 
@@ -228,7 +228,7 @@ repos:
     hooks:
       - id: editorconfig-checker
         language: python
-        files: ^(src/|docs/)
+        files: ^(ai_investing/|docs/)
         exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.py|\.ipynb|\.bib)$
 
   ##########################################################################################
