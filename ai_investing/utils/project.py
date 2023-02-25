@@ -5,7 +5,7 @@ import cProfile
 import pstats
 import argparse
 from argparse import Namespace
-from typing import Any, Dict, Tuple
+from typing import Dict, Tuple
 
 from common.baseexitcode import BaseExitCode
 
@@ -81,13 +81,18 @@ class _LoadArgumentsFromFile(argparse.Action):
             parser.parse_args(f.read().split(), namespace)
 
 
-def get_argparse() -> Tuple[Dict[str, Any], Namespace]:
+def get_argparse() -> Tuple[vars, Namespace]:
+    """
+    Parse arguments from command line or file
+    :return: Tuple[vars, Namespace]
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument("--train", help="Will train models based on hyper parameters",
                         action="store_true", )
     parser.add_argument("--test", help="Will test trained models.",
                         action="store_true", )
     parser.add_argument("--dataset", help="Will test trained models.",
+                        nargs="?",
                         action="store_true", )
     parser.add_argument("--save_dataset", help="Prepare and save dataset as csv into: {ProjectDir().model.root}",
                         action="store_true", )

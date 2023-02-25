@@ -1,41 +1,64 @@
 # -*- coding: utf-8 -*-
-from os import getenv
+from copy import deepcopy
 from pathlib import Path
-from typing import Literal
+from typing import Dict, Literal
 
 import pandas as pd
 import numpy as np
 from finta import TA
 from tvDatafeed import TvDatafeed, Interval
+from meta.config_tickers import DOW_30_TICKER
 
 from utils.project import get_argparse
 from project_configs.experiment_dir import ExperimentDir
+from project_configs.project_dir import ProjectDir
+from project_configs.program import Program
+from data.train.company_info import CompanyInfo
 
-TRAIN_DATE_START = '2019-01-01'
-TRAIN_DATE_END = '2020-01-01'
-TEST_DATE_START = '2020-01-01'
-TEST_DATE_END = '2021-01-01'
-DATASET_PATH = 'out/dataset.csv'
-DEBUG = getenv('DEBUG', None)
+
+# from model_config.utils import load_all_initial_symbol_data
 
 
 class StockDataset:
-    def __init__(self):
-        # TODO: load data for all tickers
-        self.tickers = None
-        self.ta_indicators = None  # Technical analysis indicators
-        self.fa_indicators = None  # Fundamental analysis indicators
+    def __init__(self, program: Program):
+        TICKERS = deepcopy(DOW_30_TICKER)
+        TICKERS.remove("DOW")  # TODO: "DOW" is not DJI30 or what?
+        #
+        self.program: Program = program
+        self.tickers = TICKERS
+        self.base_cols = ["date", "tic", "open", "high", "low", "close", "volume"]
+        # Technical analysis indicators
+        self.ta_indicators = None
+        # Fundamental analysis indicators
+        self.fa_indicators = [
+            "operatingProfitMargin",
+            "netProfitMargin",
+            "returnOnAssets",
+            "returnOnEquity",
+            "currentRatio",
+            "quickRatio",
+            "cashRatio",
+            "inventoryTurnover",
+            "receivablesTurnover",
+            "payablesTurnover",
+            "debtRatio",
+            "debtEquityRatio",
+            "priceEarningsRatio",
+            "priceBookValueRatio",
+            "dividendYield",
+        ]
+
+        # Final dataset for training and testing
         self.dataset = None
-        self.dataset_path = Path(DATASET_PATH)
 
-        # TODO: preprocess data
-
-        # TODO: save dataset
+    def data_split(self):
+        """Split dataset into train and test"""
 
     def preprocess(self) -> pd.DataFrame:
         """Return dataset"""
         #
-        df = self.download("EURUSD", exchange='OANDA', interval=Interval.in_1_minute, n_bars=1000)
+        # df = self.download("EURUSD", exchange='OANDA', interval=Interval.in_1_minute, n_bars=1000)
+        df = self.load_raw(self.tickers, )
         # df = self.add_ta_features(df)
         df = self.add_fa_features(df)
         # df = self.add_candlestick_features(df)
@@ -45,8 +68,63 @@ class StockDataset:
         self.save()
         return df
 
-    def add_fa_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Add fundamental analysis features to dataset"""
+    def add_fa_features(self, tickers_data: Dict[str, CompanyInfo]) -> pd.DataFrame:
+        """
+        Add fundamental analysis features to dataset
+        Merge tickers information into one pd.Dataframe
+        """
+        df = pd.DataFrame()
+        # for k, v in [("DIS", tickers_data["DIS"])]:
+        for k, v in tickers_data.items():
+            # Prices
+            data = v.data_detailed[self.base_cols]
+            data.insert(0, "tic", k)
+
+            # Fill before or forward
+            data = data.fillna(method="bfill")
+            data = data.fillna(method="ffill")
+
+            # Ratios
+            ratios = v.financial_ratios.loc[self.fa_indicators].transpose()
+
+            # Fill 0, where Nan/np.inf
+            ratios = ratios.fillna(0)
+            ratios = ratios.replace(np.inf, 0)
+
+            #
+            merge = pd.merge(data, ratios, how="outer", left_index=True, right_index=True)
+            filled = merge.fillna(method="bfill")
+            filled = filled.fillna(method="ffill")
+            clean = filled.drop(filled[~filled.index.str.contains("\d{4}-\d{2}-\d{2}")].index)
+            df = pd.concat([clean, df])
+
+        df.insert(0, "date", df.index)
+        assert df.isna().any().any() is False  # Can't be any Nan/np.inf values
+        return df
+
+    def clean_dataset_from_missing_stock_in_some_days(self, df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Take only those dates where we have data for all stock in each day
+        Parameters
+        ----------
+        df: pd.DataFrame
+
+        Returns
+        -------
+        df: pd.DataFrame
+        """
+        # max_size = df.groupby("date").size().unique().max()
+        _d = df.groupby("date").size()
+        binary = _d.values == 29
+        latest_date = _d[binary].index[0]
+        df = df[df["date"] > latest_date]
+        return df
+
+    def give_index_to_each_day(self, df: pd.DataFrame) -> pd.DataFrame:
+        dataset = df.sort_values(by="date")
+        dataset.index = dataset["date"].factorize()[0]
+        assert dataset.groupby("date").size().unique().size == 1
+        return df
 
     def add_ta_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Add technical analysis features to dataset"""
@@ -103,11 +181,31 @@ class StockDataset:
 
     def save(self) -> None:
         """Save dataset"""
-        self.dataset.to_csv(DATASET_PATH, index=False)
+        self.dataset.to_csv(self.program.dataset_path, index=False)
 
-    def load(self) -> None:
+    def load_raw(self,
+                 tickers: list,
+                 directory: Path
+                 ) -> Dict[str, CompanyInfo]:
+        """Check if folders with tickers exists and load all data from them into CompanyInfo class"""
+        tickers_data: Dict[str, CompanyInfo] = {}
+        for tic in tickers:
+            data = {"symbol": tic}
+            files = deepcopy(CompanyInfo.Names.list())
+            files.remove("symbol")
+            for f in files:
+                tic_file = directory.joinpath(tic).joinpath(f + ".csv")
+                if tic_file.exists():
+                    data[f] = pd.read_csv(tic_file, index_col=0)
+                else:
+                    raise FileExistsError(f"File not exists: {tic_file}")
+            tickers_data[tic] = CompanyInfo(**data)
+
+        return tickers_data
+
+    def load_dataset(self) -> None:
         """Load dataset"""
-        self.dataset = pd.read_csv(DATASET_PATH)
+        self.dataset = pd.read_csv(self.program.dataset_path)
 
 
 class Train:
@@ -149,30 +247,45 @@ class Test:
         pass
 
 
+def initilisation() -> Program:
+    prj_dir = ProjectDir(root=Path("/Users/zlapik/my-drive-zlapik/0-todo/ai-investing"))
+    _, args = get_argparse()
+    experiment_dir = ExperimentDir(Path(__file__).parent)
+    experiment_dir.create_dirs()
+    return Program(
+        project_dir=prj_dir,
+        experiment_dir=experiment_dir,
+        args=args,
+        train_date_start='2019-01-01',
+        train_date_end='2020-01-01',
+        test_date_start='2020-01-01',
+        test_date_end='2021-01-01',
+        dataset_path='out/dataset.csv',
+    )
+
+
 def t1():
-    d = StockDataset()
+    program = initilisation()
+    d = StockDataset(program)
     return {
         "d": d,
     }
 
 
 if __name__ == "__main__":
-    args_vars, args = get_argparse()
-    experiment_dir = ExperimentDir(Path(__file__).parent)
-    experiment_dir.create_dirs()
-    # TODO: Create all unnesessary folders
+    program = initilisation()
 
-    if DEBUG:
-        forex_dataset = StockDataset()
+    if program.DEBUG is not None:
+        forex_dataset = StockDataset(program)
         df = forex_dataset.preprocess()
-    if not DEBUG:
-        if args.dataset:
-            forex_dataset = StockDataset()
+    if program.DEBUG is None:
+        if program.args.dataset:
+            forex_dataset = StockDataset(program)
             forex_dataset.preprocess()
             forex_dataset.save()
-        if args.train:
+        if program.args.train:
             train = Train()
             train.train()
-        if args.test:
+        if program.args.test:
             test = Test()
             test.test()
