@@ -138,7 +138,7 @@ function docker_clean_all() {
 function requirement_for_workflow() {
     # Because "tvdatafeed" is not available on PyPi for Python 3.10
     file_name="requirements_for_workflows.txt"
-    cat requirements.txt | grep --invert-match "tvdatafeed" >${file_name}
+    cat requirements.txt | grep --invert-match "tvdatafeed\|finrl-meta" >${file_name}
     git add ${file_name}
 }
 
