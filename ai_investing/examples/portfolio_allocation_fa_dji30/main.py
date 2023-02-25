@@ -8,7 +8,7 @@ import numpy as np
 from finta import TA
 from tvDatafeed import TvDatafeed, Interval
 
-from common.utils import get_argparse
+from utils.project import get_argparse
 from project_configs.experiment_dir import ExperimentDir
 
 TRAIN_DATE_START = '2019-01-01'
@@ -16,7 +16,7 @@ TRAIN_DATE_END = '2020-01-01'
 TEST_DATE_START = '2020-01-01'
 TEST_DATE_END = '2021-01-01'
 DATASET_PATH = 'out/dataset.csv'
-DEBUG = getenv('DEBUG', False)
+DEBUG = getenv('DEBUG', None)
 
 
 class StockDataset:

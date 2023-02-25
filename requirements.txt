@@ -41,7 +41,7 @@ pylint==2.15.8
 pymdstat==0.4.2
 pympler==1.0.1
 pynvim==0.4.3
-pyportfolioopt==1.5.4
+pyportfolioopt==1.5.2
 pysnmp==4.4.12
 pytest-depends==1.0.1
 pytest-xdist==3.1.0
