@@ -13,11 +13,7 @@ import seaborn_image as isns
 
 from typing import Union
 
-
-# This function reload the module
-def reload_module(module):
-    import importlib
-    importlib.reload(module)
+from utils.project import reload_module  # noqa # pylint: disable=unused-import
 
 
 class Net(nn.Module):

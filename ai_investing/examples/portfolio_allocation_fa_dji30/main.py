@@ -16,6 +16,7 @@ from project_configs.program import Program
 from data.train.company_info import CompanyInfo
 
 
+
 # from model_config.utils import load_all_initial_symbol_data
 
 
