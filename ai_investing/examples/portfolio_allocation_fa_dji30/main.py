@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, Literal
+from typing import Literal
 
 import pandas as pd
 import numpy as np
@@ -63,50 +63,66 @@ class StockDataset:
 
     def preprocess(self) -> pd.DataFrame:
         """Return dataset"""
-        #
-        # df = self.download("EURUSD", exchange='OANDA', interval=Interval.in_1_minute, n_bars=1000)
-        df = self.load_raw()
-        # df = self.add_ta_features(df)
-        df = self.add_fa_features(df)
-        # df = self.add_candlestick_features(df)
+        self.dataset = self.get_stock_dataset()
+        return self.dataset
 
-        # save dataset
-        self.dataset = df
+    def get_stock_dataset(self) -> pd.DataFrame:
+        df = pd.DataFrame()
+        pbar = tqdm(self.tickers)
+        for tic in pbar:
+            pbar.set_description(f"Processing {tic}")
+
+            # Load tickers data
+            raw_data: CompanyInfo = self.load_raw_data(tic)
+
+            # Add features
+            feature_data = self.add_fa_features(raw_data)
+
+            # Add ticker to dataset
+            df = pd.concat([feature_data, df])
+
+        df.insert(0, "date", df.index)
+        df = self.clean_dataset_from_missing_stock_in_some_days(df)
+        df = self.make_index_by_date(df)
+        assert not self.is_dataset_correct(df), "Dataset is not correct"
         return df
 
-    def add_fa_features(self, tickers_data: Dict[str, CompanyInfo]) -> pd.DataFrame:
+    def is_dataset_correct(self, df: pd.DataFrame) -> bool:
+        """Check if all data are correct"""
+        return df.isna().any().any()  # Can't be any Nan/np.inf values
+
+    def add_fa_features(self, ticker_raw_data: CompanyInfo) -> pd.DataFrame:
         """
         Add fundamental analysis features to dataset
         Merge tickers information into one pd.Dataframe
         """
-        df = pd.DataFrame()
-        # for k, v in [("DIS", tickers_data["DIS"])]:
-        for k, v in tqdm(tickers_data.items()):
-            # Prices
-            data = v.data_detailed[self.base_columns]
-            data.insert(0, "tic", k)
+        # Prices
+        prices = ticker_raw_data.data_detailed[self.base_columns]
+        prices.insert(0, "tic", ticker_raw_data.symbol)
 
-            # Fill before or forward
-            data = data.fillna(method="bfill")
-            data = data.fillna(method="ffill")
+        # Fill before or forward
+        prices = prices.fillna(method="bfill")
+        prices = prices.fillna(method="ffill")
 
-            # Ratios
-            ratios = v.financial_ratios.loc[self.fa_indicators].transpose()
+        # Ratios
+        ratios = ticker_raw_data.financial_ratios.loc[self.fa_indicators].transpose()
 
-            # Fill 0, where Nan/np.inf
-            ratios = ratios.fillna(0)
-            ratios = ratios.replace(np.inf, 0)
+        # Fill 0, where Nan/np.inf
+        ratios = ratios.fillna(0)
+        ratios = ratios.replace(np.inf, 0)
 
-            #
-            merge = pd.merge(data, ratios, how="outer", left_index=True, right_index=True)
-            filled = merge.fillna(method="bfill")
-            filled = filled.fillna(method="ffill")
-            clean = filled.drop(filled[~filled.index.str.contains(r"\d{4}-\d{2}-\d{2}")].index)
-            df = pd.concat([clean, df])
+        merge = pd.merge(prices, ratios,
+                         how="outer", left_index=True, right_index=True)
+        filled = merge.fillna(method="bfill")
+        filled = filled.fillna(method="ffill")
+        clean = filled.drop(filled[~filled.index.str.contains(r"\d{4}-\d{2}-\d{2}")].index)  # Remove non-dates
+        return clean
 
-        df.insert(0, "date", df.index)
-        assert not df.isna().any().any()  # Can't be any Nan/np.inf values
-        return df
+        # df = pd.concat([clean, df])
+
+        # df.insert(0, "date", df.index)
+        # assert not df.isna().any().any()  # Can't be any Nan/np.inf values
+        # return df
 
     def clean_dataset_from_missing_stock_in_some_days(self, df: pd.DataFrame) -> pd.DataFrame:
         """
@@ -119,17 +135,19 @@ class StockDataset:
         -------
         df: pd.DataFrame
         """
-        # max_size = df.groupby("date").size().unique().max()
-        _d = df.groupby("date").size()
-        binary = _d.values == 29
-        latest_date = _d[binary].index[0]
-        df = df[df["date"] > latest_date]
+        ticker_in_each_date = df.groupby("date").size()
+        where_are_all_tickers = ticker_in_each_date.values == ticker_in_each_date.values.max()
+
+        # FIXME: This is not correct, because we can have missing data in the middle of the dataset
+        earliest_date = ticker_in_each_date[where_are_all_tickers].index[0]
+        df = df[df["date"] > earliest_date]
         return df
 
-    def give_index_to_each_day(self, df: pd.DataFrame) -> pd.DataFrame:
-        dataset = df.sort_values(by="date")
-        dataset.index = dataset["date"].factorize()[0]
-        assert dataset.groupby("date").size().unique().size == 1
+    def make_index_by_date(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Create index for same dates"""
+        df.sort_values(by="date", inplace=True)
+        df.index = df["date"].factorize()[0]
+        assert df.groupby("date").size().unique().size == 1, "Why is it here?"
         return df
 
     def add_ta_features(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -189,30 +207,26 @@ class StockDataset:
         """Save dataset"""
         file_name = self.program.experiment_dir.datasets.joinpath(self.program.args.dataset)
         print(f"Saving dataset to: {file_name}")
-        self.dataset.to_csv(file_name, index=False)
+        self.dataset.to_csv(file_name, index=True)
 
-    def load_raw(self) -> Dict[str, CompanyInfo]:
-        """Check if folders with tickers exists and load all data from them into CompanyInfo class"""
-        tickers_data: Dict[str, CompanyInfo] = {}
-        for tic in tqdm(self.tickers):
-            data = {"symbol": tic}
-            files = deepcopy(CompanyInfo.Names.list())
-            files.remove("symbol")
-            for f in files:
-                tic_file = self.program.project_dir.data.tickers.joinpath(tic).joinpath(f + ".csv")
-                if tic_file.exists():
-                    data[f] = pd.read_csv(tic_file, index_col=0)
-                else:
-                    raise FileExistsError(f"File not exists: {tic_file}")
-            tickers_data[tic] = CompanyInfo(**data)
-
-        return tickers_data
+    def load_raw_data(self, tic) -> CompanyInfo:
+        """Check if folders with ticker exists and load all data from them into CompanyInfo class"""
+        data = {"symbol": tic}
+        files = deepcopy(CompanyInfo.Names.list())
+        files.remove("symbol")
+        for f in files:
+            tic_file = self.program.project_dir.data.tickers.joinpath(tic).joinpath(f + ".csv")
+            if tic_file.exists():
+                data[f] = pd.read_csv(tic_file, index_col=0)
+            else:
+                raise FileExistsError(f"File not exists: {tic_file}")
+        return CompanyInfo(**data)
 
     def load_dataset(self) -> None:
         """Load dataset"""
         file_name = self.program.experiment_dir.datasets.joinpath(self.program.args.dataset)
         print(f"Loading dataset from: {file_name}")
-        self.dataset = pd.read_csv(file_name)
+        self.dataset = pd.read_csv(file_name, index_col=0)
 
 
 class Train:
@@ -228,7 +242,7 @@ class Train:
                                           tickers=self.stock_dataset.tickers,
                                           features=self.stock_dataset.get_features(),
                                           start_from_index=0)
-        env_train, _ = self.env.get_sb_env()
+        env_train, _ = self.env.get_stable_baseline3_environment()
         drl_agent = CustomDRLAgent(env=env_train, program=self.program)
 
         ALGORITHM_PARAMS = {  # noqa: F841 # pylint: disable=unused-variable
@@ -295,15 +309,14 @@ def initialisation(arg_parse: bool = True) -> Program:
 def t1():
     program = initialisation(False)
     d = StockDataset(program)
-    df = d.preprocess()
+    df = d.get_stock_dataset()
     return {
-        1: 1,
         "d": d,
         "df": df,
     }
 
 
-if __name__ == "__main__":
+def main():
     program_init = initialisation()
 
     if program_init.debug is None:
@@ -320,3 +333,7 @@ if __name__ == "__main__":
         if program_init.args.test:
             test = Test()
             test.test()
+
+
+if __name__ == "__main__":
+    main()
