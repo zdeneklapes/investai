@@ -3,4 +3,4 @@ import pytest
 
 
 class TestDataFundamentalAnalysis:
-    pytestmark = pytest.mark.data
+    pytestmark = pytest.mark._current_data

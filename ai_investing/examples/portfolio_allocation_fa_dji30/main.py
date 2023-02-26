@@ -31,7 +31,7 @@ class StockDataset:
         self.unique_columns = ["date", "tic"]
         self.base_columns = ["open", "high", "low", "close", "volume"]
         # Technical analysis indicators
-        self.ta_indicators = None
+        self.ta_indicators = []
         # Fundamental analysis indicators
         self.fa_indicators = [
             "operatingProfitMargin",
@@ -56,6 +56,10 @@ class StockDataset:
 
     def data_split(self):
         """Split dataset into train and test"""
+
+    def get_features(self):
+        """Return features for training and testing"""
+        return self.fa_indicators + self.ta_indicators + self.base_columns
 
     def preprocess(self) -> pd.DataFrame:
         """Return dataset"""
@@ -220,7 +224,10 @@ class Train:
         self.algorithm_name = algorithm_name
 
     def train(self) -> None:
-        self.env = PortfolioAllocationEnv(df=self.stock_dataset.dataset, **self.get_env_kwargs())
+        self.env = PortfolioAllocationEnv(df=self.stock_dataset.dataset, initial_portfolio_value=100_000,
+                                          tickers=self.stock_dataset.tickers,
+                                          features=self.stock_dataset.get_features(),
+                                          start_from_index=0)
         env_train, _ = self.env.get_sb_env()
         drl_agent = CustomDRLAgent(env=env_train, program=self.program)
 
@@ -243,25 +250,6 @@ class Train:
             model=algorithm, tb_log_name=f"tb_run_{self.algorithm_name}", checkpoint_freq=10_000,
             total_timesteps=200_000
         )
-
-    def get_env_kwargs(self) -> vars:
-        stock_dimension = len(self.stock_dataset.dataset["tic"].unique())
-        environment_kwargs = {
-            "hmax": 100,
-            "initial_amount": 100000,
-            # spaces
-            "action_space": stock_dimension,
-            "state_space": (1
-                            # portfolio value
-                            + 2 * stock_dimension
-                            # stock price & stock owned  # len(fa_ratios) * len(stocks)
-                            + len(self.stock_dataset.fa_indicators) * stock_dimension
-                            ),
-            "tech_indicator_list": self.stock_dataset.fa_indicators,
-            # "stock_dim": stock_dimension,
-            # "reward_scaling": 1e-4,
-        }
-        return environment_kwargs
 
     def save_model(self) -> None:
         pass
