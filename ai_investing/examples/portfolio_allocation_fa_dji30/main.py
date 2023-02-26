@@ -16,7 +16,7 @@ from project_configs.project_dir import ProjectDir
 from project_configs.program import Program
 from data.train.company_info import CompanyInfo
 from agent.custom_drl_agent import CustomDRLAgent
-from .PortfolioAllocationEnv import PortfolioAllocationEnv
+from examples.portfolio_allocation_fa_dji30.PortfolioAllocationEnv import PortfolioAllocationEnv
 
 from utils.project import reload_module  # noqa # pylint: disable=unused-import
 
@@ -213,7 +213,6 @@ class StockDataset:
 
 class Train:
     def __init__(self, stock_dataset: StockDataset, program: Program, algorithm_name: str = "ppo"):
-        # TODO: load dataset
         self.stock_dataset: StockDataset = stock_dataset
         self.program: Program = program
         self.model = None
@@ -221,9 +220,7 @@ class Train:
         self.algorithm_name = algorithm_name
 
     def train(self) -> None:
-        # Agent
-        self.env = PortfolioAllocationEnv(df=self.stock_dataset.dataset,
-                                          **self.get_env_kwargs())
+        self.env = PortfolioAllocationEnv(df=self.stock_dataset.dataset, **self.get_env_kwargs())
         env_train, _ = self.env.get_sb_env()
         drl_agent = CustomDRLAgent(env=env_train, program=self.program)
 
@@ -251,19 +248,18 @@ class Train:
         stock_dimension = len(self.stock_dataset.dataset["tic"].unique())
         environment_kwargs = {
             "hmax": 100,
-            "initial_amount": 1000000,
-            "buy_cost_pct": 0.001,
-            "sell_cost_pct": 0.001,
+            "initial_amount": 100000,
+            # spaces
+            "action_space": stock_dimension,
             "state_space": (1
                             # portfolio value
                             + 2 * stock_dimension
                             # stock price & stock owned  # len(fa_ratios) * len(stocks)
                             + len(self.stock_dataset.fa_indicators) * stock_dimension
                             ),
-            "stock_dim": stock_dimension,
             "tech_indicator_list": self.stock_dataset.fa_indicators,
-            "action_space": stock_dimension,
-            "reward_scaling": 1e-4,
+            # "stock_dim": stock_dimension,
+            # "reward_scaling": 1e-4,
         }
         return environment_kwargs
 
@@ -337,7 +333,7 @@ if __name__ == "__main__":
             stock_dataset = StockDataset(program_init)
             stock_dataset.load_dataset()
         if program_init.args.train:
-            train = Train(stock_dataset=stock_dataset)
+            train = Train(stock_dataset=stock_dataset, program=program_init)
             train.train()
         if program_init.args.test:
             test = Test()

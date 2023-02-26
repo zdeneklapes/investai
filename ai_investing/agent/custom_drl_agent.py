@@ -4,14 +4,14 @@ from typing import Union
 #
 import numpy as np
 import torch
-from finrl.agents.stablebaselines3.models import DRLAgent, TensorboardCallback
+from agents.stablebaselines3_models import DRLAgent, TensorboardCallback
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 from stable_baselines3 import A2C, DDPG, PPO, SAC, TD3
 from stable_baselines3.common.noise import NormalActionNoise, OrnsteinUhlenbeckActionNoise
 
-from rl.experiments.common.callbacks import CheckpointCallback
-from rl.experiments.common.classes import Program
-from common.utils import now_time
+from model_config.callbacks import CheckpointCallback
+from project_configs.program import Program
+from utils.project import now_time
 
 
 class CustomDRLAgent(DRLAgent):
@@ -32,10 +32,13 @@ class CustomDRLAgent(DRLAgent):
                 ),
             ]
         )
-        learned_algo = model.learn(
-            total_timesteps=total_timesteps, tb_log_name=tb_log_name, callback=callback_list, **kwargs
+        trained_model = model.learn(
+            total_timesteps=total_timesteps,
+            tb_log_name=tb_log_name,
+            callback=callback_list,
+            **kwargs
         )
-        return learned_algo
+        return trained_model
 
     def get_model(
         self,
