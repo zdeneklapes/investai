@@ -306,22 +306,16 @@ def t1():
 if __name__ == "__main__":
     program_init = initialisation()
 
-    #
-    if program_init.debug is not None:
-        stock_dataset = StockDataset(program_init)
-        df = stock_dataset.preprocess()
-
-    #
     if program_init.debug is None:
         if program_init.args.prepare_dataset:  # Dataset is not provided create it
-            stock_dataset = StockDataset(program_init)
-            stock_dataset.preprocess()
-            stock_dataset.save()
+            stock_dataset_init = StockDataset(program_init)
+            stock_dataset_init.preprocess()
+            stock_dataset_init.save()
         else:
-            stock_dataset = StockDataset(program_init)
-            stock_dataset.load_dataset()
+            stock_dataset_init = StockDataset(program_init)
+            stock_dataset_init.load_dataset()
         if program_init.args.train:
-            train = Train(stock_dataset=stock_dataset, program=program_init)
+            train = Train(stock_dataset=stock_dataset_init, program=program_init)
             train.train()
         if program_init.args.test:
             test = Test()
