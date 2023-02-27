@@ -5,18 +5,19 @@ from pathlib import Path
 
 #
 from stable_baselines3.common.callbacks import BaseCallback
+from utils.project import now_time
 
 
 class CheckpointCallback(BaseCallback):
     """
     A custom callback that saves a model every ``save_freq`` steps.
-    :param save_freq:
+    :param frequency:
     :param save_path:
     """
 
-    def __init__(self, save_freq: int, save_path: Union[Path]):
+    def __init__(self, frequency: int, save_path: Union[Path]):
         super(CheckpointCallback, self).__init__()
-        self.save_freq = save_freq
+        self.save_freq = frequency
         self.save_path = save_path
         if not self.save_path.parent.exists():  # check directory exists
             raise FileNotFoundError(f"Directory not found: {self.save_path.parent.as_posix()}")
@@ -25,7 +26,7 @@ class CheckpointCallback(BaseCallback):
 
     def _on_step(self) -> bool:
         if self.n_calls % self.save_freq == 0:
-            self.model.save(self.save_path.as_posix() + f"_{self.n_calls}")
+            self.model.save(self.save_path.as_posix() + f"_{now_time()}_{self.n_calls}")
         return True
 
     def _on_training_end(self) -> None:

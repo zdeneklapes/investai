@@ -84,6 +84,7 @@ class StockDataset:
         df.insert(0, "date", df.index)
         df = self.clean_dataset_from_missing_stock_in_some_days(df)
         df = self.make_index_by_date(df)
+        df = df.sort_values(by=self.unique_columns)
         assert not self.is_dataset_correct(df), "Dataset is not correct"
         return df
 
@@ -235,15 +236,17 @@ class Train:
         self.program: Program = program
         self.model = None
         self.env: PortfolioAllocationEnv | None = None
-        self.algorithm_name = algorithm_name
+        self.algorithm = algorithm_name
 
     def train(self) -> None:
-        self.env = PortfolioAllocationEnv(df=self.stock_dataset.dataset, initial_portfolio_value=100_000,
+        self.env = PortfolioAllocationEnv(df=self.stock_dataset.dataset,
+                                          initial_portfolio_value=100_000,
                                           tickers=self.stock_dataset.tickers,
                                           features=self.stock_dataset.get_features(),
+                                          save_path=self.program.experiment_dir.try_number,
                                           start_from_index=0)
         env_train, _ = self.env.get_stable_baseline3_environment()
-        drl_agent = CustomDRLAgent(env=env_train, program=self.program)
+        drl_agent = CustomDRLAgent(env=env_train, program=self.program, algorithm=self.algorithm)
 
         ALGORITHM_PARAMS = {  # noqa: F841 # pylint: disable=unused-variable
             "n_steps": 2048,
@@ -253,15 +256,16 @@ class Train:
         }
         # Parameter for algorithm
         algorithm = drl_agent.get_model(
+            model_name=self.algorithm,
             model_kwargs=ALGORITHM_PARAMS,
-            tensorboard_log=self.program.experiment_dir.out.tensorboard.as_posix(),
+            tensorboard_log=self.program.experiment_dir.tensorboard.as_posix(),
             verbose=0,
             device="cpu",
         )
 
         # Train
         self.model = drl_agent.train_model(
-            model=algorithm, tb_log_name=f"tb_run_{self.algorithm_name}", checkpoint_freq=10_000,
+            model=algorithm, tb_log_name=f"tb_run_{self.algorithm}", checkpoint_freq=10_000,
             total_timesteps=200_000
         )
 
@@ -328,7 +332,14 @@ def main():
             stock_dataset_init = StockDataset(program_init)
             stock_dataset_init.load_dataset()
         if program_init.args.train:
-            train = Train(stock_dataset=stock_dataset_init, program=program_init)
+            #
+            train = Train(stock_dataset=stock_dataset_init, program=program_init, algorithm_name="ppo")
+
+            #
+            program_init.experiment_dir.add_attributes_for_models(train.algorithm)
+            program_init.experiment_dir.create_specific_dirs()
+
+            #
             train.train()
         if program_init.args.test:
             test = Test()

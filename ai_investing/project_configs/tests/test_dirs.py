@@ -34,7 +34,7 @@ class TestExperimentDir:
         experiment_dir.add_attributes_for_models("algo")
         assert experiment_dir.algo is not None
         assert experiment_dir.tensorboard is not None
-        assert experiment_dir.results is not None
+        assert experiment_dir.chart is not None
 
     @pytest.mark.depends(on=["test_create_dirs", "test_add_attributes_for_models"])
     def test_create_specific_dirs(self):
@@ -44,7 +44,7 @@ class TestExperimentDir:
         experiment_dir.create_specific_dirs()
         assert experiment_dir.algo.exists()
         assert experiment_dir.tensorboard.exists()
-        assert experiment_dir.results.exists()
+        assert experiment_dir.chart.exists()
 
     @pytest.mark.depends(on=["test_create_dirs", "test_create_specific_dirs", "test_add_attributes_for_models"])
     @pytest.mark.parametrize("_id, add_attr", [

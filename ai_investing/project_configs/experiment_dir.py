@@ -11,13 +11,14 @@ class ExperimentDir:
         if not root.exists():
             raise FileNotFoundError(f"Root directory does not exist: {root}")
 
-        self.root = root
-        self.out = self.root.joinpath("out")
-        self.datasets = self.out.joinpath("datasets")
-        self.models = self.out.joinpath("models")
-        self.algo = None
-        self.tensorboard = None
-        self.results = None
+        self.root: Path = root
+        self.out: Path = self.root.joinpath("out")
+        self.datasets: Path = self.out.joinpath("datasets")
+        self.models: Path = self.out.joinpath("models")
+        self.try_number: Path | None = None
+        self.algo: Path | None = None
+        self.tensorboard: Path | None = None
+        self.chart: Path | None = None
 
     def _get_next_algo_folder_id(self) -> str:
         try:
@@ -25,12 +26,11 @@ class ExperimentDir:
         except Exception:
             return "1"
 
-    def add_attributes_for_models(self, algo: str, try_number: str = None):
+    def add_attributes_for_models(self, algo: str):
         self.algo = self.models.joinpath(algo)
-        if not try_number:
-            try_number = self._get_next_algo_folder_id()
-        self.tensorboard = self.algo.joinpath(try_number).joinpath("tensorboard")
-        self.results = self.algo.joinpath(try_number).joinpath("results")
+        self.try_number = self.algo.joinpath(self._get_next_algo_folder_id())
+        self.tensorboard = self.try_number.joinpath("tensorboard")
+        self.chart = self.try_number.joinpath("chart")
 
     def create_dirs(self):
         self.root.mkdir(parents=True, exist_ok=True)
@@ -41,7 +41,7 @@ class ExperimentDir:
     def create_specific_dirs(self):
         self.algo.mkdir(parents=True, exist_ok=True)
         self.tensorboard.mkdir(parents=True, exist_ok=True)
-        self.results.mkdir(parents=True, exist_ok=True)
+        self.chart.mkdir(parents=True, exist_ok=True)
 
     def delete_out_dir(self):
         shutil.rmtree(self.out)  # Force delete even if dir is not empty

@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
 from typing import Any, Dict, Optional, List, Final
 import attrs
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import gymnasium as gym
-from gymnasium import spaces
+# FIXME: Stable-baselines3 requires gym.spaces not gymnasium.spaces
+import gym
+from gym import spaces
+# import gymnasium as gym
+# from gymnasium import spaces
 from gymnasium.utils import seeding
 from scipy.special import softmax
 from stable_baselines3.common.vec_env import DummyVecEnv
+
 
 
 @attrs.define
@@ -18,65 +23,66 @@ class Memory:
     action: List
     date: List
 
-    def append_memory(self, _portfolio_value, _portfolio_return, _action, _date):
+    def append_memory(self, portfolio_value, portfolio_return, action, date):
         """Append memory
-        :param _portfolio_value: Portfolio value
-        :param _portfolio_return: Portfolio return
-        :param _action: Action
-        :param _date: Date
+        :param portfolio_value: Portfolio value
+        :param portfolio_return: Portfolio return
+        :param action: Action
+        :param date: Date
         """
-        self.portfolio_value.append(_portfolio_value)
-        self.portfolio_return.append(_portfolio_return)
-        self.action.append(_action)
-        self.date.append(_date)
+        self.portfolio_value.append(portfolio_value)
+        self.portfolio_return.append(portfolio_return)
+        self.action.append(action)
+        self.date.append(date)
 
 
 class PortfolioAllocationEnv(gym.Env):
     """Portfolio Allocation Environment using OpenAI gym"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, df, initial_portfolio_value, tickers, features, start_from_index=0):
+    def __init__(self, df: pd.DataFrame, initial_portfolio_value: int, tickers: List[str], features: List[str],
+                 save_path: Path, start_from_index: int = 0):
         # Immutable
+        self._save_path: Final = save_path
         self._df: Final = df
-        self._initial_amount: Final = initial_portfolio_value
         self._tickers: Final = tickers  # Used for: Action and Observation space
-        self._features: Final = features  # Used for Obser
+        self._features: Final = features  # Used for Observation space
 
         # Sets: self._data_index, self._portfolio_value, self._memory
-        self.__init_environment(_data_index=start_from_index)
+        self.__init_environment(initial_portfolio_value=initial_portfolio_value, data_index=start_from_index)
 
         # Inherited
         self.action_space = spaces.Box(low=0, high=1, shape=(len(self._tickers),))
         self.observation_space = spaces.Box(low=-np.inf,
                                             high=np.inf,
-                                            shape=(len(self._features),
-                                                   len(self._tickers))
+                                            shape=(len(self._tickers),
+                                                   len(self._features))
                                             )
 
-    def __init_environment(self, _data_index: int = 0):
+    def __init_environment(self, initial_portfolio_value: int, data_index: int):
         """Initialize environment
         self._data_index: Index of the current data
         self._portfolio_value: Portfolio value
         self._memory: Memory of the environment
+        :param initial_portfolio_value:
         """
-        self._data_index = _data_index
-        self._portfolio_value = self._initial_amount
+        self._data_index = data_index
         self._memory = Memory(
-            portfolio_value=[self._portfolio_value],
+            portfolio_value=[initial_portfolio_value],
             portfolio_return=[0],
             action=[[1 / len(self._tickers)] * len(self._tickers)],
             date=[self._current_data.date.unique()[0]]
         )
 
     @property
-    def _current_data(self):
+    def _current_data(self) -> pd.DataFrame:
         """self._data_index must be set correctly"""
         return self._df.loc[self._data_index, :]
 
     @property
-    def _current_state(self):
+    def _current_state(self) -> object:
         """self._data_index must be set correctly"""
-        return self._current_data.values.tolist()
+        return self._current_data.drop(columns=["date", "tic"])
 
     @property
     def _reward(self) -> float:
@@ -91,6 +97,26 @@ class PortfolioAllocationEnv(gym.Env):
         # TODO: portfolio_value <= 0
         return self._data_index >= len(self._df.index.unique()) - 1
 
+    @property
+    def _initial_portfolio_value(self) -> int:
+        return self._memory.portfolio_value[0]
+
+    @property
+    def _last_portfolio_value(self) -> int:
+        return self._memory.portfolio_value[-1]
+
+    def get_portfolio_return(self, weights) -> float:
+        """Calculate portfolio return
+        :param weights: Weights of the portfolio
+        :return: Portfolio return
+        """
+
+        current_close = self._current_data["close"].values
+        previous_close = self._df.loc[self._data_index - 1, "close"].values
+        individual_return = current_close / previous_close - 1
+        portfolio_return = (individual_return * weights).sum()
+        return portfolio_return
+
     def step(self, action):
         if self._is_terminal:
             df = pd.DataFrame(data={  # noqa # pylint: disable=unused-variable
@@ -99,33 +125,22 @@ class PortfolioAllocationEnv(gym.Env):
                 'portfolio_return': self._memory.portfolio_return,
                 'action': self._memory.action
             })
-            # TODO: Save df to a file
-            # TODO: Stats
+            df.to_csv(self._save_path.joinpath("result.csv"), index=True)
         else:
+            # TODO: Why is softmax used here?
             weights = softmax(action)  # action are the tickers weight in the portfolio
-            previous_data = self._current_data
 
             self._data_index += 1  # Go to next data (State & Observation Space)
-
-            # Calculate portfolio return: individual stocks' return * weight
-            portfolio_return = sum(
-                (
-                    (
-                        self._current_data["close"].values
-                        / previous_data["close"].values
-                    ) - 1  # TODO: Why is here -1?
-                ) * weights
-            )
-            # update portfolio value
-            self._portfolio_value *= (1 + portfolio_return)
+            current_portfolio_value = self._last_portfolio_value * (1 + self.get_portfolio_return(weights))
 
             # Memory
-            self._memory.append_memory(self._portfolio_value,
-                                       portfolio_return,
-                                       weights,
-                                       self._current_data.date.unique()[0])
+            self._memory.append_memory(portfolio_value=current_portfolio_value,
+                                       portfolio_return=self.get_portfolio_return(weights),
+                                       action=weights,
+                                       date=self._current_data.date.unique()[0])
 
-        # Observation, Reward, Terminated, Truncated, Info, Done
+            print(self._last_portfolio_value)
+            # Observation, Reward, Terminated, Truncated, Info, Done
         return self._current_state, self._reward, self._is_terminal, {}
 
     def reset(
@@ -134,7 +149,7 @@ class PortfolioAllocationEnv(gym.Env):
         seed: Optional[int] = None,
         options: Optional[Dict[str, Any]] = None,
     ):
-        self.__init_environment(_data_index=0)
+        self.__init_environment(initial_portfolio_value=self._initial_portfolio_value, data_index=0)
         return self._current_state
 
     def render(self, mode='human'):
@@ -164,6 +179,6 @@ class PortfolioAllocationEnv(gym.Env):
         return [seed]
 
     def get_stable_baseline3_environment(self):
-        e = DummyVecEnv([lambda: self])
-        obs = e.reset()
-        return e, obs
+        environment = DummyVecEnv([lambda: self])
+        observation_space = environment.reset()
+        return environment, observation_space
