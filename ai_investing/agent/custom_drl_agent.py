@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+TODO: Better save checkpoint and description info.txt
+"""
 from typing import Union
 
 #
