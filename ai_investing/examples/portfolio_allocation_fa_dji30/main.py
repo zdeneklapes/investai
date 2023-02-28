@@ -9,16 +9,19 @@ from finta import TA
 from tvDatafeed import TvDatafeed, Interval
 from meta.config_tickers import DOW_30_TICKER
 from tqdm import tqdm
+from agents.stablebaselines3_models import TensorboardCallback
+from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 
 from utils.project import get_argparse
 from project_configs.experiment_dir import ExperimentDir
 from project_configs.project_dir import ProjectDir
 from project_configs.program import Program
 from data.train.company_info import CompanyInfo
-from agent.custom_drl_agent import CustomDRLAgent
+from agent.custom_drl_agent import Algorithm
 from examples.portfolio_allocation_fa_dji30.PortfolioAllocationEnv import PortfolioAllocationEnv
+from model_config.callbacks import CustomCheckpointCallback
 
-from utils.project import reload_module  # noqa # pylint: disable=unused-import
+from utils.project import reload_module, now_time  # noqa # pylint: disable=unused-import
 
 
 class StockDataset:
@@ -246,28 +249,29 @@ class Train:
                                           save_path=self.program.experiment_dir.try_number,
                                           start_from_index=0)
         env_train, _ = self.env.get_stable_baseline3_environment()
-        drl_agent = CustomDRLAgent(env=env_train, program=self.program, algorithm=self.algorithm)
+        algorithms = Algorithm(program=self.program, algorithm=self.algorithm, env=env_train)
 
-        ALGORITHM_PARAMS = {  # noqa: F841 # pylint: disable=unused-variable
-            "n_steps": 2048,
-            "ent_coef": 0.01,
-            "learning_rate": 0.00025,
-            "batch_size": 128,
-        }
-        # Parameter for algorithm
-        algorithm = drl_agent.get_model(
+        # Callbacks
+        callbacks = CallbackList(
+            [
+                TensorboardCallback(),
+                ProgressBarCallback(),
+                CustomCheckpointCallback(save_freq=20_000,
+                                         save_path=self.program.experiment_dir.models.as_posix(),
+                                         name_prefix=f"{now_time()}" + self.algorithm,
+                                         save_replay_buffer=True,
+                                         save_vecnormalize=True),
+            ]
+        )
+
+        model_sb3 = algorithms.get_model(
             model_name=self.algorithm,
-            model_kwargs=ALGORITHM_PARAMS,
             tensorboard_log=self.program.experiment_dir.tensorboard.as_posix(),
             verbose=0,
-            device="cpu",
         )
 
         # Train
-        self.model = drl_agent.train_model(
-            model=algorithm, tb_log_name=f"tb_run_{self.algorithm}", checkpoint_freq=10_000,
-            total_timesteps=200_000
-        )
+        self.model = model_sb3.learn(total_timesteps=200_000, tb_log_name=f"{self.algorithm}", callback=callbacks)
 
     def save_model(self) -> None:
         pass
@@ -303,10 +307,10 @@ def initialisation(arg_parse: bool = True) -> Program:
         project_dir=prj_dir,
         experiment_dir=experiment_dir,
         args=get_argparse()[1] if arg_parse else None,
-        train_date_start='2019-01-01',
-        train_date_end='2020-01-01',
-        test_date_start='2020-01-01',
-        test_date_end='2021-01-01',
+        # train_date_start='2019-01-01',
+        # train_date_end='2020-01-01',
+        # test_date_start='2020-01-01',
+        # test_date_end='2021-01-01',
     )
 
 

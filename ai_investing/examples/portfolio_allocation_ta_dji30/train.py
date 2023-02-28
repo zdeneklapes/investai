@@ -125,7 +125,7 @@ def train(program):
     )
 
     # Train
-    drl_agent.train_model(
+    drl_agent.train(
         model=algorithm, tb_log_name=f"tb_run_{algorithm_name}", checkpoint_freq=10_000, total_timesteps=200_000
     )
 

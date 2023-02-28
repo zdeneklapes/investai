@@ -147,7 +147,7 @@ class Pipeline:
 
         ##
         # Train
-        trained = agent.train_model(model=model_a2c, tb_log_name="a2c", total_timesteps=5000)
+        trained = agent.train(model=model_a2c, tb_log_name="a2c", total_timesteps=5000)
         self.trained_model = trained
 
         ##
