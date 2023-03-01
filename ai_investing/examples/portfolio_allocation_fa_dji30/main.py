@@ -17,7 +17,7 @@ from project_configs.experiment_dir import ExperimentDir
 from project_configs.project_dir import ProjectDir
 from project_configs.program import Program
 from data.train.company_info import CompanyInfo
-from agent.custom_drl_agent import Algorithm
+from model_config.algorithm import Algorithm, SB3_MODEL_TYPE
 from examples.portfolio_allocation_fa_dji30.PortfolioAllocationEnv import PortfolioAllocationEnv
 from model_config.callbacks import CustomCheckpointCallback
 
@@ -57,8 +57,21 @@ class StockDataset:
         # Final dataset for training and testing
         self.dataset = None
 
-    def data_split(self):
+    @property
+    def train_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
+        return self.dataset[self.dataset["date"] < self.get_split_date()]
+
+    @property
+    def test_dataset(self) -> pd.DataFrame:
+        """Split dataset into train and test"""
+        return self.dataset[self.dataset["date"] >= self.get_split_date()]
+
+    def get_split_date(self) -> str:
+        """Return split date"""
+        coef = 0.8
+        dates = self.dataset["date"].unique()
+        return dates[int(len(dates) * coef)]
 
     def get_features(self):
         """Return features for training and testing"""
@@ -237,65 +250,103 @@ class Train:
     def __init__(self, stock_dataset: StockDataset, program: Program, algorithm_name: str = "ppo"):
         self.stock_dataset: StockDataset = stock_dataset
         self.program: Program = program
-        self.model = None
-        self.env: PortfolioAllocationEnv | None = None
-        self.algorithm = algorithm_name
+        self.algorithm: str = algorithm_name
 
     def train(self) -> None:
-        self.env = PortfolioAllocationEnv(df=self.stock_dataset.dataset,
-                                          initial_portfolio_value=100_000,
-                                          tickers=self.stock_dataset.tickers,
-                                          features=self.stock_dataset.get_features(),
-                                          save_path=self.program.experiment_dir.try_number,
-                                          start_from_index=0)
-        env_train, _ = self.env.get_stable_baseline3_environment()
-        algorithms = Algorithm(program=self.program, algorithm=self.algorithm, env=env_train)
+        # Output folder
+        self.program.experiment_dir.set_algo(self.algorithm)
+        self.program.experiment_dir.create_specific_dirs()
+
+        # Environment
+        env = PortfolioAllocationEnv(df=self.stock_dataset.train_dataset,
+                                     initial_portfolio_value=100_000,
+                                     tickers=self.stock_dataset.tickers,
+                                     features=self.stock_dataset.get_features(),
+                                     save_path=self.program.experiment_dir.algo,
+                                     start_from_index=0)
+        env_train, _ = env.get_stable_baseline3_environment()
 
         # Callbacks
-        callbacks = CallbackList(
-            [
-                TensorboardCallback(),
-                ProgressBarCallback(),
-                CustomCheckpointCallback(save_freq=20_000,
-                                         save_path=self.program.experiment_dir.models.as_posix(),
-                                         name_prefix=f"{now_time()}" + self.algorithm,
-                                         save_replay_buffer=True,
-                                         save_vecnormalize=True),
-            ]
-        )
+        callbacks = CallbackList([
+            TensorboardCallback(),
+            ProgressBarCallback(),
+            CustomCheckpointCallback(memory_name="memory.json",
+                                     save_freq=1_00,
+                                     save_path=self.program.experiment_dir.algo.as_posix(),
+                                     name_prefix="model",
+                                     save_replay_buffer=True,
+                                     save_vecnormalize=True),
+        ])
 
-        model_sb3 = algorithms.get_model(
-            model_name=self.algorithm,
+        # Get model with appropriate parameters based on algorithm and framework
+        algorithm = Algorithm(
+            program=self.program,
+            algorithm=self.algorithm,
+            env=env_train
+        )
+        model_sb3 = algorithm.get_model(
             tensorboard_log=self.program.experiment_dir.tensorboard.as_posix(),
             verbose=0,
         )
 
-        # Train
-        self.model = model_sb3.learn(total_timesteps=200_000, tb_log_name=f"{self.algorithm}", callback=callbacks)
-
-    def save_model(self) -> None:
-        pass
-
-    def load_model(self) -> None:
-        pass
+        # Train and using CheckpointCallback save model
+        model_sb3.learn(total_timesteps=1_000, tb_log_name=f"{self.algorithm}", callback=callbacks)
 
 
 class Test:
-    def __init__(self):
-        self.dataset = None
-        self.model = None
-        self.results = None
+    def __init__(self, program: Program, stock_dataset: StockDataset):
+        self.program: Program = program
+        self.stock_dataset: StockDataset = stock_dataset
+        self.env: PortfolioAllocationEnv = PortfolioAllocationEnv(df=self.stock_dataset.test_dataset,
+                                                                  initial_portfolio_value=100_000,
+                                                                  tickers=self.stock_dataset.tickers,
+                                                                  features=self.stock_dataset.get_features(),
+                                                                  save_path=self.program.experiment_dir.algo,
+                                                                  start_from_index=0)
 
-    def test(self) -> None:
-        pass
+    def test(self, model_path: Path = None) -> None:
+        if model_path is None:  # Test all
+            for model_path in self.program.experiment_dir.models.iterdir():
+                self.test_model(model_path)
+        else:  # Test one
+            self.test_model(model_path)
 
-    def save_results(self) -> None:
-        pass
+    def test_model(self, model_path: Path) -> None:
+        # Get files
+        memory_file = model_path.joinpath("memory.json")
+        model_files = [
+            m for m in model_path.iterdir()
+            if m.is_file() and m.name.startswith('model') and m.suffix == ".zip"
+        ]
+        model_files.sort(key=lambda x: int(x.name.split("_")[1]))  # Sort by number of steps
 
-    def load_results(self) -> None:
-        pass
+        # Prepare model
+        algorithm_name = model_path.name.split("_")[0]
+        algorithm = Algorithm(
+            program=self.program,
+            algorithm=algorithm_name,
+            env=self.env
+        )
+        model = algorithm.get_model(tensorboard_log=self.program.experiment_dir.tensorboard.as_posix(), verbose=0)
 
-    def plot_results(self) -> None:
+        # All checkpoints
+        pbar = tqdm(model_files)
+        for checkpoint_model_path in pbar:
+            pbar.set_description(f"Testing {algorithm_name} model: {checkpoint_model_path.name}")
+            self.get_checkpoints_performance(model, checkpoint_model_path)
+
+        # Memory
+        self.get_memory_stats(memory_file)
+
+    def get_checkpoints_performance(self, model: SB3_MODEL_TYPE, checkpoint_model_path: Path) -> None:
+        loaded_model = model.load(checkpoint_model_path.as_posix())
+        obs = self.env.reset()
+        done = False
+        while not done:
+            action, _states = loaded_model.predict(obs)
+            done = self.env.step(action)[1]
+
+    def get_memory_stats(self, memory_file: Path) -> None:
         pass
 
 
@@ -307,10 +358,6 @@ def initialisation(arg_parse: bool = True) -> Program:
         project_dir=prj_dir,
         experiment_dir=experiment_dir,
         args=get_argparse()[1] if arg_parse else None,
-        # train_date_start='2019-01-01',
-        # train_date_end='2020-01-01',
-        # test_date_start='2020-01-01',
-        # test_date_end='2021-01-01',
     )
 
 
@@ -338,15 +385,10 @@ def main():
         if program_init.args.train:
             #
             train = Train(stock_dataset=stock_dataset_init, program=program_init, algorithm_name="ppo")
-
-            #
-            program_init.experiment_dir.add_attributes_for_models(train.algorithm)
-            program_init.experiment_dir.create_specific_dirs()
-
             #
             train.train()
         if program_init.args.test:
-            test = Test()
+            test = Test(program=program_init, stock_dataset=stock_dataset_init)
             test.test()
 
 

@@ -29,12 +29,13 @@ class Memory:
         :param action: Action
         :param date: Date
         """
-        self.df = self.df.append({
-            "portfolio_value": portfolio_value,
-            "portfolio_return": portfolio_return,
-            "action": action,
-            "date": date
-        }, ignore_index=True)
+        df_new = pd.DataFrame({
+            "portfolio_value": [portfolio_value],
+            "portfolio_return": [portfolio_return],
+            "action": [action],
+            "date": [date]
+        })
+        self.df = pd.concat([self.df, df_new], axis=0, ignore_index=True)
 
     @property
     def _initial_portfolio_value(self) -> int:
@@ -50,13 +51,13 @@ class Memory:
         """Save memory to csv file
         :param save_path: Path to save the memory
         """
-        self.df.to_csv(save_path.as_posix(), index=True)
+        self.df.to_json(save_path.as_posix(), index=True)
 
     def load(self, save_path: Path):
         """Save memory to csv file
         :param save_path: Path to save the memory
         """
-        self.df.from_csv(save_path.as_posix(), index=True)
+        self.df.from_json(save_path.as_posix(), index=True)
 
 
 class PortfolioAllocationEnv(gym.Env):
@@ -131,23 +132,20 @@ class PortfolioAllocationEnv(gym.Env):
         return portfolio_return
 
     def step(self, action):
-        if self._terminal:
-            self._memory.save(save_path=self._save_path)
-        else:
-            # TODO: Why is softmax used here?
-            normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
+        # TODO: Why is softmax used here?
+        normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
 
-            self._data_index += 1  # Go to next data (State & Observation Space)
-            current_portfolio_value = (
-                self._memory._current_portfolio_value
-                * (1 + self._get_portfolio_return(normalized_actions))
-            )
+        self._data_index += 1  # Go to next data (State & Observation Space)
+        current_portfolio_value = (
+            self._memory._current_portfolio_value
+            * (1 + self._get_portfolio_return(normalized_actions))
+        )
 
-            # Memory
-            self._memory.append(portfolio_value=current_portfolio_value,
-                                portfolio_return=self._get_portfolio_return(normalized_actions),
-                                action=normalized_actions,
-                                date=self._current_data.date.unique()[0])
+        # Memory
+        self._memory.append(portfolio_value=current_portfolio_value,
+                            portfolio_return=self._get_portfolio_return(normalized_actions),
+                            action=normalized_actions,
+                            date=self._current_data.date.unique()[0])
 
         # Observation, Reward, Terminated, Truncated, Info, Done
         return self._current_state, self._get_reward(), self._terminal, {}
@@ -159,7 +157,7 @@ class PortfolioAllocationEnv(gym.Env):
         options: Optional[Dict[str, Any]] = None,
     ):
         self.__init_environment(initial_portfolio_value=self._memory._initial_portfolio_value, data_index=0)
-        return self._current_state
+        return self._current_state  # First observation
 
     def render(self, mode='human'):
         return self._current_state

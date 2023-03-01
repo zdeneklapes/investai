@@ -31,7 +31,7 @@ class TestExperimentDir:
     def test_add_attributes_for_models(self):
         experiment_dir = ExperimentDir(root=Path(__file__).parent)
         experiment_dir.create_dirs()
-        experiment_dir.add_attributes_for_models("algo")
+        experiment_dir.add_attributes_for_models()
         assert experiment_dir.algo is not None
         assert experiment_dir.tensorboard is not None
         assert experiment_dir.chart is not None
@@ -40,7 +40,7 @@ class TestExperimentDir:
     def test_create_specific_dirs(self):
         experiment_dir = ExperimentDir(root=Path(__file__).parent)
         experiment_dir.create_dirs()
-        experiment_dir.add_attributes_for_models("algo")
+        experiment_dir.add_attributes_for_models()
         experiment_dir.create_specific_dirs()
         assert experiment_dir.algo.exists()
         assert experiment_dir.tensorboard.exists()
@@ -56,7 +56,7 @@ class TestExperimentDir:
         experiment_dir = ExperimentDir(root=Path(__file__).parent)
 
         if add_attr:
-            experiment_dir.add_attributes_for_models("algo")
+            experiment_dir.add_attributes_for_models()
 
         folder_id = experiment_dir._get_next_algo_folder_id()
         assert folder_id == _id
