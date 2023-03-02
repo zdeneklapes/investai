@@ -3,6 +3,7 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Literal
 
+import plotly.graph_objs as go
 import pandas as pd
 import numpy as np
 from finta import TA
@@ -12,16 +13,16 @@ from tqdm import tqdm
 from agents.stablebaselines3_models import TensorboardCallback
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 
-from utils.project import get_argparse
+from utils.project import reload_module, now_time, get_argparse  # noqa # pylint: disable=unused-import
 from project_configs.experiment_dir import ExperimentDir
 from project_configs.project_dir import ProjectDir
 from project_configs.program import Program
 from data.train.company_info import CompanyInfo
-from model_config.algorithm import Algorithm, SB3_MODEL_TYPE
 from examples.portfolio_allocation_fa_dji30.PortfolioAllocationEnv import PortfolioAllocationEnv
+from model_config.algorithm import Algorithm, SB3_MODEL_TYPE
 from model_config.callbacks import CustomCheckpointCallback
-
-from utils.project import reload_module, now_time  # noqa # pylint: disable=unused-import
+from model_config.plot import get_baseline, get_daily_return, convert_daily_return_to_pyfolio_ts
+from extra.math.finance.minimum_variance import minimum_variance
 
 
 class StockDataset:
@@ -60,12 +61,15 @@ class StockDataset:
     @property
     def train_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
+        print("Train dataset from", self.dataset["date"].min(), "to", self.get_split_date())
         return self.dataset[self.dataset["date"] < self.get_split_date()]
 
     @property
     def test_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
-        return self.dataset[self.dataset["date"] >= self.get_split_date()]
+        df = self.dataset[self.dataset["date"] >= self.get_split_date()]
+        df.index = df["date"].factorize()[0]
+        return df
 
     def get_split_date(self) -> str:
         """Return split date"""
@@ -254,7 +258,9 @@ class Train:
 
     def train(self) -> None:
         # Output folder
-        self.program.experiment_dir.set_algo(self.algorithm)
+        self.program.experiment_dir.set_algo(
+            f"{self.algorithm}_{self.program.experiment_dir.get_last_algorithm_index(self.algorithm) + 1}"
+        )
         self.program.experiment_dir.create_specific_dirs()
 
         # Environment
@@ -270,7 +276,7 @@ class Train:
         callbacks = CallbackList([
             TensorboardCallback(),
             ProgressBarCallback(),
-            CustomCheckpointCallback(memory_name="memory.json",
+            CustomCheckpointCallback(memory_name="train_memory.json",
                                      save_freq=1_00,
                                      save_path=self.program.experiment_dir.algo.as_posix(),
                                      name_prefix="model",
@@ -297,23 +303,25 @@ class Test:
     def __init__(self, program: Program, stock_dataset: StockDataset):
         self.program: Program = program
         self.stock_dataset: StockDataset = stock_dataset
-        self.env: PortfolioAllocationEnv = PortfolioAllocationEnv(df=self.stock_dataset.test_dataset,
-                                                                  initial_portfolio_value=100_000,
-                                                                  tickers=self.stock_dataset.tickers,
-                                                                  features=self.stock_dataset.get_features(),
-                                                                  save_path=self.program.experiment_dir.algo,
-                                                                  start_from_index=0)
+        self.env: PortfolioAllocationEnv = PortfolioAllocationEnv(
+            df=self.stock_dataset.test_dataset,
+            initial_portfolio_value=100_000,
+            tickers=self.stock_dataset.tickers,
+            features=self.stock_dataset.get_features(),
+            save_path=self.program.experiment_dir.algo,
+            start_from_index=self.stock_dataset.test_dataset.index[0]
+        )
 
     def test(self, model_path: Path = None) -> None:
         if model_path is None:  # Test all
             for model_path in self.program.experiment_dir.models.iterdir():
+                self.program.experiment_dir.set_algo(model_path.name)
                 self.test_model(model_path)
         else:  # Test one
             self.test_model(model_path)
 
     def test_model(self, model_path: Path) -> None:
         # Get files
-        memory_file = model_path.joinpath("memory.json")
         model_files = [
             m for m in model_path.iterdir()
             if m.is_file() and m.name.startswith('model') and m.suffix == ".zip"
@@ -335,19 +343,121 @@ class Test:
             pbar.set_description(f"Testing {algorithm_name} model: {checkpoint_model_path.name}")
             self.get_checkpoints_performance(model, checkpoint_model_path)
 
-        # Memory
-        self.get_memory_stats(memory_file)
-
     def get_checkpoints_performance(self, model: SB3_MODEL_TYPE, checkpoint_model_path: Path) -> None:
         loaded_model = model.load(checkpoint_model_path.as_posix())
         obs = self.env.reset()
         done = False
         while not done:
             action, _states = loaded_model.predict(obs)
-            done = self.env.step(action)[1]
+            done = self.env.step(action)[2]
+
+        # Save memory
+        memory_name = f"model_{checkpoint_model_path.name.split('_')[1]}_steps_memory.json"
+        self.env._memory.save(self.program.experiment_dir.algo.joinpath(memory_name))
 
     def get_memory_stats(self, memory_file: Path) -> None:
         pass
+
+    def plot_stats(self) -> None:
+        import pyfolio
+        for p in self.program.experiment_dir.models.iterdir():
+            memories = [m for m in p.iterdir() if m.name.endswith("memory.json")]
+            memories.sort(key=lambda x: int(x.name.split("_")[1]))
+            # TODO: Take only best memory
+
+            for memory in memories:
+                df = pd.read_json(memory)
+                # Get Baseline
+                baseline_df = get_baseline(ticker='^DJI', start=df.loc[0, 'date'], end=df.tail(1).iloc[0]['date'])
+                baseline_returns = get_daily_return(baseline_df, value_col_name="close")
+
+                # Get DRL
+                df_ts = convert_daily_return_to_pyfolio_ts(df, "portfolio_return")
+
+                with pyfolio.plotting.plotting_context(font_scale=1.1):
+                    pyfolio.create_full_tear_sheet(returns=df_ts, benchmark_rets=baseline_returns, set_context=False)
+
+                # print("\n\n\n\n")
+                # print(memory.name)
+                break
+
+    def plot_compare_portfolios(self):
+        for p in self.program.experiment_dir.models.iterdir():
+            memories = [m for m in p.iterdir() if m.name.endswith("memory.json")]
+            memories.sort(key=lambda x: int(x.name.split("_")[1]))
+            # TODO: Take only best memory
+            for memory in memories:
+                #
+                df = pd.read_json(memory)
+
+                #
+                baseline_df = get_baseline(ticker='^DJI', start=df.loc[0, 'date'], end=df.tail(1).iloc[0]['date'])
+                baseline_returns = get_daily_return(baseline_df, value_col_name="close")
+
+                #
+                model_cumpod = (1 + df['portfolio_return']).cumprod() - 1
+                dji_cumpod = (1 + baseline_returns).cumprod() - 1
+                min_var_cumpod = minimum_variance(self.stock_dataset.test_dataset)
+
+                #
+                trace0_portfolio = go.Scatter(x=df['date'], y=model_cumpod, mode='lines',
+                                              name=f"{p.name}]")
+                trace1_portfolio = go.Scatter(x=df['date'], y=dji_cumpod, mode='lines', name='DJIA')
+                trace2_portfolio = go.Scatter(x=df['date'], y=min_var_cumpod, mode='lines', name='Min-Variance')
+
+                #
+                fig = go.Figure()
+                fig.add_trace(trace0_portfolio)
+                fig.add_trace(trace1_portfolio)
+                fig.add_trace(trace2_portfolio)
+
+                #
+                fig.update_layout(
+                    legend=dict(
+                        x=0,
+                        y=1,
+                        traceorder="normal",
+                        font=dict(
+                            family="sans-serif",
+                            size=15,
+                            color="black"
+                        ),
+                        bgcolor="White",
+                        bordercolor="white",
+                        borderwidth=2
+
+                    ),
+                )
+                # fig.update_layout(legend_orientation="h")
+                fig.update_layout(title={
+                    # 'text': "Cumulative Return using FinRL",
+                    'y': 0.85,
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'yanchor': 'top'})
+                # with Transaction cost
+                # fig.update_layout(title =  'Quarterly Trade Date')
+                fig.update_layout(
+                    #    margin=dict(l=20, r=20, t=20, b=20),
+
+                    paper_bgcolor='rgba(1,1,0,0)',
+                    plot_bgcolor='rgba(1, 1, 0, 0)',
+                    # xaxis_title="Date",
+                    yaxis_title="Cumulative Return",
+                    xaxis={'type': 'date',
+                           'tick0': df.loc[0, 'date'],
+                           'tickmode': 'linear',
+                           'dtick': 86400000.0 * 80}
+
+                )
+                fig.update_xaxes(showline=True, linecolor='black', showgrid=True, gridwidth=1,
+                                 gridcolor='LightSteelBlue', mirror=True)
+                fig.update_yaxes(showline=True, linecolor='black', showgrid=True, gridwidth=1,
+                                 gridcolor='LightSteelBlue', mirror=True)
+                fig.update_yaxes(zeroline=True, zerolinewidth=1, zerolinecolor='LightSteelBlue')
+
+                fig.show()
+                break
 
 
 def initialisation(arg_parse: bool = True) -> Program:
@@ -362,34 +472,46 @@ def initialisation(arg_parse: bool = True) -> Program:
 
 
 def t1():
-    program = initialisation(False)
-    d = StockDataset(program)
-    df = d.get_stock_dataset()
-    return {
-        "d": d,
-        "df": df,
-    }
+    print("t1")
+
+
+def stock_dataset(program: Program) -> StockDataset:
+    stock_dataset_init = StockDataset(program)
+
+    #
+    if program.args is None:
+        stock_dataset_init.load_dataset()
+        return stock_dataset_init
+
+    if program.args.prepare_dataset:  # Dataset is not provided create it
+        stock_dataset_init.preprocess()
+        stock_dataset_init.save()
+        return stock_dataset_init
+    else:
+        stock_dataset_init.load_dataset()
+        return stock_dataset_init
+
+
+def train(program: Program, dataset: StockDataset):
+    t = Train(stock_dataset=dataset, program=program, algorithm_name="ppo")
+    t.train()
+
+
+def test(program: Program, dataset: StockDataset):
+    test = Test(program=program, stock_dataset=dataset)
+    # test.test()
+    test.plot_stats()
 
 
 def main():
-    program_init = initialisation()
+    program = initialisation()
+    dataset = stock_dataset(program)
 
-    if program_init.debug is None:
-        if program_init.args.prepare_dataset:  # Dataset is not provided create it
-            stock_dataset_init = StockDataset(program_init)
-            stock_dataset_init.preprocess()
-            stock_dataset_init.save()
-        else:
-            stock_dataset_init = StockDataset(program_init)
-            stock_dataset_init.load_dataset()
-        if program_init.args.train:
-            #
-            train = Train(stock_dataset=stock_dataset_init, program=program_init, algorithm_name="ppo")
-            #
-            train.train()
-        if program_init.args.test:
-            test = Test(program=program_init, stock_dataset=stock_dataset_init)
-            test.test()
+    if program.debug is None:
+        if program.args.train:
+            train(program, dataset)
+        if program.args.test:
+            test(program, dataset)
 
 
 if __name__ == "__main__":

@@ -22,12 +22,11 @@ class ExperimentDir:
         # self.algo = self.models.joinpath(algo)
         # self.chart: Path | None = None
 
-    def set_algo(self, algo: str):
-        last_algo_index = self._get_last_algorithm_index(algo)
-        self.algo = self.models.joinpath(algo + f"_{last_algo_index + 1}")
+    def set_algo(self, algo_name: str):
+        self.algo = self.models.joinpath(algo_name)
         self.tensorboard = self.algo.joinpath("tensorboard")
 
-    def _get_last_algorithm_index(self, algo: str) -> int:
+    def get_last_algorithm_index(self, algo: str) -> int:
         """Get the index of the last trained model. If no model is trained, return 0"""
         models = [i for i in os.listdir(self.models.as_posix()) if algo in i]
         if len(models) == 0:

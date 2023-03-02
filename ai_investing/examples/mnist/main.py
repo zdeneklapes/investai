@@ -56,7 +56,7 @@ def train(args, model, device, train_loader, optimizer, epoch):
                 'Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                     epoch,
                     batch_idx * len(data),
-                    len(train_loader.dataset),
+                    len(train_loader.stock_dataset),
                     100. * batch_idx / len(train_loader),
                     loss.item()
                 )
@@ -77,11 +77,11 @@ def test(model, device, test_loader):
             pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
             correct += pred.eq(target.view_as(pred)).sum().item()
 
-    test_loss /= len(test_loader.dataset)
+    test_loss /= len(test_loader.stock_dataset)
 
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
-        test_loss, correct, len(test_loader.dataset),
-        100. * correct / len(test_loader.dataset)))
+        test_loss, correct, len(test_loader.stock_dataset),
+        100. * correct / len(test_loader.stock_dataset)))
 
 
 def main():

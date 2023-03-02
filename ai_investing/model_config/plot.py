@@ -21,13 +21,14 @@ def get_daily_return(df, value_col_name="account_value"):
     return pd.Series(df["daily_return"], index=df.index)
 
 
-def convert_daily_return_to_pyfolio_ts(df):
+def convert_daily_return_to_pyfolio_ts(df, value_col_name="daily_return", format: str = "%Y-%m-%d"):
     strategy_ret = df.copy()
     strategy_ret["date"] = pd.to_datetime(strategy_ret["date"])
+    # strategy_ret["date"] = strategy_ret["date"].dt.strftime(format)
     strategy_ret.set_index("date", drop=False, inplace=True)
     strategy_ret.index = strategy_ret.index.tz_localize("UTC")
     del strategy_ret["date"]
-    return pd.Series(strategy_ret["daily_return"].values, index=strategy_ret.index)
+    return pd.Series(strategy_ret[value_col_name].values, index=strategy_ret.index)
 
 
 def backtest_stats(account_value, value_col_name="account_value"):

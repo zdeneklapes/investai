@@ -202,7 +202,7 @@ if __name__ == "__main__":
         forex_dataset = ForexDataset()
         df = forex_dataset.preprocess()
     if not DEBUG:
-        if args.dataset:
+        if args.stock_dataset:
             forex_dataset = ForexDataset()
             forex_dataset.preprocess()
             forex_dataset.save()

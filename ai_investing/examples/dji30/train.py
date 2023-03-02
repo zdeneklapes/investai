@@ -147,8 +147,8 @@ def get_algorithm_params() -> Dict[str, Any]:
 # ######################################################################################################################
 def train(program):
     # Establish the training environment using StockTradingEnv() class
-    env_kwargs = get_env_kwargs(program.dataset)
-    env_gym = StockTradingEnv(df=program.dataset, **env_kwargs)
+    env_kwargs = get_env_kwargs(program.stock_dataset)
+    env_gym = StockTradingEnv(df=program.stock_dataset, **env_kwargs)
 
     # Agent
     env_train, _ = env_gym.get_sb_env()
@@ -178,11 +178,11 @@ if __name__ == "__main__":
         exp_dir=ExperimentDir(root=Path(__file__).parent),
         DEBUG=False,
     )
-    program.dataset = get_dataset(
+    program.stock_dataset = get_dataset(
         pd.read_csv(program.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv"), index_col=0), purpose="train"
     )
     program.exp_dir.create_dirs()
 
     #
-    print(f"Start: {program.dataset['date'].min()}, End: {program.dataset['date'].max()}")
+    print(f"Start: {program.stock_dataset['date'].min()}, End: {program.stock_dataset['date'].max()}")
     train(program)

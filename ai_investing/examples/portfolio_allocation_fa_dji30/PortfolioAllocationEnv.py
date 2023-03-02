@@ -69,11 +69,12 @@ class PortfolioAllocationEnv(gym.Env):
         # Immutable
         self._save_path: Final = save_path
         self._df: Final = df
+        self._start_from_index: Final = start_from_index
         self._tickers: Final = tickers  # Used for: Action and Observation space
         self._features: Final = features  # Used for Observation space
 
         # Sets: self._data_index, self._portfolio_value, self._memory
-        self.__init_environment(initial_portfolio_value=initial_portfolio_value, data_index=start_from_index)
+        self.__init_environment(initial_portfolio_value=initial_portfolio_value)
 
         # Inherited
         self.action_space = spaces.Box(low=0, high=1, shape=(len(self._tickers),))
@@ -83,14 +84,14 @@ class PortfolioAllocationEnv(gym.Env):
                                                    len(self._features))
                                             )
 
-    def __init_environment(self, initial_portfolio_value: int, data_index: int):
+    def __init_environment(self, initial_portfolio_value: int):
         """Initialize environment
         self._data_index: Index of the current data
         self._portfolio_value: Portfolio value
         self._memory: Memory of the environment
         :param initial_portfolio_value:
         """
-        self._data_index = data_index
+        self._data_index = self._start_from_index
         self._memory = Memory(df=pd.DataFrame(dict(portfolio_value=[initial_portfolio_value],
                                                    portfolio_return=[0],
                                                    action=[[1 / len(self._tickers)] * len(self._tickers)],
@@ -156,7 +157,7 @@ class PortfolioAllocationEnv(gym.Env):
         seed: Optional[int] = None,
         options: Optional[Dict[str, Any]] = None,
     ):
-        self.__init_environment(initial_portfolio_value=self._memory._initial_portfolio_value, data_index=0)
+        self.__init_environment(initial_portfolio_value=self._memory._initial_portfolio_value)
         return self._current_state  # First observation
 
     def render(self, mode='human'):
