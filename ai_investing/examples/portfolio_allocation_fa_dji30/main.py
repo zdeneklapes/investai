@@ -500,7 +500,8 @@ def train(program: Program, dataset: StockDataset):
 def test(program: Program, dataset: StockDataset):
     test = Test(program=program, stock_dataset=dataset)
     # test.test()
-    test.plot_stats()
+    # test.plot_stats()
+    test.plot_compare_portfolios()
 
 
 def main():
