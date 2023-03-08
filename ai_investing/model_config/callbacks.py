@@ -1,8 +1,12 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
+from typing import Optional, Literal
 
+import wandb
+from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.callbacks import CheckpointCallback
-from examples.portfolio_allocation_fa_dji30.PortfolioAllocationEnv import Memory, PortfolioAllocationEnv
+from examples.portfolio_allocation_fa_dji30.PortfolioAllocationEnv import PortfolioAllocationEnv
+from model_config.memory import Memory
 
 
 class CustomCheckpointCallback(CheckpointCallback):
@@ -34,3 +38,20 @@ class CustomCheckpointCallback(CheckpointCallback):
                 memory: Memory = self.locals['env'].envs[0]._memory
                 memory_path = Path(self.save_path).joinpath(self.memory_name)
                 memory.save(memory_path)
+
+
+class WandbCallbackExtendMemory(WandbCallback):
+    def __init__(
+        self,
+        verbose: int = 0,
+        model_save_path: Optional[str] = None,
+        model_save_freq: int = 0,
+        gradient_save_freq: int = 0,
+        log: Optional[Literal["gradients", "parameters", "all"]] = "all",
+    ):
+        return super().__init__(verbose, model_save_path, model_save_freq, gradient_save_freq, log)
+
+    def _on_step(self) -> bool:
+        memory: Memory = self.locals['env'].envs[0]._memory
+        wandb.log(memory.df.tail(1).to_dict())
+        return super()._on_step()

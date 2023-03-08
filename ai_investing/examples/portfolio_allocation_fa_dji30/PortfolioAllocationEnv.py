@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from typing import Any, Dict, Optional, List, Final
-import attrs
 from pathlib import Path
 
 import numpy as np
@@ -14,50 +13,8 @@ from gym import spaces
 
 from gymnasium.utils import seeding
 from scipy.special import softmax
-from stable_baselines3.common.vec_env import DummyVecEnv
 
-
-@attrs.define
-class Memory:
-    """Memory class for storing the history of the agent performance in the environment"""
-    df: pd.DataFrame
-
-    def append(self, portfolio_value, portfolio_return, action, date):
-        """Append memory
-        :param portfolio_value: Portfolio value
-        :param portfolio_return: Portfolio return
-        :param action: Action
-        :param date: Date
-        """
-        df_new = pd.DataFrame({
-            "portfolio_value": [portfolio_value],
-            "portfolio_return": [portfolio_return],
-            "action": [action],
-            "date": [date]
-        })
-        self.df = pd.concat([self.df, df_new], axis=0, ignore_index=True)
-
-    @property
-    def _initial_portfolio_value(self) -> int:
-        """Initial portfolio value"""
-        return self.df["portfolio_value"].iloc[0]
-
-    @property
-    def _current_portfolio_value(self) -> int:
-        """Current portfolio value"""
-        return self.df["portfolio_value"].iloc[-1]
-
-    def save(self, save_path: Path):
-        """Save memory to csv file
-        :param save_path: Path to save the memory
-        """
-        self.df.to_json(save_path.as_posix(), index=True)
-
-    def load(self, save_path: Path):
-        """Save memory to csv file
-        :param save_path: Path to save the memory
-        """
-        self.df.from_json(save_path.as_posix(), index=True)
+from model_config.memory import Memory
 
 
 class PortfolioAllocationEnv(gym.Env):
@@ -65,7 +22,7 @@ class PortfolioAllocationEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, df: pd.DataFrame, initial_portfolio_value: int, tickers: List[str], features: List[str],
-                 save_path: Path, start_from_index: int = 0):
+                 save_path: Path, start_from_index: int = 0, wandb: bool = False):
         # Immutable
         self._save_path: Final = save_path
         self._df: Final = df
@@ -83,6 +40,7 @@ class PortfolioAllocationEnv(gym.Env):
                                             shape=(len(self._tickers),
                                                    len(self._features))
                                             )
+        self.wandb = wandb
 
     def __init_environment(self, initial_portfolio_value: int):
         """Initialize environment
@@ -143,13 +101,16 @@ class PortfolioAllocationEnv(gym.Env):
         )
 
         # Memory
-        self._memory.append(portfolio_value=current_portfolio_value,
-                            portfolio_return=self._get_portfolio_return(normalized_actions),
-                            action=normalized_actions,
-                            date=self._current_data.date.unique()[0])
+        log_dict = {
+            "portfolio_value": current_portfolio_value,
+            "portfolio_return": self._get_portfolio_return(normalized_actions),
+            "action": normalized_actions,
+            "date": self._current_data.date.unique()[0]
+        }
+        self._memory.append(**log_dict)
 
         # Observation, Reward, Terminated, Truncated, Info, Done
-        return self._current_state, self._get_reward(), self._terminal, {}
+        return self._current_state, self._get_reward(), self._terminal, log_dict
 
     def reset(
         self,
@@ -166,8 +127,3 @@ class PortfolioAllocationEnv(gym.Env):
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
-
-    def get_stable_baseline3_environment(self):
-        environment = DummyVecEnv([lambda: self])
-        observation_space = environment.reset()
-        return environment, observation_space

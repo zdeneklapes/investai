@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 from os import path
 import sys
 import cProfile
@@ -6,6 +7,7 @@ import pstats
 import argparse
 from argparse import Namespace
 from typing import Dict, Tuple
+from distutils.util import strtobool
 
 from common.baseexitcode import BaseExitCode
 
@@ -86,27 +88,46 @@ def get_argparse() -> Tuple[vars, Namespace]:
     Parse arguments from command line or file
     :return: Tuple[vars, Namespace]
     """
+    # nargs="?": 1 optional argument
+    # nargs="*": 0 or more arguments
+    # nargs="+": 1 or more arguments
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--train", help="Will train models based on hyper parameters",
-                        action="store_true", )
-    parser.add_argument("--test", help="Will test trained models",
-                        action="store_true", )
-    parser.add_argument("--dataset", help="Will test trained models",
-                        nargs="?", default="dataset.csv")
-    parser.add_argument("--prepare-dataset", help="Prepare and save dataset as csv",
-                        action="store_true", )
-    # parser.add_argument("--save_dataset", help="Prepare and save dataset as csv into: {ProjectDir().model.root}",
-    #                     action="store_true", )
-    # parser.add_argument("--input_dataset", help="Use already prepared dataset.",
-    #                     nargs="?", )  # 1 optional argument type=str, )
-    # parser.add_argument("--default_dataset", help="Default preprocessed dataset will be used",
-    #                     action="store_true", )
-    parser.add_argument("--models", help="Already trained model",
-                        nargs="+", )  # 1 or more arguments type=str, default=[], )
-    parser.add_argument("--stable_baseline", help="Use stable-baselines3",
-                        action="store_true", )
-    parser.add_argument("--ray", help="Use ray-rllib",
-                        action="store_true", )
-    parser.add_argument("--config", help="Configuration file",
-                        type=open, action=_LoadArgumentsFromFile)
+    # Project arguments
+    parser.add_argument("--train", help="Will train models based on hyper parameters", action="store_true", )
+    parser.add_argument("--test", help="Will test trained models", action="store_true", )
+    parser.add_argument("--dataset", help="Will test trained models", nargs="?", default="dataset.csv")
+    parser.add_argument("--prepare-dataset", help="Prepare and save dataset as csv", action="store_true", )
+    parser.add_argument("--models", help="Already trained model", nargs="+", )  # 1 or more arguments type=str, default=[], )
+    parser.add_argument("--stable_baseline", help="Use stable-baselines3", action="store_true", )
+    parser.add_argument("--ray", help="Use ray-rllib", action="store_true", )
+    parser.add_argument("--config", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
+    parser.add_argument("--debug", help="Debug mode", action="store_true", )
+
+    # Training arguments
+    parser.add_argument("--exp-name", type=str, default=os.path.basename(__file__).rstrip(".py"), help="the name of this experiment")
+    parser.add_argument("--seed", type=int, default=1, help="seed of the experiment")
+    parser.add_argument("--torch-deterministic", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True, help="if toggled, `torch.backends.cudnn.deterministic=False`")
+    parser.add_argument("--cuda", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True, help="if toggled, cuda will be enabled by default")
+    parser.add_argument("--track", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True, help="if toggled, this experiment will be tracked with Weights and Biases")
+    parser.add_argument("--wandb-project-name", type=str, default="cleanRL", help="the wandb's project name")
+    parser.add_argument("--wandb-entity", type=str, default=None, help="the entity (team) of wandb's project")
+    parser.add_argument("--capture-video", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True, help="whether to capture videos of the agent performances (check out `videos` folder)")
+
+    # Algorithm specific arguments
+    parser.add_argument("--env-id", type=str, default="", help="the id of the environment")
+    parser.add_argument("--total-timesteps", type=int, default=1000000, help="total timesteps of the experiments")
+    parser.add_argument("--buffer-size", type=int, default=int(1e6), help="the replay memory buffer size")
+    parser.add_argument("--gamma", type=float, default=0.99, help="the discount factor gamma")
+    parser.add_argument("--tau", type=float, default=0.005, help="target smoothing coefficient (default: 0.005)")
+    parser.add_argument("--batch-size", type=int, default=256, help="the batch size of sample from the reply memory")
+    parser.add_argument("--policy-noise", type=float, default=0.2, help="the scale of policy noise")
+    parser.add_argument("--exploration-noise", type=float, default=0.1, help="the scale of exploration noise")
+    parser.add_argument("--learning-starts", type=int, default=25e3, help="timestep to start learning")
+    parser.add_argument("--policy-frequency", type=int, default=2, help="the frequency of training policy (delayed)")
+    parser.add_argument("--noise-clip", type=float, default=0.5, help="noise clip parameter of the Target Policy Smoothing Regularization")
+    parser.add_argument("--n-steps", type=int, default=5, help="the number of steps to run in the environment for each training step")
+    parser.add_argument("--ent-coef", type=float, default=0.01, help="the coefficient of the entropy")
+    parser.add_argument("--learning-rate", type=float, default=7e-4, help="the learning rate of the optimizer")
+
     return vars(parser.parse_args()), parser.parse_args()
