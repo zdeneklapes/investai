@@ -19,7 +19,7 @@
 # INCLUDES
 # ##############################################################################
 
-##
+
 import os
 import sys
 import warnings
@@ -29,9 +29,7 @@ from pyfolio import timeseries
 import matplotlib
 
 from finrl.agents.stablebaselines3.models import DRLAgent
-from finrl.config import (
-    TRAINED_MODEL_DIR,
-)
+from finrl.config import TRAINED_MODEL_DIR
 from finrl.config_tickers import DOW_30_TICKER
 from finrl.plot import backtest_stats, convert_daily_return_to_pyfolio_ts, get_baseline
 
@@ -48,40 +46,33 @@ from rl.envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv
 from common.utils import now_time
 from project_configs.project_dir import ProjectDir
 
-##
 _TRAIN_DATA_START = "2010-01-01"
 _TRAIN_DATA_END = "2021-12-31"
 _TEST_DATA_START = "2021-01-01"
 _TEST_DATA_END = "2021-12-31"
 
 
-##
 # ##############################################################################
 # FUNCTIONS
 # ##############################################################################
 def config():
-    ##
     warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=FutureWarning)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
     # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # INFO, WARN are ignored and only ERROR messages will be printed
 
-    ##
     matplotlib.use("Agg")
 
-    ##
     ProjectDir().check_and_create_dirs()
 
 
 # def run_stable_baseline(args: Args):
 #     if args.train:
-#         ##
 #         data = DataFundamentalAnalysis(_TRAIN_DATA_START, _TRAIN_DATA_END, ticker_list=DOW_30_TICKER)
 #         processed_data = data.retrieve_data(args)
 #         train_data = data_split(processed_data, _TRAIN_DATA_START, _TRAIN_DATA_END)
 #         trade_data = data_split(processed_data, _TEST_DATA_START, TEST_END_DATE)
-#         ##
 #         agent = Agent(train_data, trade_data)
 #         agent.train()
 #         agent.save_trained_model()
@@ -90,7 +81,6 @@ def config():
 
 
 # class EnvHyperParams(Enum):
-#
 class Pipeline:
     def __init__(self, args: Args):
         self.args = args
@@ -129,7 +119,6 @@ class Pipeline:
         return A2C_PARAMS
 
     def train(self):
-        ##
         # Data, Hyperparams
         data = DataTechnicalAnalysis(_TRAIN_DATA_START, _TEST_DATA_END, ticker_list=DOW_30_TICKER)
         data.load_data(args=self.args)
@@ -138,29 +127,24 @@ class Pipeline:
         )
         env_kwargs = self.get_env_kwargs(data=train_data).copy()
 
-        ##
         # Prepare Env, Model agent and policy
         gym_train_env = StockPortfolioAllocationEnv(**env_kwargs)
         env_train, _ = gym_train_env.get_sb_env()
         agent = DRLAgent(env=env_train)
         model_a2c = agent.get_model(model_name="a2c", model_kwargs=self.get_agent_kwargs())
 
-        ##
         # Train
         trained = agent.train(model=model_a2c, tb_log_name="a2c", total_timesteps=5000)
         self.trained_model = trained
 
-        ##
         # Save
         self.trained_model.save(os.path.join(TRAINED_MODEL_DIR, "a2c_{}".format(now_time())))
 
     def test(self):
-        ##
         # Data, Hyperparams
         test_data = self.get_data(DataBase.DataType.TEST)  # TODO: fixme # pylint: disable=no-member
         env_kwargs = self.get_env_kwargs(data=test_data).copy()
 
-        ##
         # Get trained model results
         gym_test_env = StockPortfolioAllocationEnv(**env_kwargs)
         test_daily_return, _ = DRLAgent.DRL_prediction(model=self.trained_model, environment=gym_test_env)
@@ -172,7 +156,6 @@ class Pipeline:
         print(f"==============STATS: Portfolio of ticker: {test_data.tic.unique()}===========")
         print(perf_stats_all)
 
-        ##
         # Compare with the market
         index_compare = "^DJI"
         baseline_df = get_baseline(ticker=index_compare, start=_TEST_DATA_START, end=_TEST_DATA_END)
@@ -181,7 +164,6 @@ class Pipeline:
         print(stats)
 
 
-##
 # ##############################################################################
 # # Main
 # ##############################################################################

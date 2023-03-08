@@ -54,6 +54,7 @@ statsd==4.0.1
 svgwrite==1.4.3
 tensorflow==2.11.0
 torchvision==0.14.1
+wandb==0.13.11
 wifi==0.3.8
 xarray==2023.2.0
 zeroconf==0.39.4
