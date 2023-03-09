@@ -11,7 +11,7 @@ from project_configs.program import Program
 
 
 def initialisation(arg_parse: bool = True) -> Program:
-    prj_dir = ProjectDir(root=Path("/Users/zlapik/my-drive-zlapik/0-todo/ai-investing"))
+    prj_dir = ProjectDir(__file__)
     experiment_dir = ExperimentDir(Path(__file__).parent)
     experiment_dir.create_dirs()
     return Program(
@@ -19,10 +19,6 @@ def initialisation(arg_parse: bool = True) -> Program:
         experiment_dir=experiment_dir,
         args=get_argparse()[1] if arg_parse else None,
     )
-
-
-def t1():
-    print("t1")
 
 
 def stock_dataset(program: Program) -> StockDataset:
@@ -60,13 +56,13 @@ def t1():
 
     if program.debug:
         import wandb
-        return Train(stock_dataset=dataset, program=program), wandb
+        wandb.plot.line_chart()
+        # return Train(stock_dataset=dataset, program=program), wandb
     else:
         if program.args.train:
             train(program, dataset)
         if program.args.test:
             test(program, dataset)
-
 
 
 if __name__ == "__main__":

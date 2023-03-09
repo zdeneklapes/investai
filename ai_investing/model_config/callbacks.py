@@ -53,5 +53,6 @@ class WandbCallbackExtendMemory(WandbCallback):
 
     def _on_step(self) -> bool:
         memory: Memory = self.locals['env'].envs[0]._memory
-        wandb.log(memory.df.tail(1).to_dict())
+        log_dict = {f"portfolio/{k}": v for k, v in memory.df.tail(1).to_dict()}
+        wandb.log(log_dict)
         return super()._on_step()

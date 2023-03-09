@@ -100,7 +100,7 @@ def ignore_warnings():
 
 def init_program(dataset_name: str = None) -> Program:
     program = Program(
-        project_dir=ProjectDir(root=Path("/Users/zlapik/my-drive-zlapik/0-todo/ai-investing")),
+        project_dir=ProjectDir(__file__),
         exp_dir=ExperimentDir(Path(os.getcwd())),
         DEBUG=False,
     )

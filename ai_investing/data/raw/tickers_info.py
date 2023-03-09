@@ -31,8 +31,8 @@ sys.path.append("../../../")
 
 ##
 from project_configs.project_dir import ProjectDir
-from common.utils import now_time
-from rl.data.CompanyInfo import CompanyInfo
+from utils.project import now_time
+from data.train.company_info import CompanyInfo
 
 # ######################################################################################################################
 # Global Variables
@@ -240,7 +240,7 @@ def remove_already_downloaded_tickers(tickers: List[List[str]], program: Program
 # ######################################################################################################################
 if __name__ == "__main__":
     program = Program(
-        prj_dir=ProjectDir(root=Path(__file__).parent.parent.parent.parent.parent),
+        prj_dir=ProjectDir(__file__),
         DEBUG=False,
     )
 

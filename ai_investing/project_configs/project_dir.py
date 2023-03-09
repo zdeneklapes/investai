@@ -24,31 +24,22 @@ class ProjectDir:
             self.test_tickers = self.root.joinpath("test_tickers")
             self.tickers = self.root.joinpath("tickers")
 
-    class _ModelDir:
-        def __init__(self, root: Path):
-            self.root = root.joinpath("models")
-            #
-            self.experiments = self.root.joinpath("experiments")
-
-    def __init__(self, root: Path = None):
-        if not root:
-            root = Path(__file__).parent.parent.parent
+    def __init__(self, file_dir: str):
+        root = self._find_git_root(Path(file_dir).parent)
 
         if not root.exists():
             raise FileNotFoundError(f"Root directory does not exist: {root}")
 
-        if root.name != "ai-investing":
-            raise ValueError(f"Project root directory is not \"ai-investing\", but \"{root.as_posix()}\"")
-
         self.root = root
-        #
-        self.parent = root.parent
         self.data = self._DataDir(self.root)
-        self.model = self._ModelDir(self.root)
 
-    def check_and_create_dirs(self):
-        self.model.root.mkdir(parents=True, exist_ok=True)
-        print(f"Created {self.model.root}")
+    def _find_git_root(self, path):
+        path = Path(path).resolve()
+        if (path / '.git').is_dir():
+            return path
+        if path == path.parent:
+            raise Exception('Not a Git repository')
+        return self._find_git_root(path.parent)
 
 
 if __name__ == "__main__":

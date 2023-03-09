@@ -182,7 +182,7 @@ def get_dataset(
 # ######################################################################################################################
 if __name__ == "__main__":
     program = Program(
-        prj_dir=ProjectDir(root=Path(__file__).parent.parent.parent.parent.parent),
+        prj_dir=ProjectDir(__file__),
         exp_dir=ExperimentDir(root=Path(__file__).parent),
         DEBUG=False,
     )

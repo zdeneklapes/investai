@@ -44,7 +44,6 @@ from common.Args import Args, argument_parser
 from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis, DataBase
 from rl.envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv
 from common.utils import now_time
-from project_configs.project_dir import ProjectDir
 
 _TRAIN_DATA_START = "2010-01-01"
 _TRAIN_DATA_END = "2021-12-31"
@@ -64,7 +63,7 @@ def config():
 
     matplotlib.use("Agg")
 
-    ProjectDir().check_and_create_dirs()
+    # ProjectDir().check_and_create_dirs()
 
 
 # def run_stable_baseline(args: Args):

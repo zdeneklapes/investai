@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from pathlib import Path
 
 import pandas as pd
 
@@ -10,7 +9,7 @@ def dji30_tickers(): pass
 
 
 def sp500_tickers():
-    prj_dir = ProjectDir(root=Path(__file__).parent.parent.parent.parent.parent)
+    prj_dir = ProjectDir(__file__)
     SP500 = prj_dir.data.indexes.joinpath("SP500")
     SP500.mkdir(parents=True, exist_ok=True)
     url = 'https://en.wikipedia.org/wiki/List_of_S%26P_500_companies'

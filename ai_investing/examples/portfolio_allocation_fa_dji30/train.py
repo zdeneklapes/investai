@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from typing import Union
 from agents.stablebaselines3_models import TensorboardCallback
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 import wandb
@@ -11,6 +12,8 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 import model_config.algorithm_parameters as algo_params
 from project_configs.program import Program
 from model_config.callbacks import WandbCallbackExtendMemory
+from wandb.sdk.wandb_run import Run
+from wandb.sdk.lib.disabled import RunDisabled
 
 
 class Train:
@@ -25,33 +28,41 @@ class Train:
         )
         self.program.experiment_dir.create_specific_dirs()
 
-    def _init_wandb(self):
-        run = wandb.init(
-            project="ai-investing",
-            sync_tensorboard=True,
-            monitor_gym=True,
-            save_code=True,
-            dir=self.program.experiment_dir.algo.as_posix(),
-        )
+    def _init_wandb(self) -> Union[Run, RunDisabled, None]:
+        # Hyper parameters
         intersect_keys = (
             set(self.program.args.__dict__.keys())
-            .intersection(
-                set(algo_params.STABLE_BASELINE_PARAMETERS[self.algorithm].keys())
-            )
+            .intersection(set(algo_params.STABLE_BASELINE_PARAMETERS[self.algorithm].keys()))
         )
-        default_keys = set(algo_params.STABLE_BASELINE_PARAMETERS[self.algorithm].keys()).difference(
-            intersect_keys
-        )
+        default_keys = set(algo_params.STABLE_BASELINE_PARAMETERS[self.algorithm].keys()).difference(intersect_keys)
 
         cli_config = {key: self.program.args.__dict__[key] for key in intersect_keys}
         default_config: dict = {
             key: algo_params.STABLE_BASELINE_PARAMETERS[self.algorithm][key]
             for key in default_keys
         }
+
         assert len(set(cli_config.keys()).intersection(set(default_config.keys()))) == 0, \
             "cli_config keys and default_config keys should be unique"
-        wandb.config.update(cli_config)
-        wandb.config.update(default_config)
+
+        # Initialize wandb
+        run = wandb.init(
+            job_type="train",
+            dir=self.program.experiment_dir.algo.as_posix(),
+            config=(cli_config | default_config),
+            project="ai-investing",
+            entity="zlapik",
+            tags=["train", "ppo", "portfolio-allocation"],
+            notes="Training PPO on DJI30 stocks",
+            group="experiment_1",  # TIP: Can be used environment variable "WANDB_RUN_GROUP", Must be unique
+            mode="online",
+            allow_val_change=False,
+            resume=None,
+            force=True,  # True: User must be logged in to W&B, False: User can be logged in or not
+            sync_tensorboard=True,
+            monitor_gym=True,
+            save_code=True,
+        )
         return run
 
     def _init_environment(self):
@@ -101,7 +112,7 @@ class Train:
         self._init_folder()
 
         # Wandb
-        wandb_run = self._init_wandb()
+        _ = self._init_wandb()
 
         # Environment
         env = self._init_environment()
@@ -114,6 +125,9 @@ class Train:
         model.save(
             (self.program.experiment_dir.algo / f"model_{self.program.args.total_timesteps}_steps.zip").as_posix()
         )
+
+        # Wandb metrics
+        wandb.define_metric("total_reward", step_metric="total_timesteps")
 
         # Deinit
         self._deinit_environment(env)
