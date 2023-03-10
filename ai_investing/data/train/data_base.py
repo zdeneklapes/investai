@@ -8,8 +8,8 @@ import pandas as pd
 from meta.data_processors.yahoofinance import Yahoofinance
 
 from project_configs.project_dir import ProjectDir
-from common.Args import Args
-from common.utils import now_time
+from shared.Args import Args
+from shared.utils import now_time
 
 
 @dataclasses.dataclass(init=False)

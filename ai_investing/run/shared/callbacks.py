@@ -5,7 +5,7 @@ from typing import Optional, Literal
 import wandb
 from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.callbacks import CheckpointCallback
-from examples.portfolio_allocation_fa_dji30.PortfolioAllocationEnv import PortfolioAllocationEnv
+from run.portfolio_allocation.PortfolioAllocationEnv import PortfolioAllocationEnv
 from model_config.memory import Memory
 
 

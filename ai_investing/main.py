@@ -39,11 +39,11 @@ sys.path.append("../")
 sys.path.append("../../")
 sys.path.append("../../../")
 
-from common.Args import Args, argument_parser
+from shared.Args import Args, argument_parser
 
 from rl.data.DataTechnicalAnalysis import DataTechnicalAnalysis, DataBase
 from rl.envs.StockPortfolioAllocationEnv import StockPortfolioAllocationEnv
-from common.utils import now_time
+from shared.utils import now_time
 
 _TRAIN_DATA_START = "2010-01-01"
 _TRAIN_DATA_END = "2021-12-31"

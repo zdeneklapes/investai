@@ -4,8 +4,8 @@ from agents.stablebaselines3_models import TensorboardCallback
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 import wandb
 
-from examples.portfolio_allocation_fa_dji30.PortfolioAllocationEnv import PortfolioAllocationEnv
-from examples.portfolio_allocation_fa_dji30.dataset import StockDataset
+from run.portfolio_allocation.PortfolioAllocationEnv import PortfolioAllocationEnv
+from run.portfolio_allocation.dataset_fa_daily import StockDataset
 from stable_baselines3.ppo import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv

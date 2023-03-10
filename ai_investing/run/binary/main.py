@@ -8,8 +8,8 @@ import numpy as np
 from finta import TA
 from tvDatafeed import TvDatafeed, Interval
 
-from common.Args import get_argparse
-from common.utils import reload_module  # noqa # pylint: disable=unused-import
+from shared.Args import get_argparse
+from shared.utils import reload_module  # noqa # pylint: disable=unused-import
 from project_configs.experiment_dir import ExperimentDir
 
 TRAIN_DATE_START = '2019-01-01'

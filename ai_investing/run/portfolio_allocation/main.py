@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 
-from examples.portfolio_allocation_fa_dji30.dataset import StockDataset
-from examples.portfolio_allocation_fa_dji30.test import Test
-from examples.portfolio_allocation_fa_dji30.train import Train
+from run.portfolio_allocation.dataset_fa_daily import StockDataset
+from run.portfolio_allocation.test import Test
+from run.portfolio_allocation.trains import Train
 from utils.project import reload_module, now_time, get_argparse  # noqa # pylint: disable=unused-import
 from project_configs.experiment_dir import ExperimentDir
 from project_configs.program import Program

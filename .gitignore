@@ -60,11 +60,8 @@ logs/
 *.png
 
 # Data
-**datasets/
-**dataset/
+**out
 /data/
-ai_investing/rl/examples/mnist/data/
-*.csv
 
 # Models
 **trained_models**/

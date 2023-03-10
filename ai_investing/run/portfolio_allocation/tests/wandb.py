@@ -5,8 +5,8 @@ import pandas as pd
 import wandb
 from plotly import graph_objs as go
 
-from examples.portfolio_allocation_fa_dji30.PortfolioAllocationEnv import PortfolioAllocationEnv
-from examples.portfolio_allocation_fa_dji30.dataset import StockDataset
+from run.portfolio_allocation.PortfolioAllocationEnv import PortfolioAllocationEnv
+from run.portfolio_allocation.dataset_fa_daily import StockDataset
 from extra.math.finance.minimum_variance import minimum_variance
 from model_config.plot import get_baseline, get_daily_return, convert_daily_return_to_pyfolio_ts
 from project_configs.program import Program
