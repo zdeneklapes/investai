@@ -2,6 +2,7 @@
 import os
 import shutil
 from pathlib import Path
+from typing import Optional
 
 
 class ExperimentDir:
@@ -17,8 +18,8 @@ class ExperimentDir:
         self.out: Path = self.root.joinpath("out")
         self.datasets: Path = self.out.joinpath("datasets")
         self.models: Path = self.out.joinpath("models")
-        self.algo: Path | None = None
-        self.tensorboard: Path | None = None
+        self.algo: Optional[Path] = None
+        self.tensorboard: Optional[Path] = None
 
         #
         self.create_dirs()
