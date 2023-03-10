@@ -142,7 +142,7 @@ if __name__ == "__main__":
     from rl.experiments.common.utils import get_dataset
 
     program.dataset = get_dataset(
-        pd.read_json(program.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv")), purpose="train"
+        pd.read_json(program.exp_dir.out.dataset.joinpath(f"{dataset_name}.csv")), purpose="train"
     )
     program.exp_dir.create_dirs()
 

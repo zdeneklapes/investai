@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 from typing import Union
 
-from agents.stablebaselines3_models import TensorboardCallback
+# from agents.stablebaselines3_models import TensorboardCallback
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 import wandb
 from wandb.sdk.wandb_run import Run
 from wandb.sdk.lib.disabled import RunDisabled
-from meta.config_tickers import DOW_30_TICKER
 from stable_baselines3.ppo import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
+from run.shared.tickers import DOW_30_TICKER
 
-import run.shared.algorithm_parameters as algo_params
+from run.shared.algorithm_parameters import STABLE_BASELINE_PARAMETERS
+from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
 from run.shared.callbacks import WandbCallbackExtendMemory
+from run.shared.callbacks import TensorboardCallback
 from shared.program import Program
-
-from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 
 
 class Train:
@@ -33,13 +33,13 @@ class Train:
         # Hyper parameters
         intersect_keys = (
             set(self.program.args.__dict__.keys())
-            .intersection(set(algo_params.STABLE_BASELINE_PARAMETERS[self.algorithm].keys()))
+            .intersection(set(STABLE_BASELINE_PARAMETERS[self.algorithm].keys()))
         )
-        default_keys = set(algo_params.STABLE_BASELINE_PARAMETERS[self.algorithm].keys()).difference(intersect_keys)
+        default_keys = set(STABLE_BASELINE_PARAMETERS[self.algorithm].keys()).difference(intersect_keys)
 
         cli_config = {key: self.program.args.__dict__[key] for key in intersect_keys}
         default_config: dict = {
-            key: algo_params.STABLE_BASELINE_PARAMETERS[self.algorithm][key]
+            key: STABLE_BASELINE_PARAMETERS[self.algorithm][key]
             for key in default_keys
         }
 
@@ -116,7 +116,7 @@ class Train:
         callbacks = self._init_callbacks()
 
         #
-        model = self._init_model(environment, callbacks) # noqa
+        model = self._init_model(environment, callbacks)  # noqa
 
         # Wandb: Log artifacts
         artifact = wandb.Artifact("dataset", type="dataset")
@@ -137,6 +137,7 @@ def main():
     program = Program()
     load_dotenv(dotenv_path=program.project_dir.root.as_posix())
     dataset = StockFaDailyDataset(program, DOW_30_TICKER)
+    dataset.load_dataset()
     t = Train(program=program, dataset=dataset)
     t.train()
 

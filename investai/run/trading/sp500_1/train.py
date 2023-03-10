@@ -187,7 +187,7 @@ if __name__ == "__main__":
         DEBUG=False,
     )
     program.dataset = get_dataset(
-        pd.read_csv(program.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv"), index_col=0), purpose="train"
+        pd.read_csv(program.exp_dir.out.dataset.joinpath(f"{dataset_name}.csv"), index_col=0), purpose="train"
     )
     program.exp_dir.create_dirs()
 

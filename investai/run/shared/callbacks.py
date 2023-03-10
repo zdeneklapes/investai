@@ -5,8 +5,10 @@ from typing import Optional, Literal
 import wandb
 from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.callbacks import CheckpointCallback
-from run.portfolio_allocation.PortfolioAllocationEnv import PortfolioAllocationEnv
-from model_config.memory import Memory
+from stable_baselines3.common.callbacks import BaseCallback
+
+from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
+from run.shared.memory import Memory
 
 
 class CustomCheckpointCallback(CheckpointCallback):
@@ -57,3 +59,18 @@ class WandbCallbackExtendMemory(WandbCallback):
             log_dict = {f"portfolio/{k}": v for k, v in memory.df.tail(1).to_dict()}
             wandb.log(log_dict)
         return super()._on_step()
+
+class TensorboardCallback(BaseCallback):
+    """
+    Custom callback for plotting additional values in tensorboard.
+    """
+
+    def __init__(self, verbose=0):
+        super(TensorboardCallback, self).__init__(verbose)
+
+    def _on_step(self) -> bool:
+        try:
+            self.logger.record(key="train/reward", value=self.locals["rewards"][0])
+        except BaseException:
+            self.logger.record(key="train/reward", value=self.locals["reward"][0])
+        return True

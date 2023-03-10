@@ -16,7 +16,7 @@ class ExperimentDir:
 
         self.root: Path = root
         self.out: Path = self.root.joinpath("out")
-        self.datasets: Path = self.out.joinpath("datasets")
+        self.dataset: Path = self.out.joinpath("datasets")
         self.models: Path = self.out.joinpath("models")
         self.algo: Optional[Path] = None
         self.tensorboard: Optional[Path] = None
@@ -41,7 +41,7 @@ class ExperimentDir:
     def create_dirs(self):
         self.root.mkdir(parents=True, exist_ok=True)
         self.out.mkdir(parents=True, exist_ok=True)
-        self.datasets.mkdir(parents=True, exist_ok=True)
+        self.dataset.mkdir(parents=True, exist_ok=True)
         self.models.mkdir(parents=True, exist_ok=True)
 
     def create_specific_dirs(self):
