@@ -25,6 +25,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     # nargs="+": 1 or more arguments
 
     parser = argparse.ArgumentParser()
+
     # Project arguments
     parser.add_argument("--train", help="Will train models based on hyper parameters", action="store_true", )
     parser.add_argument("--test", help="Will test trained models", action="store_true", )
@@ -35,6 +36,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         nargs="+", )  # 1 or more arguments type=str, default=[], )
     parser.add_argument("--stable_baseline", help="Use stable-baselines3", action="store_true", )
     parser.add_argument("--ray", help="Use ray-rllib", action="store_true", )
+    parser.add_argument("--sweep", help="Wandb sweep tune hyper parameters", action="store_true", )
 
     parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
     parser.add_argument("--debug", help="Debug mode", action="store_true", default=os.environ.get("DEBUG", False))
@@ -70,6 +72,8 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--total-timesteps", type=int, default=1000, help="total timesteps of the experiments")
     parser.add_argument("--buffer-size", type=int, default=int(1e6), help="the replay memory buffer size")
     parser.add_argument("--gamma", type=float, default=0.99, help="the discount factor gamma")
+    parser.add_argument("--gae-lambda", type=float, default=0.95,
+                        help="the lambda for the general advantage estimation")
     parser.add_argument("--tau", type=float, default=0.005, help="target smoothing coefficient (default: 0.005)")
     parser.add_argument("--batch-size", type=int, default=256, help="the batch size of sample from the reply memory")
     parser.add_argument("--policy-noise", type=float, default=0.2, help="the scale of policy noise")
@@ -78,9 +82,24 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--policy-frequency", type=int, default=2, help="the frequency of training policy (delayed)")
     parser.add_argument("--noise-clip", type=float, default=0.5,
                         help="noise clip parameter of the Target Policy Smoothing Regularization")
+    parser.add_argument("--clip-range", type=float, default=0.2, help="the limit for the ratio clipping")
+    parser.add_argument("--clip-range-vf", type=float, default=None,
+                        help="the limit for the ratio clipping of the value function")
+    parser.add_argument("normalize-advantage", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
+                        help="whether or not to normalize the advantage")
+
     parser.add_argument("--n-steps", type=int, default=5,
                         help="the number of steps to run in the environment for each training step")
-    parser.add_argument("--entropy-coefficient", type=float, default=0.01, help="the coefficient of the entropy")
+    parser.add_argument("--n-epochs", type=int, default=4, help="the number of epoch when updating the network")
+    parser.add_argument("--ent-coef", type=float, default=0.01, help="the coefficient of the entropy")
+    parser.add_argument("--vf-coef", type=float, default=0.5, help="the coefficient of the value function")
+    parser.add_argument("--max-grad-norm", type=float, default=0.5, help="the maximum value for the gradient clipping")
+    parser.add_argument("--use-sde", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
+                        help="whether or not to use generalized State Dependent Exploration")
+    parser.add_argument("--sde-sample-freq", type=int,
+                        help="Sample a new noise matrix every n steps (-1 = only at the beginning of the rollout)")
+    parser.add_argument("--target-kl", type=float, default=None,
+                        help="target kl divergence for early stopping (-1 = no early stopping)")
     parser.add_argument("--learning-rate", type=float, default=7e-4, help="the learning rate of the optimizer")
 
     # Environment arguments

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+from copy import deepcopy
 from typing import Union
 from pathlib import Path
 
@@ -28,42 +29,48 @@ class Train:
         self.algorithm: str = "ppo"
         self.model_path = self.program.experiment_dir.models.joinpath(f"{self.algorithm}.zip")
 
-    def _init_wandb(self) -> Union[Run, RunDisabled, None]:
-        # Hyper parameters
+    def _init_hyper_parameters(self):
+        """Hyper parameters for PPO algorithm"""
+        default_hyper_parameters = deepcopy(STABLE_BASELINE_PARAMETERS[self.algorithm])
         intersect_keys = (
             set(self.program.args.__dict__.keys())
-            .intersection(set(STABLE_BASELINE_PARAMETERS[self.algorithm].keys()))
+            .intersection(set(default_hyper_parameters.keys()))
         )
-        default_keys = set(STABLE_BASELINE_PARAMETERS[self.algorithm].keys()).difference(intersect_keys)
+        default_keys = set(default_hyper_parameters.keys()).difference(intersect_keys)
 
         cli_config = {key: self.program.args.__dict__[key] for key in intersect_keys}
         default_config: dict = {
-            key: STABLE_BASELINE_PARAMETERS[self.algorithm][key]
+            key: default_hyper_parameters[key]
             for key in default_keys
         }
 
         assert len(set(cli_config.keys()).intersection(set(default_config.keys()))) == 0, \
             "cli_config keys and default_config keys should be unique"
 
-        # Initialize wandb
-        run = wandb.init(
-            job_type="train",
-            dir=self.program.experiment_dir.models.as_posix(),
-            config=(cli_config | default_config),
-            project=os.environ.get("WANDB_PROJECT"),
-            entity=os.environ.get("WANDB_ENTITY"),
-            tags=["train", "ppo", "portfolio-allocation"],
-            notes="Training PPO on DJI30 stocks",
-            group="experiment_1",  # TIP: Can be used environment variable "WANDB_RUN_GROUP", Must be unique
-            mode="online",
-            allow_val_change=False,
-            resume=None,
-            force=True,  # True: User must be logged in to W&B, False: User can be logged in or not
-            sync_tensorboard=True,
-            monitor_gym=True,
-            save_code=True,
-        )
-        return run
+        return cli_config | default_config
+
+    def _init_wandb(self) -> Union[Run, RunDisabled, None]:
+        if self.program.args.sweep:
+            return wandb.init()
+        else:
+            run = wandb.init(
+                job_type="train",
+                dir=self.program.experiment_dir.models.as_posix(),
+                config=self._init_hyper_parameters(),
+                project=os.environ.get("WANDB_PROJECT"),
+                entity=os.environ.get("WANDB_ENTITY"),
+                tags=["train", "ppo", "portfolio-allocation"],
+                notes="Training PPO on DJI30 stocks",
+                group="experiment_1",  # TIP: Can be used environment variable "WANDB_RUN_GROUP", Must be unique
+                mode="online",
+                allow_val_change=False,
+                resume=None,
+                force=True,  # True: User must be logged in to W&B, False: User can be logged in or not
+                sync_tensorboard=True,
+                monitor_gym=True,
+                save_code=True,
+            )
+            return run
 
     def _init_environment(self):
         env = PortfolioAllocationEnv(df=self.stock_dataset.train_dataset,
@@ -140,7 +147,18 @@ def main():
     dataset = StockFaDailyDataset(program, DOW_30_TICKER)
     dataset.load_dataset()
     t = Train(program=program, dataset=dataset)
-    t.train()
+
+    if program.args.sweep:
+        sweep_id = wandb.sweep({})
+        wandb.agent(
+            sweep_id,
+            function=t.train,
+            project=os.environ.get("WANDB_PROJECT"),
+            entity=os.environ.get("WANDB_ENTITY"),
+            count=5
+        )
+    else:
+        t.train()
 
 
 if __name__ == '__main__':
