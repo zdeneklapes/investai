@@ -1,77 +1,9 @@
 # -*- coding: utf-8 -*-
-import os
-from os import path
-import sys
-import cProfile
-import pstats
 import argparse
+import os
 from argparse import Namespace
-from typing import Dict, Tuple
+from typing import Tuple
 from distutils.util import strtobool
-
-from shared.baseexitcode import BaseExitCode
-
-
-class Util:
-    @staticmethod
-    def check_paths(*, params: Dict[str, str]):
-        for key, val in params.items():
-            if key.find("dir") != -1 and not path.isdir(str(val)):
-                # TODO: LOGGER_STREAM.error(f'Bad directory|{key}: {val}')
-                print(f"Bad directory|{key}: {val}")  # TODO: Remove this
-                sys.exit(BaseExitCode.BAD_PARAMS)
-
-
-def now_time(_format: str = "%Y-%m-%dT%H-%M-%S") -> str:
-    import datetime
-
-    return datetime.datetime.now().strftime(_format)
-
-
-def line_profiler_stats(func):
-    def wrapper(*args, **kwargs):
-        import line_profiler
-
-        time_profiler = line_profiler.LineProfiler()
-        try:
-            return time_profiler(func)(*args, **kwargs)
-        finally:
-            time_profiler.print_stats()
-
-    return wrapper
-
-
-def profileit(func):
-    def wrapper(*args, **kwargs):
-        prof = cProfile.Profile()
-        retval = prof.runcall(func, *args, **kwargs)
-        ps = pstats.Stats(prof).sort_stats("cumtime")
-        ps.print_stats()
-        return retval
-
-    return wrapper
-
-
-def cProfile_decorator(sort_by: str):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            pr = cProfile.Profile()
-            pr.enable()
-            try:
-                return func(*args, **kwargs)
-            finally:
-                pr.disable()
-                pr.print_stats(sort=sort_by)
-
-        return wrapper
-
-    return decorator
-
-
-# This function reload the module
-def reload_module(module):
-    import importlib
-    importlib.reload(module)
 
 
 class _LoadArgumentsFromFile(argparse.Action):
@@ -83,7 +15,7 @@ class _LoadArgumentsFromFile(argparse.Action):
             parser.parse_args(f.read().split(), namespace)
 
 
-def get_argparse() -> Tuple[vars, Namespace]:
+def parse_arguments() -> Tuple[vars, Namespace]:
     """
     Parse arguments from command line or file
     :return: Tuple[vars, Namespace]
@@ -135,7 +67,12 @@ def get_argparse() -> Tuple[vars, Namespace]:
                         help="noise clip parameter of the Target Policy Smoothing Regularization")
     parser.add_argument("--n-steps", type=int, default=5,
                         help="the number of steps to run in the environment for each training step")
-    parser.add_argument("--ent-coef", type=float, default=0.01, help="the coefficient of the entropy")
+    parser.add_argument("--entropy-coefficient", type=float, default=0.01, help="the coefficient of the entropy")
     parser.add_argument("--learning-rate", type=float, default=7e-4, help="the learning rate of the optimizer")
+    parser.add_argument("--initial-amount", type=int, default=100000, help="Initial amount of money")
+    parser.add_argument("--transaction-cost", type=float, default=0.5, help="Transaction cost in $")
+    parser.add_argument("--reward-scaling", type=float, help="Reward scaling")
+    parser.add_argument("--dataset-split", type=float, default=0.8,
+                        help="Define what percentage of the dataset is used for training")
 
     return vars(parser.parse_args()), parser.parse_args()

@@ -1,31 +1,78 @@
 # -*- coding: utf-8 -*-
-#
-import sys
-
-#
-sys.path.append("./ai_investing/")
-sys.path.append("./")
-sys.path.append("../")
-sys.path.append("../../")
-sys.path.append("../../../")
-
-#
 import os
 import warnings
 from pathlib import Path
 from typing import List, Literal
+import cProfile
+import pstats
 
-#
 import pandas as pd
+import matplotlib
 
-#
+from shared.dir.project_dir import ProjectDir
+from shared.dir.experiment_dir import ExperimentDir
+from shared.program import Program
+from run.shared.learned_algorithm import LearnedAlgorithm
 
-#
-from project_configs.project_dir import ProjectDir
-from project_configs.experiment_dir import ExperimentDir
-# from rl.envs.StockTradingEnv import StockTradingEnv
-from project_configs.program import Program
-from model_config.learned_algorithm import LearnedAlgorithm
+
+def now_time(_format: str = "%Y-%m-%dT%H-%M-%S") -> str:
+    import datetime
+
+    return datetime.datetime.now().strftime(_format)
+
+
+def line_profiler_stats(func):
+    def wrapper(*args, **kwargs):
+        import line_profiler
+
+        time_profiler = line_profiler.LineProfiler()
+        try:
+            return time_profiler(func)(*args, **kwargs)
+        finally:
+            time_profiler.print_stats()
+
+    return wrapper
+
+
+def profileit(func):
+    def wrapper(*args, **kwargs):
+        prof = cProfile.Profile()
+        retval = prof.runcall(func, *args, **kwargs)
+        ps = pstats.Stats(prof).sort_stats("cumtime")
+        ps.print_stats()
+        return retval
+
+    return wrapper
+
+
+def cProfile_decorator(sort_by: str):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            pr = cProfile.Profile()
+            pr.enable()
+            try:
+                return func(*args, **kwargs)
+            finally:
+                pr.disable()
+                pr.print_stats(sort=sort_by)
+
+        return wrapper
+
+    return decorator
+
+
+# This function reload the module
+def reload_module(module):
+    import importlib
+    importlib.reload(module)
+
+
+def config():
+    warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
+    warnings.filterwarnings("ignore", category=FutureWarning)
+    warnings.filterwarnings("ignore", category=RuntimeWarning)
+    matplotlib.use("Agg")
 
 
 def data_split(df, start, end, target_date_col="date"):
@@ -52,9 +99,6 @@ def get_dataset(
         raise ValueError(f"Unknown purpose: {purpose}")
 
 
-# ######################################################################################################################
-# Helpers
-# ######################################################################################################################
 def print_learned_algo(algos: List[LearnedAlgorithm], metric_row: str):
     for i in algos:
         try:
@@ -80,17 +124,6 @@ def get_start_end(df: pd.DataFrame) -> dict:
     return {"start": start, "end": end}
 
 
-# def get_learned_algos(program: TestProgram) -> List[LearnedAlgorithm]:
-#     def get_algorithm(filename: Path):
-#         if "a2c" in filename.as_posix():
-#             return LearnedAlgorithm(algorithm="a2c", filename=filename, learned_algorithm=A2C.load(filename))
-#
-#     return [get_algorithm(filepath) for filepath in program.exp_dir.out.models.glob("*")]
-
-
-# ######################################################################################################################
-# Functions
-# ######################################################################################################################
 def ignore_warnings():
     warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
     warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -110,28 +143,3 @@ def init_program(dataset_name: str = None) -> Program:
         )
     program.exp_dir.create_dirs()
     return program
-
-
-# def predicate(program: TestProgram, algos: List[LearnedAlgorithm]) -> List[LearnedAlgorithm]:
-#     for algo in algos:
-#         env_kwargs = get_env_kwargs(program.dataset)
-#         env_gym = StockTradingEnv(df=program.dataset, **env_kwargs)
-#         algo.df_account_value, algo.df_actions = CustomDRLAgent.DRL_prediction(
-#             model=algo.learned_algorithm, environment=env_gym
-#         )
-#     return algos
-
-
-# def calc_performance_statistics(program: TestProgram):
-#     for algo in program.algos:
-#         perf_stats_all = backtest_stats(account_value=algo.df_account_value, value_col_name="account_value")
-#         algo.perf_stats_all = pd.DataFrame(perf_stats_all)
-#
-#     sorted_list = sorted(program.algos, key=lambda x: x.perf_stats_all.loc[program.metric][0])
-#     return sorted_list
-
-
-
-    # if type == "data_detailed":
-    #     df = pd.DataFrame()
-    #     return pd.concat([df, tickers_data[tic].data_detailed for tic in tickers_data], ignore_index=True)

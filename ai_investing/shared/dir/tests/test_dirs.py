@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import pytest
 from pathlib import Path
-from project_configs.experiment_dir import ExperimentDir
+from shared.dir.experiment_dir import ExperimentDir
 
 
 class TestExperimentDir:

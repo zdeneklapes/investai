@@ -5,8 +5,8 @@ from typing import Union
 from argparse import Namespace
 import attr
 
-from project_configs.project_dir import ProjectDir
-from project_configs.experiment_dir import ExperimentDir
+from shared.dir.project_dir import ProjectDir
+from shared.dir.experiment_dir import ExperimentDir
 
 
 @attr.define
