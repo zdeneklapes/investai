@@ -139,7 +139,17 @@ def init_program(dataset_name: str = None) -> Program:
     )
     if dataset_name:
         program.dataset = get_dataset(
-            pd.read_csv(program.exp_dir.out.datasets.joinpath(f"{dataset_name}.csv"), index_col=0), purpose="test"
+            pd.read_csv(program.experiment_dir.out.datasets.joinpath(f"{dataset_name}.csv"), index_col=0),
+            purpose="test"
         )
-    program.exp_dir.create_dirs()
+    program.experiment_dir.create_dirs()
     return program
+
+
+def find_git_root(path):
+    path = Path(path).resolve()
+    if (path / '.git').is_dir():
+        return path
+    if path == path.parent:
+        raise Exception('Not a Git repository')
+    return find_git_root(path.parent)

@@ -3,22 +3,24 @@ from typing import Union
 from agents.stablebaselines3_models import TensorboardCallback
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 import wandb
+from meta.config_tickers import DOW_30_TICKER
 
-from run.portfolio_allocation.PortfolioAllocationEnv import PortfolioAllocationEnv
-from run.portfolio_allocation.dataset_fa_daily import StockDataset
+from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
 from stable_baselines3.ppo import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
-import model_config.algorithm_parameters as algo_params
-from project_configs.program import Program
-from model_config.callbacks import WandbCallbackExtendMemory
+import run.shared.algorithm_parameters as algo_params
+from shared.program import Program
+from run.shared.callbacks import WandbCallbackExtendMemory
 from wandb.sdk.wandb_run import Run
 from wandb.sdk.lib.disabled import RunDisabled
 
+from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
+
 
 class Train:
-    def __init__(self, stock_dataset: StockDataset, program: Program):
-        self.stock_dataset: StockDataset = stock_dataset
+    def __init__(self, program: Program, dataset: StockFaDailyDataset):
+        self.stock_dataset: StockFaDailyDataset = dataset
         self.program: Program = program
         self.algorithm: str = "ppo"
 
@@ -136,9 +138,15 @@ class Train:
         self._deinit_wandb()
 
 
-if __name__ == '__main__':
-    from project_configs.project_dir import ProjectDir
+def main():
     from dotenv import load_dotenv
 
-    project_dir = ProjectDir(__file__)
-    load_dotenv(dotenv_path=project_dir.root.joinpath(".env"))
+    program = Program()
+    load_dotenv(dotenv_path=program.project_dir.root.as_posix())
+    dataset = StockFaDailyDataset(program, DOW_30_TICKER)
+    t = Train(program=program, dataset=dataset)
+    t.train()
+
+
+if __name__ == '__main__':
+    main()

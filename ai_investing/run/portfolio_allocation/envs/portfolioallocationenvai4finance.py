@@ -8,7 +8,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 import matplotlib.pyplot as plt
 
 
-class StockPortfolioEnv(gym.Env):
+class PortfolioAllocationEnvAI4Finance(gym.Env):
     """A single stock trading environment for OpenAI gym
 
     Attributes

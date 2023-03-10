@@ -4,25 +4,26 @@ from pathlib import Path
 import pandas as pd
 import wandb
 from plotly import graph_objs as go
+from meta.config_tickers import DOW_30_TICKER
 
-from run.portfolio_allocation.PortfolioAllocationEnv import PortfolioAllocationEnv
-from run.portfolio_allocation.dataset_fa_daily import StockDataset
+from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
 from extra.math.finance.minimum_variance import minimum_variance
-from model_config.plot import get_baseline, get_daily_return, convert_daily_return_to_pyfolio_ts
-from project_configs.program import Program
+from run.shared.plot import get_baseline, get_daily_return, convert_daily_return_to_pyfolio_ts
+from shared.program import Program
+from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 
 
 class Test:
-    def __init__(self, program: Program, stock_dataset: StockDataset):
+    def __init__(self, program: Program, dataset: StockFaDailyDataset):
         self.program: Program = program
-        self.stock_dataset: StockDataset = stock_dataset
+        self.dataset: StockFaDailyDataset = dataset
         self.env: PortfolioAllocationEnv = PortfolioAllocationEnv(
-            df=self.stock_dataset.test_dataset,
+            df=self.dataset.test_dataset,
             initial_portfolio_value=100_000,
-            tickers=self.stock_dataset.tickers,
-            features=self.stock_dataset.get_features(),
+            tickers=self.dataset.tickers,
+            features=self.dataset.get_features(),
             save_path=self.program.experiment_dir.algo,
-            start_from_index=self.stock_dataset.test_dataset.index[0]
+            start_from_index=self.dataset.test_dataset.index[0]
         )
 
     def test(self, model_path: Path = None) -> None:
@@ -110,7 +111,7 @@ class Test:
                 #
                 model_cumpod = (1 + df['portfolio_return']).cumprod() - 1
                 dji_cumpod = (1 + baseline_returns).cumprod() - 1
-                min_var_cumpod = minimum_variance(self.stock_dataset.test_dataset)
+                min_var_cumpod = minimum_variance(self.dataset.test_dataset)
 
                 #
                 trace0_portfolio = go.Scatter(x=df['date'], y=model_cumpod, mode='lines',
@@ -201,11 +202,15 @@ def get_wandb_runs() -> pd.DataFrame:
     return runs_df
 
 
-if __name__ == '__main__':
-    from project_configs.project_dir import ProjectDir
+def main():
     from dotenv import load_dotenv
 
-    project_dir = ProjectDir(__file__)
-    load_dotenv(dotenv_path=project_dir.root.joinpath(".env"))
+    program = Program()
+    load_dotenv(dotenv_path=program.project_dir.root.as_posix())
+    dataset = StockFaDailyDataset(program, DOW_30_TICKER)
+    test = Test(program, dataset)  # noqa
+    runs_df = get_wandb_runs()  # noqa
 
-    runs_df = get_wandb_runs()
+
+if __name__ == '__main__':
+    main()

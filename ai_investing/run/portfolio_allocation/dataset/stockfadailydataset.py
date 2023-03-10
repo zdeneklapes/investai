@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from copy import deepcopy
-from typing import Literal
+from typing import Literal, List
 
 import numpy as np
 import pandas as pd
@@ -10,13 +10,13 @@ from tqdm import tqdm
 from tvDatafeed import Interval, TvDatafeed
 
 from data.train.company_info import CompanyInfo
-from project_configs.program import Program
+from shared.program import Program
 
 
-class StockDataset:
-    def __init__(self, program: Program):
-        TICKERS = deepcopy(DOW_30_TICKER)
-        TICKERS.remove("DOW")  # TODO: "DOW" is not DJI30 or what?
+class StockFaDailyDataset:
+    def __init__(self, program: Program, tickers: List[str]):
+        TICKERS = deepcopy(tickers)
+        TICKERS.remove("DOW")  # TODO: "DOW" is not in DJI30 or what?
         #
         self.program: Program = program
         self.tickers = TICKERS
@@ -236,3 +236,17 @@ class StockDataset:
         file_name = self.program.experiment_dir.datasets.joinpath(self.program.args.dataset)
         print(f"Loading dataset from: {file_name}")
         self.dataset = pd.read_csv(file_name, index_col=0)
+
+
+def main():
+    from dotenv import load_dotenv
+
+    program = Program()
+    load_dotenv(dotenv_path=program.project_dir.root.as_posix())
+    dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER)
+    dataset.preprocess()
+    dataset.save()
+
+
+if __name__ == "__main__":
+    main()

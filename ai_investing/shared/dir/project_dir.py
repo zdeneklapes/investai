@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 
-from project_configs.experiment_dir import ExperimentDir
+from shared.dir.experiment_dir import ExperimentDir
+from shared.utils import find_git_root
 
 
 # Root
@@ -24,22 +25,15 @@ class ProjectDir:
             self.test_tickers = self.root.joinpath("test_tickers")
             self.tickers = self.root.joinpath("tickers")
 
-    def __init__(self, file_dir: str):
-        root = self._find_git_root(Path(file_dir).parent)
+    def __init__(self, root: Path = None):
+        if not root:
+            root = find_git_root(Path(__file__).parent)
 
         if not root.exists():
             raise FileNotFoundError(f"Root directory does not exist: {root}")
 
         self.root = root
         self.data = self._DataDir(self.root)
-
-    def _find_git_root(self, path):
-        path = Path(path).resolve()
-        if (path / '.git').is_dir():
-            return path
-        if path == path.parent:
-            raise Exception('Not a Git repository')
-        return self._find_git_root(path.parent)
 
 
 if __name__ == "__main__":

@@ -2,12 +2,13 @@
 import os
 import shutil
 from pathlib import Path
+from shared.utils import find_git_root
 
 
 class ExperimentDir:
     def __init__(self, root: Path = None):
         if not root:
-            root = Path(__file__).parent.parent.parent
+            root = find_git_root(Path(__file__).parent)
 
         if not root.exists():
             raise FileNotFoundError(f"Root directory does not exist: {root}")
@@ -18,9 +19,9 @@ class ExperimentDir:
         self.models: Path = self.out.joinpath("models")
         self.algo: Path | None = None
         self.tensorboard: Path | None = None
-        # self.try_number: Path | None = None
-        # self.algo = self.models.joinpath(algo)
-        # self.chart: Path | None = None
+
+        #
+        self.create_dirs()
 
     def set_algo(self, algo_name: str):
         self.algo = self.models.joinpath(algo_name)
