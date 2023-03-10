@@ -28,14 +28,16 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     # Project arguments
     parser.add_argument("--train", help="Will train models based on hyper parameters", action="store_true", )
     parser.add_argument("--test", help="Will test trained models", action="store_true", )
-    parser.add_argument("--dataset", help="Will test trained models", nargs="?", default="dataset.csv")
-    parser.add_argument("--prepare-dataset", help="Prepare and save dataset as csv", action="store_true", )
+    parser.add_argument("--dataset-name", "-dn", help="Will test trained models", nargs="?", default="dataset.csv")
+    parser.add_argument("--dataset-split", type=float, default=0.8,
+                        help="Define what percentage of the dataset is used for training")
     parser.add_argument("--models", help="Already trained model",
                         nargs="+", )  # 1 or more arguments type=str, default=[], )
     parser.add_argument("--stable_baseline", help="Use stable-baselines3", action="store_true", )
     parser.add_argument("--ray", help="Use ray-rllib", action="store_true", )
-    parser.add_argument("--config", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
-    parser.add_argument("--debug", help="Debug mode", action="store_true", )
+
+    parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
+    parser.add_argument("--debug", help="Debug mode", action="store_true", default=os.environ.get("DEBUG", False))
 
     # Training arguments
     parser.add_argument("--exp-name", type=str, default=os.path.basename(__file__).rstrip(".py"),
@@ -72,7 +74,5 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--initial-amount", type=int, default=100000, help="Initial amount of money")
     parser.add_argument("--transaction-cost", type=float, default=0.5, help="Transaction cost in $")
     parser.add_argument("--reward-scaling", type=float, help="Reward scaling")
-    parser.add_argument("--dataset-split", type=float, default=0.8,
-                        help="Define what percentage of the dataset is used for training")
 
     return vars(parser.parse_args()), parser.parse_args()
