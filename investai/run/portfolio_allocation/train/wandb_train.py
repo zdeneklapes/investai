@@ -1,19 +1,20 @@
 # -*- coding: utf-8 -*-
 from typing import Union
+
 from agents.stablebaselines3_models import TensorboardCallback
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 import wandb
+from wandb.sdk.wandb_run import Run
+from wandb.sdk.lib.disabled import RunDisabled
 from meta.config_tickers import DOW_30_TICKER
-
-from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
 from stable_baselines3.ppo import PPO
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
+
 import run.shared.algorithm_parameters as algo_params
-from shared.program import Program
+from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
 from run.shared.callbacks import WandbCallbackExtendMemory
-from wandb.sdk.wandb_run import Run
-from wandb.sdk.lib.disabled import RunDisabled
+from shared.program import Program
 
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 
@@ -26,9 +27,6 @@ class Train:
 
     def _init_folder(self) -> None:
         self.program.experiment_dir.set_algo(f"{self.algorithm}")
-        # self.program.experiment_dir.set_algo(
-        #     f"{self.algorithm}_{self.program.experiment_dir.get_last_algorithm_index(self.algorithm) + 1}"
-        # )
         self.program.experiment_dir.create_specific_dirs()
 
     def _init_wandb(self) -> Union[Run, RunDisabled, None]:
@@ -111,30 +109,25 @@ class Train:
         wandb.finish()
 
     def train(self) -> None:
-        # Output folder
+        # Init
         self._init_folder()
-
-        # Wandb
-        _ = self._init_wandb()
-
-        # Environment
-        env = self._init_environment()
-
-        # Callbacks
+        run = self._init_wandb()
+        environment = self._init_environment()
         callbacks = self._init_callbacks()
 
-        # Model
-        model = self._init_model(env, callbacks)
-        model.save(
-            (self.program.experiment_dir.algo / f"{self.algorithm}.zip").as_posix()
-        )
-        # TODO: wandb save model online
+        #
+        model = self._init_model(environment, callbacks) # noqa
 
-        # Wandb metrics
+        # Wandb: Log artifacts
+        artifact = wandb.Artifact("dataset", type="dataset")
+        artifact.add_dir(self.program.experiment_dir.dataset.as_posix())
+        run.log_artifact(artifact)
+
+        # Wandb: summary
         wandb.define_metric("total_reward", step_metric="total_timesteps")
 
         # Deinit
-        self._deinit_environment(env)
+        self._deinit_environment(environment)
         self._deinit_wandb()
 
 

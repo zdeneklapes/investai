@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from copy import deepcopy
 from typing import Literal, List
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -11,6 +12,7 @@ from tvDatafeed import Interval, TvDatafeed
 
 from data.train.company_info import CompanyInfo
 from shared.program import Program
+from shared.dir.experiment_dir import ExperimentDir
 
 
 class StockFaDailyDataset:
@@ -214,7 +216,7 @@ class StockFaDailyDataset:
 
     def save(self) -> None:
         """Save dataset"""
-        file_name = self.program.experiment_dir.datasets.joinpath(self.program.args.dataset)
+        file_name = self.program.experiment_dir.datasets.joinpath(self.program.args.dataset_name)
         print(f"Saving dataset to: {file_name}")
         self.dataset.to_csv(file_name, index=True)
 
@@ -241,7 +243,7 @@ class StockFaDailyDataset:
 def main():
     from dotenv import load_dotenv
 
-    program = Program()
+    program = Program(experiment_dir=ExperimentDir(root=Path(__file__).parent.parent))
     load_dotenv(dotenv_path=program.project_dir.root.as_posix())
     dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER)
     dataset.preprocess()
