@@ -54,11 +54,25 @@ class WandbCallbackExtendMemory(WandbCallback):
         return super().__init__(verbose, model_save_path, model_save_freq, gradient_save_freq, log)
 
     def _on_step(self) -> bool:
-        if hasattr(self.locals['env'].envs[0], '_memory'):
-            memory: Memory = self.locals['env'].envs[0]._memory
-            log_dict = {f"portfolio/{k}": v for k, v in memory.df.tail(1).to_dict()}
+        if hasattr(self.locals['env'].envs[0].unwrapped, '_memory'):
+            memory: Memory = getattr(self.locals['env'].envs[0].unwrapped, '_memory')
+            memory_dict = memory.df.iloc[-1].to_dict()
+            del memory_dict['action']
+            del memory_dict['date']
+            log_dict = {f"memory/{k}": v for k, v in memory_dict.items()}
             wandb.log(log_dict)
         return super()._on_step()
+
+    def _on_training_end(self) -> None:
+        if hasattr(self.locals['env'].envs[0].unwrapped, '_memory'):
+            memory: Memory = getattr(self.locals['env'].envs[0].unwrapped, '_memory')
+            wandb.run.summary["portfolio_return_sum"] = memory.df['portfolio_return'].sum()
+            wandb.run.summary["portfolio_value_start"] = memory.df['portfolio_value'].iloc[0]
+            wandb.run.summary["portfolio_value_end"] = memory.df['portfolio_value'].iloc[-1]
+            wandb.run.summary["date_start"] = memory.df['date'].unique()[0]
+            wandb.run.summary["date_end"] = memory.df['date'].unique()[-1]
+        super()._on_training_end()
+
 
 class TensorboardCallback(BaseCallback):
     """

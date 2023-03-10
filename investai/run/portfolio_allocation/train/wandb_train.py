@@ -61,7 +61,7 @@ class Train:
             force=True,  # True: User must be logged in to W&B, False: User can be logged in or not
             sync_tensorboard=True,
             monitor_gym=True,
-            # save_code=True,
+            save_code=True,
         )
         return run
 
