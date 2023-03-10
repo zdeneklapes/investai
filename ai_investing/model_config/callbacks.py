@@ -52,7 +52,8 @@ class WandbCallbackExtendMemory(WandbCallback):
         return super().__init__(verbose, model_save_path, model_save_freq, gradient_save_freq, log)
 
     def _on_step(self) -> bool:
-        memory: Memory = self.locals['env'].envs[0]._memory
-        log_dict = {f"portfolio/{k}": v for k, v in memory.df.tail(1).to_dict()}
-        wandb.log(log_dict)
+        if hasattr(self.locals['env'].envs[0], '_memory'):
+            memory: Memory = self.locals['env'].envs[0]._memory
+            log_dict = {f"portfolio/{k}": v for k, v in memory.df.tail(1).to_dict()}
+            wandb.log(log_dict)
         return super()._on_step()

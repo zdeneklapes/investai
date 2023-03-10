@@ -6,7 +6,6 @@ from examples.portfolio_allocation_fa_dji30.test import Test
 from examples.portfolio_allocation_fa_dji30.train import Train
 from utils.project import reload_module, now_time, get_argparse  # noqa # pylint: disable=unused-import
 from project_configs.experiment_dir import ExperimentDir
-from project_configs.project_dir import ProjectDir
 from project_configs.program import Program
 
 
@@ -21,7 +20,7 @@ def initialisation(arg_parse: bool = True) -> Program:
     )
 
 
-def stock_dataset(program: Program) -> StockDataset:
+def dataset(program: Program) -> StockDataset:
     stock_dataset_init = StockDataset(program)
 
     #
@@ -52,18 +51,23 @@ def test(program: Program, dataset: StockDataset):
 
 def t1():
     program = initialisation()
-    dataset = stock_dataset(program)
+    _dataset = dataset(program)
 
     if program.debug:
         import wandb
         wandb.plot.line_chart()
-        # return Train(stock_dataset=dataset, program=program), wandb
+        # return Train(stock_dataset=_dataset, program=program), wandb
     else:
         if program.args.train:
-            train(program, dataset)
+            train(program, _dataset)
         if program.args.test:
-            test(program, dataset)
+            test(program, _dataset)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
+    from project_configs.project_dir import ProjectDir
+    from dotenv import load_dotenv
+
+    project_dir = ProjectDir(__file__)
+    load_dotenv(dotenv_path=project_dir.root.joinpath(".env"))
     t1()

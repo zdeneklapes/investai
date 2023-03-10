@@ -23,9 +23,10 @@ class Train:
         self.algorithm: str = "ppo"
 
     def _init_folder(self) -> None:
-        self.program.experiment_dir.set_algo(
-            f"{self.algorithm}_{self.program.experiment_dir.get_last_algorithm_index(self.algorithm) + 1}"
-        )
+        self.program.experiment_dir.set_algo(f"{self.algorithm}")
+        # self.program.experiment_dir.set_algo(
+        #     f"{self.algorithm}_{self.program.experiment_dir.get_last_algorithm_index(self.algorithm) + 1}"
+        # )
         self.program.experiment_dir.create_specific_dirs()
 
     def _init_wandb(self) -> Union[Run, RunDisabled, None]:
@@ -123,8 +124,9 @@ class Train:
         # Model
         model = self._init_model(env, callbacks)
         model.save(
-            (self.program.experiment_dir.algo / f"model_{self.program.args.total_timesteps}_steps.zip").as_posix()
+            (self.program.experiment_dir.algo / f"{self.algorithm}.zip").as_posix()
         )
+        # TODO: wandb save model online
 
         # Wandb metrics
         wandb.define_metric("total_reward", step_metric="total_timesteps")
@@ -132,3 +134,11 @@ class Train:
         # Deinit
         self._deinit_environment(env)
         self._deinit_wandb()
+
+
+if __name__ == '__main__':
+    from project_configs.project_dir import ProjectDir
+    from dotenv import load_dotenv
+
+    project_dir = ProjectDir(__file__)
+    load_dotenv(dotenv_path=project_dir.root.joinpath(".env"))
