@@ -42,11 +42,15 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     # Wandb arguments
     parser.add_argument("--wandb-project", type=str, default=None, help="the wandb's project name")
     parser.add_argument("--wandb-entity", type=str, default=None, help="the entity (team) of wandb's project")
-    parser.add_argument("--wandb-model-save-freq", type=int, default=0,
+    parser.add_argument("--wandb-model-save", action="store_true", help="Save model")
+    parser.add_argument("--wandb-model-save-freq", type=int, default=100,
                         help="Save model every x steps (0 = no checkpoint)")
     parser.add_argument("--wandb-gradient-save-freq", type=int, default=100,
                         help="Save gradient every x steps (0 = no checkpoint)")
-    parser.add_argument("--wandb-verbose", type=int, default=2, help="Verbosity level 0: not output 1: info 2: debug")
+    parser.add_argument("--wandb-verbose", type=int, default=0,
+                        help="Verbosity level 0: not output 1: info 2: debug, default: 0")
+    parser.add_argument("--verbose", type=int, default=0,
+                        help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
     # Training arguments
     parser.add_argument("--exp-name", type=str, default=os.path.basename(__file__).rstrip(".py"),

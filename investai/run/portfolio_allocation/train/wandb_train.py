@@ -80,9 +80,9 @@ class Train:
             TensorboardCallback(),
             ProgressBarCallback(),
             WandbCallbackExtendMemory(
-                verbose=self.program.args.wandb_verbose,
-                # model_save_path=self.model_path.parent.as_posix(),
-                # model_save_freq=0,
+                verbose=self.program.args.verbose,
+                model_save_path=self.model_path.parent.as_posix() if self.program.args.wandb_model_save else None,
+                model_save_freq=self.program.args.wandb_model_save_freq if self.program.args.wandb_model_save else 0,
                 gradient_save_freq=self.program.args.wandb_gradient_save_freq,
             ),
         ])
