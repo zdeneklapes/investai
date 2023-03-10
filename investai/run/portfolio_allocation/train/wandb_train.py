@@ -48,7 +48,7 @@ class Train:
         # Initialize wandb
         run = wandb.init(
             job_type="train",
-            dir=self.program.experiment_dir.algo.as_posix(),
+            dir=self.program.experiment_dir.models.as_posix(),
             config=(cli_config | default_config),
             project=os.environ.get("WANDB_PROJECT"),
             entity=os.environ.get("WANDB_ENTITY"),
@@ -69,7 +69,6 @@ class Train:
         env = PortfolioAllocationEnv(df=self.stock_dataset.train_dataset,
                                      initial_portfolio_value=self.program.args.initial_cash,
                                      tickers=self.stock_dataset.tickers, features=self.stock_dataset.get_features(),
-                                     save_path=self.program.experiment_dir.algo,
                                      start_data_from_index=self.program.args.start_data_from_index)
         env = Monitor(env, wandb.run.dir, allow_early_resets=True)  # stable_baselines3.common.monitor.Monitor
         # env = Monitor(env, wandb.run.dir) # gym.wrappers.Monitor
@@ -82,8 +81,8 @@ class Train:
             ProgressBarCallback(),
             WandbCallbackExtendMemory(
                 verbose=self.program.args.wandb_verbose,
-                model_save_path=self.model_path.parent.as_posix(),
-                model_save_freq=self.program.args.wandb_model_save_freq,
+                # model_save_path=self.model_path.parent.as_posix(),
+                # model_save_freq=0,
                 gradient_save_freq=self.program.args.wandb_gradient_save_freq,
             ),
         ])

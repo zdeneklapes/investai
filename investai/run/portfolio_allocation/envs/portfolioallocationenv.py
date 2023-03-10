@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from typing import Any, Dict, Optional, List, Final
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -22,9 +21,8 @@ class PortfolioAllocationEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, df: pd.DataFrame, initial_portfolio_value: int, tickers: List[str], features: List[str],
-                 save_path: Path, start_data_from_index: int = 0):
+                 start_data_from_index: int = 0):
         # Immutable
-        self._save_path: Final = save_path
         self._df: Final = df
         self._start_from_index: Final = start_data_from_index
         self._tickers: Final = tickers  # Used for: Action and Observation space

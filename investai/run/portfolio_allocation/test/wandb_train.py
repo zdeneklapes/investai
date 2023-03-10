@@ -21,7 +21,6 @@ class Test:
                                                                   initial_portfolio_value=100_000,
                                                                   tickers=self.dataset.tickers,
                                                                   features=self.dataset.get_features(),
-                                                                  save_path=self.program.experiment_dir.algo,
                                                                   start_data_from_index=self.dataset.test_dataset.index[
                                                                       0])
 

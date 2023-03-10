@@ -40,7 +40,9 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--debug", help="Debug mode", action="store_true", default=os.environ.get("DEBUG", False))
 
     # Wandb arguments
-    parser.add_argument("--wandb-model-save-freq", type=int, default=100,
+    parser.add_argument("--wandb-project", type=str, default=None, help="the wandb's project name")
+    parser.add_argument("--wandb-entity", type=str, default=None, help="the entity (team) of wandb's project")
+    parser.add_argument("--wandb-model-save-freq", type=int, default=0,
                         help="Save model every x steps (0 = no checkpoint)")
     parser.add_argument("--wandb-gradient-save-freq", type=int, default=100,
                         help="Save gradient every x steps (0 = no checkpoint)")
@@ -56,8 +58,6 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="if toggled, cuda will be enabled by default")
     parser.add_argument("--track", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
                         help="if toggled, this experiment will be tracked with Weights and Biases")
-    parser.add_argument("--wandb-project-name", type=str, default="cleanRL", help="the wandb's project name")
-    parser.add_argument("--wandb-entity", type=str, default=None, help="the entity (team) of wandb's project")
     parser.add_argument("--capture-video", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
                         help="whether to capture videos of the agent performances (check out `videos` folder)")
 
