@@ -2,7 +2,6 @@
 from pathlib import Path
 
 from shared.dir.experiment_dir import ExperimentDir
-from shared.utils import find_git_root
 
 
 # Root
@@ -27,6 +26,7 @@ class ProjectDir:
 
     def __init__(self, root: Path = None):
         if not root:
+            from shared.utils import find_git_root
             root = find_git_root(Path(__file__).parent)
 
         if not root.exists():

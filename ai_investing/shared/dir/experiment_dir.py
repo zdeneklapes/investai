@@ -2,12 +2,12 @@
 import os
 import shutil
 from pathlib import Path
-from shared.utils import find_git_root
 
 
 class ExperimentDir:
     def __init__(self, root: Path = None):
         if not root:
+            from shared.utils import find_git_root
             root = find_git_root(Path(__file__).parent)
 
         if not root.exists():
