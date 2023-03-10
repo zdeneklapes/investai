@@ -38,7 +38,6 @@ pip-upgrader==1.4.15
 potsdb==1.0.3
 py3nvml==0.2.7
 pyenchant==3.2.2
-pyfolio==0.9.2+75.g4b901f6
 pygal==3.0.0
 pylint==2.15.8
 pymdstat==0.4.2
