@@ -14,7 +14,7 @@ from gym import spaces
 from gymnasium.utils import seeding
 from scipy.special import softmax
 
-from model_config.memory import Memory
+from run.shared.memory import Memory
 
 
 class PortfolioAllocationEnv(gym.Env):
@@ -22,11 +22,11 @@ class PortfolioAllocationEnv(gym.Env):
     metadata = {'render.modes': ['human']}
 
     def __init__(self, df: pd.DataFrame, initial_portfolio_value: int, tickers: List[str], features: List[str],
-                 save_path: Path, start_from_index: int = 0, wandb: bool = False):
+                 save_path: Path, start_data_from_index: int = 0):
         # Immutable
         self._save_path: Final = save_path
         self._df: Final = df
-        self._start_from_index: Final = start_from_index
+        self._start_from_index: Final = start_data_from_index
         self._tickers: Final = tickers  # Used for: Action and Observation space
         self._features: Final = features  # Used for Observation space
 
@@ -40,7 +40,6 @@ class PortfolioAllocationEnv(gym.Env):
                                             shape=(len(self._tickers),
                                                    len(self._features))
                                             )
-        self.wandb = wandb
 
     def __init_environment(self, initial_portfolio_value: int):
         """Initialize environment

@@ -39,6 +39,13 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
     parser.add_argument("--debug", help="Debug mode", action="store_true", default=os.environ.get("DEBUG", False))
 
+    # Wandb arguments
+    parser.add_argument("--wandb-model-save-freq", type=int, default=100,
+                        help="Save model every x steps (0 = no checkpoint)")
+    parser.add_argument("--wandb-gradient-save-freq", type=int, default=100,
+                        help="Save gradient every x steps (0 = no checkpoint)")
+    parser.add_argument("--wandb-verbose", type=int, default=2, help="Verbosity level 0: not output 1: info 2: debug")
+
     # Training arguments
     parser.add_argument("--exp-name", type=str, default=os.path.basename(__file__).rstrip(".py"),
                         help="the name of this experiment")
@@ -56,7 +63,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
 
     # Algorithm specific arguments
     parser.add_argument("--env-id", type=str, default="", help="the id of the environment")
-    parser.add_argument("--total-timesteps", type=int, default=1000000, help="total timesteps of the experiments")
+    parser.add_argument("--total-timesteps", type=int, default=1000, help="total timesteps of the experiments")
     parser.add_argument("--buffer-size", type=int, default=int(1e6), help="the replay memory buffer size")
     parser.add_argument("--gamma", type=float, default=0.99, help="the discount factor gamma")
     parser.add_argument("--tau", type=float, default=0.005, help="target smoothing coefficient (default: 0.005)")
@@ -71,8 +78,11 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="the number of steps to run in the environment for each training step")
     parser.add_argument("--entropy-coefficient", type=float, default=0.01, help="the coefficient of the entropy")
     parser.add_argument("--learning-rate", type=float, default=7e-4, help="the learning rate of the optimizer")
-    parser.add_argument("--initial-amount", type=int, default=100000, help="Initial amount of money")
-    parser.add_argument("--transaction-cost", type=float, default=0.5, help="Transaction cost in $")
+
+    # Environment arguments
+    parser.add_argument("--initial-cash", type=int, default=100_000, help="Initial amount of money")
     parser.add_argument("--reward-scaling", type=float, help="Reward scaling")
+    parser.add_argument("--transaction-cost", type=float, default=0.5, help="Transaction cost in $")
+    parser.add_argument("--start-data-from-index", type=int, default=0, help="Start data from index")
 
     return vars(parser.parse_args()), parser.parse_args()

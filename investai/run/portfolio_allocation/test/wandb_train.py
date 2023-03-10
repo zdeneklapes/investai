@@ -17,14 +17,13 @@ class Test:
     def __init__(self, program: Program, dataset: StockFaDailyDataset):
         self.program: Program = program
         self.dataset: StockFaDailyDataset = dataset
-        self.env: PortfolioAllocationEnv = PortfolioAllocationEnv(
-            df=self.dataset.test_dataset,
-            initial_portfolio_value=100_000,
-            tickers=self.dataset.tickers,
-            features=self.dataset.get_features(),
-            save_path=self.program.experiment_dir.algo,
-            start_from_index=self.dataset.test_dataset.index[0]
-        )
+        self.env: PortfolioAllocationEnv = PortfolioAllocationEnv(df=self.dataset.test_dataset,
+                                                                  initial_portfolio_value=100_000,
+                                                                  tickers=self.dataset.tickers,
+                                                                  features=self.dataset.get_features(),
+                                                                  save_path=self.program.experiment_dir.algo,
+                                                                  start_data_from_index=self.dataset.test_dataset.index[
+                                                                      0])
 
     def test(self, model_path: Path = None) -> None:
         if model_path is None:  # Test all

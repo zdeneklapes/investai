@@ -216,7 +216,7 @@ class StockFaDailyDataset:
 
     def save(self) -> None:
         """Save dataset"""
-        file_name = self.program.experiment_dir.dataset.joinpath(self.program.args.dataset_name)
+        file_name = self.program.experiment_dir.datasets.joinpath(self.program.args.dataset_name)
         print(f"Saving dataset to: {file_name}")
         self.dataset.to_csv(file_name, index=True)
 
@@ -235,7 +235,7 @@ class StockFaDailyDataset:
 
     def load_dataset(self) -> None:
         """Load dataset"""
-        file_name = self.program.experiment_dir.dataset.joinpath(self.program.args.dataset_name)
+        file_name = self.program.experiment_dir.datasets.joinpath(self.program.args.dataset_name)
         print(f"Loading dataset from: {file_name}")
         self.dataset = pd.read_csv(file_name, index_col=0)
 
