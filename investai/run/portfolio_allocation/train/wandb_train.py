@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # TODO: Wandb Sweep:
+# TODO: Add to action +1 more action from 30 actions increase to 31 actions, because Agent can als decide for cash
 # TODO: all algorithms
 # TODO: tests
 # TODO: next datasets
