@@ -167,8 +167,13 @@ sweep_configuration = {
         'name': 'train/loss'
     },
     'parameters': {
-        'policy': ["MlpPolicy",  # "MlpLstmPolicy", "MlpLnLstmPolicy",
-                   "CnnPolicy", ],  # "CnnLstmPolicy", "CnnLnLstmPolicy", ],
+        # 'policy': {
+        #     "values": ["MlpPolicy", "MlpLstmPolicy", "MlpLnLstmPolicy",
+        #                "CnnPolicy", "CnnLstmPolicy", "CnnLnLstmPolicy", ],
+        # },
+        'policy': {
+            "values": ["MlpPolicy"]  # , "CnnPolicy", "MultiInputPolicy", ],
+        },
         # 'env': ,
         'learning_rate': {'min': 0.0001, 'max': 0.01},
         # 'n_steps': int,
@@ -190,8 +195,10 @@ sweep_configuration = {
         # '_init_setup_model': bool,
         'batch_size': {'min': 32, 'max': 256},
         'n_epochs': {'min': 1, 'max': 10},
-        'clip_range': {'min': 0.1, 'max': 0.2},
-        'clip_range_vf': {'min': -1, 'max': 1},
+        'clip_range': {"min": 0.1, "max": 0.3},
+        'clip_range_vf': {
+            "values": [None, 0.1, 0.2]
+        },
         'target_kl': {'min': 0.01, 'max': 0.05},
         'buffer_size': {'min': 1000, 'max': 10000},
         'learning_starts': {'min': 100, 'max': 1000},
