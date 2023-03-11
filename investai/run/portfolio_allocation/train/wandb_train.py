@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# TODO: wandb sweep
+# TODO: Wandb Sweep:
 # TODO: all algorithms
 # TODO: tests
 # TODO: next datasets

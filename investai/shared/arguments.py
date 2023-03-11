@@ -3,6 +3,8 @@ import argparse
 import os
 from argparse import Namespace
 from typing import Tuple
+from pprint import pprint  # noqa
+from distutils.util import strtobool  # noqa
 
 
 class _LoadArgumentsFromFile(argparse.Action):
@@ -19,11 +21,17 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     Parse arguments from command line or file
     :return: Tuple[vars, Namespace]
     """
+    # TODO: Use this: type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True
     # nargs="?": 1 optional argument
     # nargs="*": 0 or more arguments
     # nargs="+": 1 or more arguments
 
     parser = argparse.ArgumentParser()
+    BOOL_AS_STR_ARGUMENTS_for_parser_add_argument = \
+        dict(type=lambda x: bool(strtobool(x)),
+             default=False,
+             nargs="?",
+             const=True)
 
     # Project arguments
     parser.add_argument("--train", help="Will train models based on hyper parameters", action="store_true", )
@@ -40,7 +48,8 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
     # Wandb arguments
-    parser.add_argument("--wandb-sweep", help="Wandb sweep tune hyper parameters", action="store_true", )
+    parser.add_argument("--wandb-sweep", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
+                        help="Wandb sweep tune hyper parameters", )
     parser.add_argument("--wandb-sweep-count", type=int, default=1, help="Wandb sweep count")
     parser.add_argument("--wandb-job-type", type=str, default=None, help="the wandb's project name")
     parser.add_argument("--wandb-project", type=str, default=None, help="the wandb's project name")
@@ -149,3 +158,16 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     # TODO: Policy specific arguments
 
     return vars(parser.parse_args()), parser.parse_args()
+
+
+def main():
+    print(f"==== START {main.__name__}() ====")
+    print("=== Parsing arguments ===")
+    args_as_dict, args = parse_arguments()
+    pprint(f"args_as_dict: {args_as_dict}")
+    pprint(args.wandb_sweep)
+    print(f"==== END {main.__name__}() ====")
+
+
+if __name__ == '__main__':
+    main()
