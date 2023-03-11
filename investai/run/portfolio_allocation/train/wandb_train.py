@@ -5,6 +5,7 @@
 # TODO: next datasets
 import os
 from typing import Union
+from pathlib import Path
 
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 import wandb
@@ -40,11 +41,13 @@ class Train:
 
     def _init_hyper_parameters(self) -> dict:
         """Hyper parameters"""
-        # TODO: Rewrite parameters from wandb.config when they are defined on cli
-        algorithm_parameters = Train.ALGORITHMS[self.algorithm].__init__.__code__.co_varnames
-        self.program.args.__dict__.keys()
-        return {key: self.program.args.__dict__[key] for key in algorithm_parameters if
-                key in self.program.args.__dict__}
+        # Because __code__.co_varnames returns all variables inside function and I need only function parameters
+        parameter_count = Train.ALGORITHMS[self.algorithm].__init__.__code__.co_argcount
+        algorithm_parameters = Train.ALGORITHMS[self.algorithm].__init__.__code__.co_varnames[:parameter_count]
+        hyperparameters = {key: self.program.args.__dict__[key] for key in algorithm_parameters if
+                           key in self.program.args.__dict__}
+        hyperparameters["tensorboard_log"] = self.program.project_structure.tensorboard.as_posix()
+        return hyperparameters
 
     def _init_wandb(self) -> Union[Run, RunDisabled, None]:
         if self.program.args.sweep:
@@ -56,8 +59,8 @@ class Train:
                 config=self._init_hyper_parameters(),
                 project=os.environ.get("WANDB_PROJECT"),
                 entity=os.environ.get("WANDB_ENTITY"),
-                tags=["train", "ppo", "portfolio-allocation"],
-                notes="Training PPO on DJI30 stocks",
+                tags=["train", self.algorithm, "portfolio-allocation"],
+                notes=f"Training {self.algorithm} on DJI30 stocks",
                 group="experiment_1",  # TIP: Can be used environment variable "WANDB_RUN_GROUP", Must be unique
                 mode="online",
                 allow_val_change=False,
@@ -74,8 +77,10 @@ class Train:
                                      initial_portfolio_value=self.program.args.initial_cash,
                                      tickers=self.stock_dataset.tickers, features=self.stock_dataset.get_features(),
                                      start_data_from_index=self.program.args.start_data_from_index)
-        env = Monitor(env, wandb.run.dir, allow_early_resets=True)  # stable_baselines3.common.monitor.Monitor
-        # env = Monitor(env, wandb.run.dir) # gym.wrappers.Monitor
+        env = Monitor(
+            env,
+            Path(self.program.project_structure.wandb).as_posix(),
+            allow_early_resets=True)  # stable_baselines3.common.monitor.Monitor
         env = DummyVecEnv([lambda: env])
         return env
 
@@ -84,26 +89,13 @@ class Train:
             TensorboardCallback(),
             ProgressBarCallback(),
             WandbCallbackExtendMemory(
-                verbose=self.program.args.verbose,
+                verbose=self.program.args.wandb_verbose,
                 model_save_path=self.model_path.parent.as_posix() if self.program.args.wandb_model_save else None,
                 model_save_freq=self.program.args.wandb_model_save_freq if self.program.args.wandb_model_save else 0,
                 gradient_save_freq=self.program.args.wandb_gradient_save_freq,
             ),
         ])
         return callbacks
-
-    def _init_model(self, env, callbacks):
-        model = PPO(
-            tensorboard_log=self.program.project_structure.tensorboard.as_posix(),
-            env=env,
-            **wandb.config,
-        )
-        model.learn(
-            total_timesteps=self.program.args.total_timesteps,
-            tb_log_name=f"{self.algorithm}",
-            callback=callbacks
-        )
-        return model
 
     def _deinit_environment(self, env):
         env.close()
@@ -117,8 +109,16 @@ class Train:
         environment = self._init_environment()
         callbacks = self._init_callbacks()
 
-        #
-        model = self._init_model(environment, callbacks)  # noqa
+        # Model training
+        model = PPO(
+            env=environment,
+            **wandb.config,
+        )
+        model.learn(
+            total_timesteps=self.program.args.total_timesteps,
+            tb_log_name=f"{self.algorithm}",
+            callback=callbacks
+        )
         model.save(self.model_path.as_posix())
 
         # Wandb: Log artifacts

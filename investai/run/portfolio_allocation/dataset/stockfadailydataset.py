@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from copy import deepcopy
 from typing import Literal, List
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -12,7 +11,6 @@ from tvDatafeed import Interval, TvDatafeed
 
 from data.train.company_info import CompanyInfo
 from shared.program import Program
-from shared.dir.experiment_dir import ExperimentDir
 
 
 class StockFaDailyDataset:
@@ -79,10 +77,13 @@ class StockFaDailyDataset:
 
     def get_stock_dataset(self) -> pd.DataFrame:
         df = pd.DataFrame()
-        pbar = tqdm(self.tickers)
-        for tic in pbar:
-            pbar.set_description(f"Processing {tic}")
 
+        if self.program.args.verbose > 0:
+            iterable = tqdm(self.tickers, desc="Processing tickers")
+        else:
+            iterable = self.tickers
+
+        for tic in iterable:
             # Load tickers data
             raw_data: CompanyInfo = self.load_raw_data(tic)
 
@@ -247,9 +248,12 @@ class StockFaDailyDataset:
 def main():
     from dotenv import load_dotenv
 
-    program = Program(experiment_dir=ExperimentDir(root=Path(__file__).parent.parent))
+    program = Program()
     load_dotenv(dotenv_path=program.project_structure.root.as_posix())
-    dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER)
+    dataset = StockFaDailyDataset(
+        program,
+        tickers=DOW_30_TICKER,
+        dataset_split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
     dataset.save_dataset(program.args.dataset_path)
 

@@ -28,7 +28,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     # Project arguments
     parser.add_argument("--train", help="Will train models based on hyper parameters", action="store_true", )
     parser.add_argument("--test", help="Will test trained models", action="store_true", )
-    parser.add_argument("--dataset-path", "-dn", help="Will test trained models", nargs="?", default="dataset.csv")
+    parser.add_argument("--dataset-path", "-dp", help="Will test trained models", nargs="?", default="dataset.csv")
     parser.add_argument("--dataset-split-coef", type=float, default=0.6,
                         help="Define what percentage of the dataset is used for training")
     parser.add_argument("--models", help="Already trained model", nargs="+", )
@@ -37,6 +37,8 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
     parser.add_argument("--debug", help="Debug mode", action="store_true", default=os.environ.get("DEBUG", False))
     parser.add_argument("--sweep", help="Wandb sweep tune hyper parameters", action="store_true", )
+    parser.add_argument('--project-verbose', type=int, default=0,
+                        help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
     # Wandb arguments
     parser.add_argument("--wandb-project", type=str, default=None, help="the wandb's project name")
@@ -73,6 +75,8 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--exploration-noise", type=float, default=0.1, help="the scale of exploration noise")
     parser.add_argument("--noise-clip", type=float, default=0.5,
                         help="noise clip parameter of the Target Policy Smoothing Regularization")
+    parser.add_argument("--sb3-verbose", type=int, default=0,
+                        help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
     # Algorithm specific arguments
     parser.add_argument('--policy', type=str,
@@ -95,10 +99,10 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument('--sde-sample-freq', type=int, default=-1,
                         help="Sample a new noise matrix every n steps (-1 = only at the beginning of the rollout)")
     parser.add_argument('--normalize-advantage', action="store_true", help="whether to normalize the advantage")
-    parser.add_argument('--tensorboard-log', type=str, default=None,
-                        help="the log location for tensorboard (if None, no logging)")
-    parser.add_argument('--policy-kwargs', type=str, default="",
-                        help="Additional keyword argument to pass to the policy on creation")
+    # parser.add_argument('--tensorboard-log', type=str, default=None,
+    #                     help="the log location for tensorboard (if None, no logging)")
+    # parser.add_argument('--policy-kwargs', type=str, default="",
+    #                     help="Additional keyword argument to pass to the policy on creation")
     parser.add_argument('--verbose', type=int, default=0,
                         help="the verbosity level: 0 none, 1 training information, 2 tensorflow debug")
     parser.add_argument('--seed', type=int, default=0, help="Random generator seed")
@@ -137,5 +141,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="Initial value of random action probability")
     parser.add_argument('--exploration-final-eps', type=float, default=0.02,
                         help="Final value of random action probability")
+
+    # TODO: Policy specific arguments
 
     return vars(parser.parse_args()), parser.parse_args()
