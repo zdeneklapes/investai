@@ -6,6 +6,7 @@
 import os
 from typing import Union
 from pathlib import Path
+from copy import deepcopy  # noqa
 
 import wandb
 from wandb.sdk.wandb_run import Run
@@ -42,36 +43,51 @@ class Train:
 
     def _init_hyper_parameters(self) -> dict:
         """Hyper parameters"""
-        # Because __code__.co_varnames returns all variables inside function and I need only function parameters
-        parameter_count = Train.ALGORITHMS[self.algorithm].__init__.__code__.co_argcount
-        algorithm_parameters = Train.ALGORITHMS[self.algorithm].__init__.__code__.co_varnames[:parameter_count]
-        hyperparameters = {key: self.program.args.__dict__[key] for key in algorithm_parameters if
-                           key in self.program.args.__dict__}
-        hyperparameters["tensorboard_log"] = self.program.project_structure.tensorboard.as_posix()
-        return hyperparameters
+        # Algorithm parameters info
+        algorithm_init_parameter_count: int = Train.ALGORITHMS[self.algorithm].__init__.__code__.co_argcount
+        algorithm_init_parameters = set(
+            Train.ALGORITHMS[self.algorithm].__init__.__code__.co_varnames[:algorithm_init_parameter_count]
+        )
+        sweep_config = {}
+
+        if self.program.args.wandb_sweep:
+            # Get parameter for Algo from Wandb sweep configuration
+            sweep_config = deepcopy(dict(wandb.config.items()))
+            sweep_config_set = set(sweep_config.keys())
+            # Remove parameters that are not in algorithm
+            for key in sweep_config_set - algorithm_init_parameters:
+                del sweep_config[key]
+        else:
+            # Get parameter for Algo from CLI arguments
+            # Because __code__.co_varnames returns all variables inside function and I need only function parameters
+            sweep_config = {key: self.program.args.__dict__[key] for key in algorithm_init_parameters if
+                            key in self.program.args.__dict__}
+
+        # Return
+        sweep_config["tensorboard_log"] = self.program.project_structure.tensorboard.as_posix()
+        return sweep_config
 
     def _init_wandb(self) -> Union[Run, RunDisabled, None]:
-        if self.program.args.sweep:
-            return wandb.init()
-        else:
-            run = wandb.init(
-                job_type="train",
-                dir=self.program.project_structure.models.as_posix(),
-                config=self._init_hyper_parameters(),
-                project=os.environ.get("WANDB_PROJECT"),
-                entity=os.environ.get("WANDB_ENTITY"),
-                tags=["train", self.algorithm, "portfolio-allocation"],
-                notes=f"Training {self.algorithm} on DJI30 stocks",
-                group="experiment_1",  # TIP: Can be used environment variable "WANDB_RUN_GROUP", Must be unique
-                mode="online",
-                allow_val_change=False,
-                resume=None,
-                force=True,  # True: User must be logged in to W&B, False: User can be logged in or not
-                sync_tensorboard=True,
-                monitor_gym=True,
-                save_code=True,
-            )
-            return run
+        run = wandb.init(
+            job_type=self.program.args.wandb_job_type,
+            dir=self.program.project_structure.models.as_posix(),
+            config=(None
+                    if self.program.args.wandb_sweep
+                    else self._init_hyper_parameters()),
+            project=self.program.args.wandb_project,
+            entity=os.environ.get("WANDB_ENTITY"),
+            tags=[self.algorithm, "portfolio-allocation"],
+            notes=f"Portfolio allocation with {self.algorithm} algorithm.",
+            group=self.program.args.wandb_group,
+            mode="online",
+            allow_val_change=False,
+            resume=None,
+            force=True,  # True: User must be logged in to W&B, False: User can be logged in or not
+            sync_tensorboard=True,
+            monitor_gym=True,
+            save_code=True,
+        )
+        return run
 
     def _init_environment(self):
         env = PortfolioAllocationEnv(df=self.stock_dataset.train_dataset,
@@ -101,6 +117,18 @@ class Train:
     def _deinit_environment(self, env):
         env.close()
 
+    def _init_model(self, environment, callbacks):
+        model = Train.ALGORITHMS[self.algorithm](
+            env=environment,
+            **self._init_hyper_parameters(),
+        )
+        model.learn(
+            total_timesteps=self.program.args.total_timesteps,
+            tb_log_name=f"{self.algorithm}",
+            callback=callbacks
+        )
+        return model
+
     def _deinit_wandb(self):
         wandb.finish()
 
@@ -111,15 +139,7 @@ class Train:
         callbacks = self._init_callbacks()
 
         # Model training
-        model = PPO(
-            env=environment,
-            **wandb.config,
-        )
-        model.learn(
-            total_timesteps=self.program.args.total_timesteps,
-            tb_log_name=f"{self.algorithm}",
-            callback=callbacks
-        )
+        model = self._init_model(environment, callbacks)
         model.save(self.model_path.as_posix())
 
         # Wandb: Log artifacts
@@ -144,26 +164,21 @@ def main():
     from dotenv import load_dotenv
 
     program = Program()
-    load_dotenv(dotenv_path=program.project_structure.root.as_posix())
+    load_dotenv(dotenv_path=program.project_structure.root.joinpath(".env").as_posix())
     dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
     dataset.load_dataset(program.args.dataset_path)
 
-    for algorithm in ["ppo", "a2c", "sac", "td3", "dqn", "ddpg"]:
+    for algorithm in program.args.algorithms:
         t = Train(program=program, dataset=dataset, algorithm=algorithm)
-        if program.args.sweep:
+        if program.args.wandb_sweep:
             sweep_id = wandb.sweep(sweep_configuration,
                                    entity=os.environ.get("WANDB_ENTITY"),
-                                   project=os.environ.get("WANDB_PROJECT"))
-            wandb.agent(
-                sweep_id,
-                function=t.train,
-                project=os.environ.get("WANDB_PROJECT"),
-                entity=os.environ.get("WANDB_ENTITY"),
-                count=5
-            )
+                                   project=program.args.wandb_project, )
+            wandb.agent(sweep_id,
+                        function=t.train,
+                        count=program.args.wandb_sweep_count, )
         else:
             t.train()
-        break
 
 
 if __name__ == '__main__':

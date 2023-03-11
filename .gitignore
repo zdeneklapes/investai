@@ -60,14 +60,9 @@ logs/
 *.png
 
 # Data
-**out
 /data/
 
-# Models
-**trained_models**/
-**tensorboard_log/
-**trained_models/
-**train_model**/
-**result_agent**/
-**results**/
-**result**/
+# Output
+**out
+**wandb
+
