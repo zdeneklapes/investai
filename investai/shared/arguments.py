@@ -48,12 +48,12 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="Save model every x steps (0 = no checkpoint)")
     parser.add_argument("--wandb-gradient-save-freq", type=int, default=100,
                         help="Save gradient every x steps (0 = no checkpoint)")
+    parser.add_argument("--wandb-group", type=str, default=os.path.basename(__file__).rstrip(".py"),
+                        help="the name of this experiment")
     parser.add_argument("--wandb-verbose", type=int, default=0,
                         help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
     # Training arguments
-    parser.add_argument("--exp-name", type=str, default=os.path.basename(__file__).rstrip(".py"),
-                        help="the name of this experiment")
     parser.add_argument("--torch-deterministic", action="store_true",
                         help="if toggled, `torch.backends.cudnn.deterministic=False`")
     parser.add_argument("--track", action="store_true",

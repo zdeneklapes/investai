@@ -167,8 +167,8 @@ sweep_configuration = {
         'name': 'train/loss'
     },
     'parameters': {
-        'policy': ["MlpPolicy", "MlpLstmPolicy", "MlpLnLstmPolicy",
-                   "CnnPolicy", "CnnLstmPolicy", "CnnLnLstmPolicy", ],
+        'policy': ["MlpPolicy",  # "MlpLstmPolicy", "MlpLnLstmPolicy",
+                   "CnnPolicy", ],  # "CnnLstmPolicy", "CnnLnLstmPolicy", ],
         # 'env': ,
         'learning_rate': {'min': 0.0001, 'max': 0.01},
         # 'n_steps': int,

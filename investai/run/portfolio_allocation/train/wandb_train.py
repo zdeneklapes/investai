@@ -7,19 +7,20 @@ import os
 from typing import Union
 from pathlib import Path
 
-from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 import wandb
 from wandb.sdk.wandb_run import Run
 from wandb.sdk.lib.disabled import RunDisabled
 from stable_baselines3 import PPO, A2C, SAC, TD3, DQN, DDPG
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
-from run.shared.tickers import DOW_30_TICKER
+from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
+from run.shared.hyperparameters.sweep_configuration import sweep_configuration
 from run.shared.callbacks import WandbCallbackExtendMemory
 from run.shared.callbacks import TensorboardCallback
+from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
 
 
@@ -150,7 +151,9 @@ def main():
     for algorithm in ["ppo", "a2c", "sac", "td3", "dqn", "ddpg"]:
         t = Train(program=program, dataset=dataset, algorithm=algorithm)
         if program.args.sweep:
-            sweep_id = wandb.sweep({})
+            sweep_id = wandb.sweep(sweep_configuration,
+                                   entity=os.environ.get("WANDB_ENTITY"),
+                                   project=os.environ.get("WANDB_PROJECT"))
             wandb.agent(
                 sweep_id,
                 function=t.train,
