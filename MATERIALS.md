@@ -1,4 +1,4 @@
-# AI-INVESTING: Bachelor Thesis
+# INVESTAI
 
 ## MATERIALS
 

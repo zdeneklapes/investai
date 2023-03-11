@@ -1,4 +1,4 @@
-# AI-INVESTING: Bachelor Thesis
+# INVESTAI
 
 ## README
 
@@ -7,7 +7,6 @@
 ### AUTHORS
 
 - **Student**: Zdeněk Lapeš <lapes.zdenek@gmail.com>
-- **Superviser**: Milan Češka <ceskam@fit.vut.cz>
 
 ### DEPENDENCIES
 

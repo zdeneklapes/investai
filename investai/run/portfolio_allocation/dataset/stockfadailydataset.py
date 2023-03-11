@@ -16,7 +16,7 @@ from shared.dir.experiment_dir import ExperimentDir
 
 
 class StockFaDailyDataset:
-    def __init__(self, program: Program, tickers: List[str]):
+    def __init__(self, program: Program, tickers: List[str], dataset_split_coef: float = 0.6):
         TICKERS = deepcopy(tickers)
         TICKERS.remove("DOW")  # TODO: "DOW" is not in DJI30 or what?
         #
@@ -47,6 +47,7 @@ class StockFaDailyDataset:
 
         # Final dataset for training and testing
         self.dataset = None
+        self.dataset_split_coef = dataset_split_coef
 
     @property
     def train_dataset(self) -> pd.DataFrame:
@@ -63,9 +64,8 @@ class StockFaDailyDataset:
 
     def get_split_date(self) -> str:
         """Return split date"""
-        coef = 0.8
         dates = self.dataset["date"].unique()
-        return dates[int(len(dates) * coef)]
+        return dates[int(len(dates) * self.dataset_split_coef)]
 
     def get_features(self):
         """Return features for training and testing"""
