@@ -99,8 +99,11 @@ class Train:
             env=env,
             **wandb.config,
         )
-        model.learn(total_timesteps=self.program.args.total_timesteps, tb_log_name=f"{self.algorithm}",
-                    callback=callbacks)
+        model.learn(
+            total_timesteps=self.program.args.total_timesteps,
+            tb_log_name=f"{self.algorithm}",
+            callback=callbacks
+        )
         return model
 
     def _deinit_environment(self, env):
