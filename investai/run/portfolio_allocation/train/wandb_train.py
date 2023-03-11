@@ -5,7 +5,6 @@
 # TODO: next datasets
 import os
 from typing import Union
-from pathlib import Path
 
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 import wandb
@@ -21,7 +20,6 @@ from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAlloca
 from run.shared.callbacks import WandbCallbackExtendMemory
 from run.shared.callbacks import TensorboardCallback
 from shared.program import Program
-from shared.dir.experiment_dir import ExperimentDir
 
 
 class Train:
@@ -38,10 +36,11 @@ class Train:
         self.stock_dataset: StockFaDailyDataset = dataset
         self.program: Program = program
         self.algorithm: str = algorithm
-        self.model_path = self.program.experiment_dir.models.joinpath(f"{self.algorithm}.zip")
+        self.model_path = self.program.project_structure.models.joinpath(f"{self.algorithm}.zip")
 
-    def _init_hyper_parameters_from_cli_arguments(self) -> dict:
+    def _init_hyper_parameters(self) -> dict:
         """Hyper parameters"""
+        # TODO: Rewrite parameters from wandb.config when they are defined on cli
         algorithm_parameters = Train.ALGORITHMS[self.algorithm].__init__.__code__.co_varnames
         self.program.args.__dict__.keys()
         return {key: self.program.args.__dict__[key] for key in algorithm_parameters if
@@ -53,8 +52,8 @@ class Train:
         else:
             run = wandb.init(
                 job_type="train",
-                dir=self.program.experiment_dir.models.as_posix(),
-                config=self._init_hyper_parameters_from_cli_arguments(),
+                dir=self.program.project_structure.models.as_posix(),
+                config=self._init_hyper_parameters(),
                 project=os.environ.get("WANDB_PROJECT"),
                 entity=os.environ.get("WANDB_ENTITY"),
                 tags=["train", "ppo", "portfolio-allocation"],
@@ -95,7 +94,7 @@ class Train:
 
     def _init_model(self, env, callbacks):
         model = PPO(
-            tensorboard_log=self.program.experiment_dir.tensorboard.as_posix(),
+            tensorboard_log=self.program.project_structure.tensorboard.as_posix(),
             env=env,
             **wandb.config,
         )
@@ -143,8 +142,8 @@ class Train:
 def main():
     from dotenv import load_dotenv
 
-    program = Program(experiment_dir=ExperimentDir(Path(__file__).parent.parent))
-    load_dotenv(dotenv_path=program.project_dir.root.as_posix())
+    program = Program()
+    load_dotenv(dotenv_path=program.project_structure.root.as_posix())
     dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
     dataset.load_dataset(program.args.dataset_path)
 

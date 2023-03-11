@@ -204,7 +204,7 @@ def main():
     from dotenv import load_dotenv
 
     program = Program()
-    load_dotenv(dotenv_path=program.project_dir.root.as_posix())
+    load_dotenv(dotenv_path=program.project_structure.root.as_posix())
     dataset = StockFaDailyDataset(program, DOW_30_TICKER)
     test = Test(program, dataset)  # noqa
     runs_df = get_wandb_runs()  # noqa

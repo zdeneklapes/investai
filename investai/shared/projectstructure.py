@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 
-from shared.dir.experiment_dir import ExperimentDir
 from shared.utils import find_git_root
 
 
 # Root
-class ProjectDir:
+class ProjectStructure:
     class _DataDir:
         class _StockDir:
             def __init__(self, root):
@@ -28,14 +27,25 @@ class ProjectDir:
     def __init__(self, root: Path = None):
         if not root:
             root = find_git_root(Path(__file__).parent)
-
-        if not root.exists():
+        elif not root.exists():
             raise FileNotFoundError(f"Root directory does not exist: {root}")
 
         self.root = root
         self.data = self._DataDir(self.root)
+        self.out: Path = self.root.joinpath("out")
+        self.datasets: Path = self.out.joinpath("datasets")
+        self.models: Path = self.out.joinpath("models")
+        self.tensorboard: Path = self.models.joinpath("tensorboard")
+        self.wandb: Path = self.models.joinpath("wandb")
 
+        #
+        self.create_dirs()
 
-if __name__ == "__main__":
-    experiment_dir = ExperimentDir(Path(__file__).parent)
-    experiment_dir.delete_out_dir()
+    def create_dirs(self):
+        self.root.mkdir(parents=True, exist_ok=True)
+        self.data.root.mkdir(parents=True, exist_ok=True)
+        self.out.mkdir(parents=True, exist_ok=True)
+        self.datasets.mkdir(parents=True, exist_ok=True)
+        self.models.mkdir(parents=True, exist_ok=True)
+        self.tensorboard.mkdir(parents=True, exist_ok=True)
+        self.wandb.mkdir(parents=True, exist_ok=True)

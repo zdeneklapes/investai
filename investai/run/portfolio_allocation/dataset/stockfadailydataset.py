@@ -230,7 +230,7 @@ class StockFaDailyDataset:
         files = deepcopy(CompanyInfo.Names.list())
         files.remove("symbol")
         for f in files:
-            tic_file = self.program.project_dir.data.tickers.joinpath(tic).joinpath(f + ".csv")
+            tic_file = self.program.project_structure.data.tickers.joinpath(tic).joinpath(f + ".csv")
             if tic_file.exists():
                 data[f] = pd.read_csv(tic_file, index_col=0)
             else:
@@ -248,7 +248,7 @@ def main():
     from dotenv import load_dotenv
 
     program = Program(experiment_dir=ExperimentDir(root=Path(__file__).parent.parent))
-    load_dotenv(dotenv_path=program.project_dir.root.as_posix())
+    load_dotenv(dotenv_path=program.project_structure.root.as_posix())
     dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER)
     dataset.preprocess()
     dataset.save_dataset(program.args.dataset_path)
