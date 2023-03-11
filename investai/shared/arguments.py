@@ -36,24 +36,28 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--ray", help="Use ray-rllib", action="store_true", )
     parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
     parser.add_argument("--debug", help="Debug mode", action="store_true", default=os.environ.get("DEBUG", False))
-    parser.add_argument("--sweep", help="Wandb sweep tune hyper parameters", action="store_true", )
     parser.add_argument('--project-verbose', type=int, default=0,
                         help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
     # Wandb arguments
+    parser.add_argument("--wandb-sweep", help="Wandb sweep tune hyper parameters", action="store_true", )
+    parser.add_argument("--wandb-sweep-count", type=int, default=1, help="Wandb sweep count")
+    parser.add_argument("--wandb-job-type", type=str, default=None, help="the wandb's project name")
     parser.add_argument("--wandb-project", type=str, default=None, help="the wandb's project name")
-    parser.add_argument("--wandb-entity", type=str, default=None, help="the entity (team) of wandb's project")
+    parser.add_argument("--wandb-entity", type=str, default=None, help="the entity (team/user) of wandb's project")
+    parser.add_argument("--wandb-group", type=str, default=os.path.basename(__file__).rstrip(".py"),
+                        help="the name of this experiment")
     parser.add_argument("--wandb-model-save", action="store_true", help="Save model")
     parser.add_argument("--wandb-model-save-freq", type=int, default=100,
                         help="Save model every x steps (0 = no checkpoint)")
     parser.add_argument("--wandb-gradient-save-freq", type=int, default=100,
                         help="Save gradient every x steps (0 = no checkpoint)")
-    parser.add_argument("--wandb-group", type=str, default=os.path.basename(__file__).rstrip(".py"),
-                        help="the name of this experiment")
     parser.add_argument("--wandb-verbose", type=int, default=0,
                         help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
     # Training arguments
+    parser.add_argument("--algorithms", type=str, default=["ppo"], choices=["ppo", "a2c", "sac", "td3", "dqn", "ddpg"],
+                        nargs="+", help="the algorithm to use")
     parser.add_argument("--torch-deterministic", action="store_true",
                         help="if toggled, `torch.backends.cudnn.deterministic=False`")
     parser.add_argument("--track", action="store_true",
