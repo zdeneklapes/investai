@@ -65,7 +65,7 @@ class Test:
 
         # Save memory
         memory_name = f"model_{checkpoint_model_path.name.split('_')[1]}_steps_memory.json"
-        self.env._memory.save(self.program.experiment_dir.algo.joinpath(memory_name))
+        self.env._memory.save_memory(self.program.experiment_dir.algo.joinpath(memory_name))
 
     def get_memory_stats(self, memory_file: Path) -> None:
         pass

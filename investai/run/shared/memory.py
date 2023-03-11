@@ -35,13 +35,13 @@ class Memory:
         """Current portfolio value"""
         return self.df["portfolio_value"].iloc[-1]
 
-    def save(self, save_path: Path):
+    def save_memory(self, save_path: Path):
         """Save memory to csv file
         :param save_path: Path to save the memory
         """
         self.df.to_json(save_path.as_posix(), index=True)
 
-    def load(self, save_path: Path):
+    def load_memory(self, save_path: Path):
         """Save memory to csv file
         :param save_path: Path to save the memory
         """

@@ -16,7 +16,7 @@ from shared.dir.experiment_dir import ExperimentDir
 
 
 class StockFaDailyDataset:
-    def __init__(self, program: Program, tickers: List[str], dataset_split_coef: float = 0.6):
+    def __init__(self, program: Program, tickers: List[str], dataset_split_coef: float):
         TICKERS = deepcopy(tickers)
         TICKERS.remove("DOW")  # TODO: "DOW" is not in DJI30 or what?
         #
@@ -52,7 +52,8 @@ class StockFaDailyDataset:
     @property
     def train_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
-        print("Train dataset from", self.dataset["date"].min(), "to", self.get_split_date())
+        if self.program.args.verbose > 0:
+            print("Train dataset from", self.dataset["date"].min(), "to", self.get_split_date())
         return self.dataset[self.dataset["date"] < self.get_split_date()]
 
     @property
@@ -214,11 +215,14 @@ class StockFaDailyDataset:
 
         return df
 
-    def save(self) -> None:
-        """Save dataset"""
-        file_name = self.program.experiment_dir.datasets.joinpath(self.program.args.dataset_name)
-        print(f"Saving dataset to: {file_name}")
-        self.dataset.to_csv(file_name, index=True)
+    def save_dataset(self, file_path) -> None:
+        """Save dataset
+        :param file_path:
+        """
+
+        if self.program.args.verbose > 0:
+            print(f"Saving dataset to: {file_path}")
+        self.dataset.to_csv(file_path, index=True)
 
     def load_raw_data(self, tic) -> CompanyInfo:
         """Check if folders with ticker exists and load all data from them into CompanyInfo class"""
@@ -233,11 +237,11 @@ class StockFaDailyDataset:
                 raise FileExistsError(f"File not exists: {tic_file}")
         return CompanyInfo(**data)
 
-    def load_dataset(self) -> None:
+    def load_dataset(self, file_path: str) -> None:
         """Load dataset"""
-        file_name = self.program.experiment_dir.datasets.joinpath(self.program.args.dataset_name)
-        print(f"Loading dataset from: {file_name}")
-        self.dataset = pd.read_csv(file_name, index_col=0)
+        if self.program.args.verbose > 0:
+            print(f"Loading dataset from: {file_path}")
+        self.dataset = pd.read_csv(file_path, index_col=0)
 
 
 def main():
@@ -247,7 +251,7 @@ def main():
     load_dotenv(dotenv_path=program.project_dir.root.as_posix())
     dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER)
     dataset.preprocess()
-    dataset.save()
+    dataset.save_dataset(program.args.dataset_path)
 
 
 if __name__ == "__main__":

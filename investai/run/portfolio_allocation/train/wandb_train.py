@@ -4,7 +4,6 @@
 # TODO: tests
 # TODO: next datasets
 import os
-from copy import deepcopy
 from typing import Union
 from pathlib import Path
 
@@ -12,12 +11,11 @@ from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 import wandb
 from wandb.sdk.wandb_run import Run
 from wandb.sdk.lib.disabled import RunDisabled
-from stable_baselines3.ppo import PPO
+from stable_baselines3 import PPO, A2C, SAC, TD3, DQN, DDPG
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 from run.shared.tickers import DOW_30_TICKER
 
-from run.shared.algorithm_parameters import STABLE_BASELINE_PARAMETERS
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
 from run.shared.callbacks import WandbCallbackExtendMemory
@@ -27,31 +25,27 @@ from shared.dir.experiment_dir import ExperimentDir
 
 
 class Train:
-    def __init__(self, program: Program, dataset: StockFaDailyDataset):
+    ALGORITHMS = {
+        "ppo": PPO,
+        "a2c": A2C,
+        "sac": SAC,
+        "td3": TD3,
+        "dqn": DQN,
+        "ddpg": DDPG,
+    }
+
+    def __init__(self, program: Program, dataset: StockFaDailyDataset, algorithm: str):
         self.stock_dataset: StockFaDailyDataset = dataset
         self.program: Program = program
-        self.algorithm: str = "ppo"
+        self.algorithm: str = algorithm
         self.model_path = self.program.experiment_dir.models.joinpath(f"{self.algorithm}.zip")
 
-    def _init_hyper_parameters(self):
-        """Hyper parameters for PPO algorithm"""
-        default_hyper_parameters = deepcopy(STABLE_BASELINE_PARAMETERS[self.algorithm])
-        intersect_keys = (
-            set(self.program.args.__dict__.keys())
-            .intersection(set(default_hyper_parameters.keys()))
-        )
-        default_keys = set(default_hyper_parameters.keys()).difference(intersect_keys)
-
-        cli_config = {key: self.program.args.__dict__[key] for key in intersect_keys}
-        default_config: dict = {
-            key: default_hyper_parameters[key]
-            for key in default_keys
-        }
-
-        assert len(set(cli_config.keys()).intersection(set(default_config.keys()))) == 0, \
-            "cli_config keys and default_config keys should be unique"
-
-        return cli_config | default_config
+    def _init_hyper_parameters_from_cli_arguments(self) -> dict:
+        """Hyper parameters"""
+        algorithm_parameters = Train.ALGORITHMS[self.algorithm].__init__.__code__.co_varnames
+        self.program.args.__dict__.keys()
+        return {key: self.program.args.__dict__[key] for key in algorithm_parameters if
+                key in self.program.args.__dict__}
 
     def _init_wandb(self) -> Union[Run, RunDisabled, None]:
         if self.program.args.sweep:
@@ -60,7 +54,7 @@ class Train:
             run = wandb.init(
                 job_type="train",
                 dir=self.program.experiment_dir.models.as_posix(),
-                config=self._init_hyper_parameters(),
+                config=self._init_hyper_parameters_from_cli_arguments(),
                 project=os.environ.get("WANDB_PROJECT"),
                 entity=os.environ.get("WANDB_ENTITY"),
                 tags=["train", "ppo", "portfolio-allocation"],
@@ -128,7 +122,7 @@ class Train:
         # Wandb: Log artifacts
         # Log dataset
         artifact = wandb.Artifact("dataset", type="dataset")
-        artifact.add_file(self.program.experiment_dir.datasets.joinpath(self.program.args.dataset_name).as_posix())
+        artifact.add_file(self.program.args.dataset_path)
         run.log_artifact(artifact)
         # Log model
         artifact = wandb.Artifact("model", type="model")
@@ -148,21 +142,23 @@ def main():
 
     program = Program(experiment_dir=ExperimentDir(Path(__file__).parent.parent))
     load_dotenv(dotenv_path=program.project_dir.root.as_posix())
-    dataset = StockFaDailyDataset(program, DOW_30_TICKER)
-    dataset.load_dataset()
-    t = Train(program=program, dataset=dataset)
+    dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
+    dataset.load_dataset(program.args.dataset_path)
 
-    if program.args.sweep:
-        sweep_id = wandb.sweep({})
-        wandb.agent(
-            sweep_id,
-            function=t.train,
-            project=os.environ.get("WANDB_PROJECT"),
-            entity=os.environ.get("WANDB_ENTITY"),
-            count=5
-        )
-    else:
-        t.train()
+    for algorithm in ["ppo", "a2c", "sac", "td3", "dqn", "ddpg"]:
+        t = Train(program=program, dataset=dataset, algorithm=algorithm)
+        if program.args.sweep:
+            sweep_id = wandb.sweep({})
+            wandb.agent(
+                sweep_id,
+                function=t.train,
+                project=os.environ.get("WANDB_PROJECT"),
+                entity=os.environ.get("WANDB_ENTITY"),
+                count=5
+            )
+        else:
+            t.train()
+        break
 
 
 if __name__ == '__main__':

@@ -39,7 +39,7 @@ class CustomCheckpointCallback(CheckpointCallback):
             if isinstance(env, PortfolioAllocationEnv):
                 memory: Memory = self.locals['env'].envs[0]._memory
                 memory_path = Path(self.save_path).joinpath(self.memory_name)
-                memory.save(memory_path)
+                memory.save_memory(memory_path)
 
 
 class WandbCallbackExtendMemory(WandbCallback):
