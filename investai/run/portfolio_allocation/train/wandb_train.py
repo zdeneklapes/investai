@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+# TODO: wandb sweep
+# TODO: all algorithms
+# TODO: tests
+# TODO: next datasets
 import os
 from copy import deepcopy
 from typing import Union
