@@ -4,6 +4,7 @@
 # TODO: all algorithms
 # TODO: tests
 # TODO: next datasets
+# TODO: Put into dataset change of price form one index to another index: e.g. 10->15=0.5, 10->5=-0.5
 import os
 from typing import Union
 from pathlib import Path

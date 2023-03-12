@@ -95,14 +95,16 @@ class StockFaDailyDataset:
 
         df.insert(0, "date", df.index)
         df = self.clean_dataset_from_missing_stock_in_some_days(df)
-        df = self.make_index_by_date(df)
         df = df.sort_values(by=self.unique_columns)
-        assert not self.is_dataset_correct(df), "Dataset is not correct"
+        df.index = df["date"].factorize()[0]
+        self.check_dataset_correctness_assert(df)
         return df
 
-    def is_dataset_correct(self, df: pd.DataFrame) -> bool:
+    def check_dataset_correctness_assert(self, df: pd.DataFrame):
         """Check if all data are correct"""
-        return df.isna().any().any()  # Can't be any Nan/np.inf values
+        assert df.groupby("date").size().unique().size == 1, \
+            "The size of each group must be equal, that means in each date is teh same number of stock data"
+        assert not df.isna().any().any(), "Can't be any Nan/np.inf values"
 
     def add_fa_features(self, ticker_raw_data: CompanyInfo) -> pd.DataFrame:
         """
@@ -158,9 +160,6 @@ class StockFaDailyDataset:
 
     def make_index_by_date(self, df: pd.DataFrame) -> pd.DataFrame:
         """Create index for same dates"""
-        df.sort_values(by="date", inplace=True)
-        df.index = df["date"].factorize()[0]
-        assert df.groupby("date").size().unique().size == 1, "Why is it here?"
         return df
 
     def add_ta_features(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -255,7 +254,9 @@ def main():
         tickers=DOW_30_TICKER,
         dataset_split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
-    dataset.save_dataset(program.args.dataset_path)
+    dataset.save_dataset((program.project_structure.datasets.joinpath(dataset.__class__.__name__.lower()+".csv"))
+                         if program.args.dataset_path is None
+                         else program.args.dataset_path)
 
 
 if __name__ == "__main__":
