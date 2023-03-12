@@ -6,7 +6,7 @@ import attr
 
 from shared.projectstructure import ProjectStructure
 from shared.arguments import parse_arguments
-from shared.utils import get_logger
+from loguru import logger
 
 
 @attr.define
@@ -18,6 +18,16 @@ class Program:
     test_date_start: str = attr.field(default='xxx-xx-xx')
     test_date_end: str = attr.field(default='xxx-xx-xx')
     debug = getenv('DEBUG', None)
+    logger: logger = attr.field(default=logger)
+
+    def init_logger(self, file_path: str):
+        from loguru import logger
+        logger.add(file_path,
+                   rotation="1 MB",
+                   backtrace=True,
+                   diagnose=True,
+                   enqueue=True)
+        return logger
 
     def __attrs_post_init__(self):
-        self.logger = get_logger(self.project_structure.out.joinpath('run.log').as_posix())
+        self.logger = self.init_logger(self.project_structure.out.joinpath('run.log').as_posix())

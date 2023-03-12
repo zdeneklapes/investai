@@ -113,15 +113,3 @@ def find_git_root(path):
     if path == path.parent:
         raise Exception('Not a Git repository')
     return find_git_root(path.parent)
-
-
-def get_logger(file_path:str):
-    from loguru import logger
-    logger.add(
-        file_path,
-        rotation="1 MB",
-        backtrace=True,
-        diagnose=True,
-        enqueue=True
-    )
-    return logger

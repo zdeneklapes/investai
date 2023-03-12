@@ -37,34 +37,36 @@ class CandlestickEngineer:
 
     @staticmethod
     @check_dataframe_columns(required_columns=["high", "low"])
-    def candlestick_size(df: pd.DataFrame) -> pd.DataFrame:
+    def candlestick_size(dataframe: pd.DataFrame) -> pd.DataFrame:
         """Get candle size"""
-        return abs(df["high"] - df["low"])
+        return abs(dataframe["high"] - dataframe["low"])
 
     @staticmethod
     @check_dataframe_columns(required_columns=["open", "close"])
-    def body_size(df: pd.DataFrame) -> pd.DataFrame:
+    def body_size(dataframe: pd.DataFrame) -> pd.DataFrame:
         """Get body size"""
-        return abs(df["close"] - df["open"])
+        return abs(dataframe["close"] - dataframe["open"])
 
     @staticmethod
     @check_dataframe_columns(required_columns=["open", "close", "high"])
-    def candlestick_up_shadow(df: pd.DataFrame) -> ndarray:
+    def candlestick_up_shadow(dataframe: pd.DataFrame) -> ndarray:
         """Get upper shadow"""
-        return np.where((df["close"] > df["open"]), df["high"] - df["close"], df["high"] - df["open"])
+        return np.where((dataframe["close"] > dataframe["open"]), dataframe["high"] - dataframe["close"],
+                        dataframe["high"] - dataframe["open"])
 
     @staticmethod
     @check_dataframe_columns(required_columns=["open", "close", "low"])
-    def candlestick_down_shadow(df: pd.DataFrame) -> ndarray:
+    def candlestick_down_shadow(dataframe: pd.DataFrame) -> ndarray:
         """Get lower shadow"""
-        return np.where((df["close"] > df["open"]), df["open"] - df["low"], df["close"] - df["low"])
+        return np.where((dataframe["close"] > dataframe["open"]), dataframe["open"] - dataframe["low"],
+                        dataframe["close"] - dataframe["low"])
 
     @staticmethod
     @check_dataframe_columns(required_columns=["open", "close"])
-    def candlestick_direction(df: pd.DataFrame) -> ndarray:
+    def candlestick_direction(dataframe: pd.DataFrame) -> ndarray:
         """
         Get candle direction
-        :param df: pd.DataFrame
+        :param dataframe: pd.DataFrame
         :return: ndarray: 1 - up, -1 - down
         """
-        return np.where((df["close"] - df["open"]) > 0, 1, -1)
+        return np.where((dataframe["close"] - dataframe["open"]) > 0, 1, -1)

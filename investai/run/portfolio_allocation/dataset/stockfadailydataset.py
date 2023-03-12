@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from copy import deepcopy
-from typing import Literal, List
+from typing import List
 
 import numpy as np
 import pandas as pd
@@ -11,12 +11,18 @@ from tvDatafeed import Interval, TvDatafeed
 
 from data.train.company_info import CompanyInfo
 from shared.program import Program
+from run.shared.dataset.dataengineer import DataEngineer as DE
+from run.shared.dataset.candlestickengineer import CandlestickEngineer as CSE
+
+# For Debugging
+from shared.utils import reload_module  # noqa
+from IPython.display import display  # noqa
 
 
 class StockFaDailyDataset:
     def __init__(self, program: Program, tickers: List[str], dataset_split_coef: float):
         TICKERS = deepcopy(tickers)
-        TICKERS.remove("DOW")  # TODO: "DOW" is not in DJI30 or what?
+        TICKERS.remove("DOW")  # TODO: Fixme: "DOW" is not in DJI30 or what?
         #
         self.program: Program = program
         self.tickers = TICKERS
@@ -51,20 +57,17 @@ class StockFaDailyDataset:
     def train_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
         if self.program.args.verbose > 0:
-            print("Train dataset from", self.dataset["date"].min(), "to", self.get_split_date())
-        return self.dataset[self.dataset["date"] < self.get_split_date()]
+            print("Train dataset from", self.dataset["date"].min(), "to",
+                  DE.get_split_date(self.dataset, self.dataset_split_coef))
+        df = self.dataset[self.dataset["date"] < DE.get_split_date(self.dataset, self.dataset_split_coef)]
+        return df
 
     @property
     def test_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
-        df = self.dataset[self.dataset["date"] >= self.get_split_date()]
+        df = self.dataset[self.dataset["date"] >= DE.get_split_date(self.dataset, self.dataset_split_coef)]
         df.index = df["date"].factorize()[0]
         return df
-
-    def get_split_date(self) -> str:
-        """Return split date"""
-        dates = self.dataset["date"].unique()
-        return dates[int(len(dates) * self.dataset_split_coef)]
 
     def get_features(self):
         """Return features for training and testing"""
@@ -78,33 +81,21 @@ class StockFaDailyDataset:
     def get_stock_dataset(self) -> pd.DataFrame:
         df = pd.DataFrame()
 
-        if self.program.args.verbose > 0:
-            iterable = tqdm(self.tickers, desc="Processing tickers")
-        else:
-            iterable = self.tickers
-
+        iterable = tqdm(self.tickers) if self.program.args.verbose > 0 else self.tickers
         for tic in iterable:
-            # Load tickers data
-            raw_data: CompanyInfo = self.load_raw_data(tic)
-
-            # Add features
-            feature_data = self.add_fa_features(raw_data)
-
-            # Add ticker to dataset
-            df = pd.concat([feature_data, df])
+            if type(iterable) is tqdm: iterable.set_description(f"Processing {tic}")
+            raw_data: CompanyInfo = self.load_raw_data(tic)  # Load tickers data
+            feature_data = self.add_fa_features(raw_data)  # Add features
+            df = pd.concat([feature_data, df])  # Add ticker to dataset
 
         df.insert(0, "date", df.index)
-        df = self.clean_dataset_from_missing_stock_in_some_days(df)
+        df = DE.clean_dataset_from_missing_tickers_by_date(df)
         df = df.sort_values(by=self.unique_columns)
         df.index = df["date"].factorize()[0]
         self.check_dataset_correctness_assert(df)
+        # TODO: Add price change
+        # TODO: fix fillna
         return df
-
-    def check_dataset_correctness_assert(self, df: pd.DataFrame):
-        """Check if all data are correct"""
-        assert df.groupby("date").size().unique().size == 1, \
-            "The size of each group must be equal, that means in each date is teh same number of stock data"
-        assert not df.isna().any().any(), "Can't be any Nan/np.inf values"
 
     def add_fa_features(self, ticker_raw_data: CompanyInfo) -> pd.DataFrame:
         """
@@ -133,72 +124,47 @@ class StockFaDailyDataset:
         clean = filled.drop(filled[~filled.index.str.contains(r"\d{4}-\d{2}-\d{2}")].index)  # Remove non-dates
         return clean
 
-        # df = pd.concat([clean, df])
+    @staticmethod
+    def add_candlestick_features(df: pd.DataFrame) -> pd.DataFrame:
+        """Add candlestick features to dataset"""
+        candle_size = CSE.candlestick_size(df)
+        body_size = CSE.body_size(df)
+        upper_shadow = CSE.candlestick_up_shadow(df)
+        down_shadow = CSE.candlestick_down_shadow(df)
 
-        # df.insert(0, "date", df.index)
-        # assert not df.isna().any().any()  # Can't be any Nan/np.inf values
-        # return df
-
-    def clean_dataset_from_missing_stock_in_some_days(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Take only those dates where we have data for all stock in each day
-        Parameters
-        ----------
-        df: pd.DataFrame
-
-        Returns
-        -------
-        df: pd.DataFrame
-        """
-        ticker_in_each_date = df.groupby("date").size()
-        where_are_all_tickers = ticker_in_each_date.values == ticker_in_each_date.values.max()
-
-        # FIXME: This is not correct, because we can have missing data in the middle of the dataset
-        earliest_date = ticker_in_each_date[where_are_all_tickers].index[0]
-        df = df[df["date"] > earliest_date]
+        # Add features
+        df["shadow_size_pct"] = (upper_shadow + down_shadow) / candle_size
+        df["body_size_pct"] = body_size / candle_size
+        df["candle_up_shadow_pct"] = upper_shadow / candle_size
+        df["candle_down_shadow_pct"] = down_shadow / candle_size
+        df["candle_direction"] = CSE.candlestick_direction(df)
         return df
 
-    def make_index_by_date(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Create index for same dates"""
-        return df
-
-    def add_ta_features(self, df: pd.DataFrame) -> pd.DataFrame:
+    @staticmethod
+    def add_ta_features(df: pd.DataFrame) -> pd.DataFrame:
         """Add technical analysis features to dataset"""
         # Add features
         df["macd"] = TA.MACD(df).SIGNAL
         df["boll_ub"] = TA.BBANDS(df).BB_UPPER
         df["boll_lb"] = TA.BBANDS(df).BB_LOWER
         df["rsi_30"] = TA.RSI(df, period=30)
-        df["dx_30"] = TA.ADX(df, period=30)
+        df["adx_30"] = TA.ADX(df, period=30)
         # df["close_30_sma"] = TA.SMA(df, period=30) # Unnecessary correlated with boll_lb
         # df["close_60_sma"] = TA.SMA(df, period=60) # Unnecessary correlated with close_30_sma
         df = df.fillna(0)  # Nan will be replaced with 0
         return df
 
-    def add_candlestick_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Add candlestick features to dataset"""
-        # get candlestick features
-        candle_size = abs(df["high"] - df["low"])  # noqa
-        body_size = abs(df["close"] - df["open"])  # noqa
-
-        # get upper and lower shadow
-        upper_shadow = np.where((df["close"] > df["open"]), df["high"] - df["close"], df["high"] - df["open"])
-        lower_shadow = np.where((df["close"] > df["open"]), df["open"] - df["low"], df["close"] - df["low"])
-
-        df["candle_size"] = candle_size
-        df["body_size"] = body_size / candle_size  # pertentage of body size in candle size
-        df["candle_upper_shadow"] = upper_shadow / candle_size  # pertentage of upper shadow in candle size
-        df["candle_lower_shadow"] = lower_shadow / candle_size  # pertentage of lower shadow in candle size
-        df["candle_direction"] = np.where((df["close"] - df["open"]) > 0, 1, 0)  # 1 - up, 0 - down
+    @staticmethod
+    def add_price_change_features(df: pd.DataFrame) -> pd.DataFrame:
+        df['change'] = df['close'].pct_change(1)
         return df
 
-    def feature_correlation_drop(self, df: pd.DataFrame, threshold: float = 0.6,
-                                 method: Literal['pearson', 'kendall', 'spearman'] = 'pearson') -> pd.DataFrame:
-        """Drop features with correlation higher than threshold"""
-        corr = df.corr(method=method)
-        triu = pd.DataFrame(np.triu(corr.T).T, corr.columns, corr.columns)
-        threshhold = triu[(triu > threshold) & (triu < 1)]
-        return threshhold
+    @staticmethod
+    def check_dataset_correctness_assert(df: pd.DataFrame):
+        """Check if all data are correct"""
+        assert df.groupby("date").size().unique().size == 1, \
+            "The size of each group must be equal, that means in each date is teh same number of stock data"
+        assert not df.isna().any().any(), "Can't be any Nan/np.inf values"
 
     # TODO: Create function for downloading data using yfinance and another one for TradingView
     def download(self, ticker,
@@ -244,6 +210,23 @@ class StockFaDailyDataset:
         self.dataset = pd.read_csv(file_path, index_col=0)
 
 
+def t1():
+    from dotenv import load_dotenv
+
+    program = Program()
+    program.args.verbose = 1
+    program.args.debug = True
+    load_dotenv(dotenv_path=program.project_structure.root.as_posix())
+    dataset = StockFaDailyDataset(
+        program,
+        tickers=DOW_30_TICKER,
+        dataset_split_coef=program.args.dataset_split_coef
+    )
+    return {
+        "d": dataset.get_stock_dataset(),
+    }
+
+
 def main():
     from dotenv import load_dotenv
 
@@ -254,7 +237,7 @@ def main():
         tickers=DOW_30_TICKER,
         dataset_split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
-    dataset.save_dataset((program.project_structure.datasets.joinpath(dataset.__class__.__name__.lower()+".csv"))
+    dataset.save_dataset((program.project_structure.datasets.joinpath(dataset.__class__.__name__.lower() + ".csv"))
                          if program.args.dataset_path is None
                          else program.args.dataset_path)
 
