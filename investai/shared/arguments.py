@@ -43,7 +43,9 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--stable_baseline", help="Use stable-baselines3", action="store_true", )
     parser.add_argument("--ray", help="Use ray-rllib", action="store_true", )
     parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
-    parser.add_argument("--debug", help="Debug mode", action="store_true", default=os.environ.get("DEBUG", False))
+    parser.add_argument("--debug",
+                        help="Debug mode",
+                        **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
     parser.add_argument('--project-verbose', type=int, default=0,
                         help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
