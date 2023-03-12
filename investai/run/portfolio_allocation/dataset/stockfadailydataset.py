@@ -27,7 +27,7 @@ class StockFaDailyDataset:
         self.program: Program = program
         self.tickers = TICKERS
         self.unique_columns = ["date", "tic"]
-        self.base_columns = ["open", "high", "low", "close", "volume"]
+        self.base_columns = ["open", "high", "low", "close", "volume", "changePercent"]
         # Technical analysis indicators
         self.ta_indicators = []
         # Fundamental analysis indicators
@@ -56,7 +56,7 @@ class StockFaDailyDataset:
     @property
     def train_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
-        if self.program.args.verbose > 0:
+        if self.program.args.project_verbose > 0:
             print("Train dataset from", self.dataset["date"].min(), "to",
                   DE.get_split_date(self.dataset, self.dataset_split_coef))
         df = self.dataset[self.dataset["date"] < DE.get_split_date(self.dataset, self.dataset_split_coef)]
@@ -81,7 +81,7 @@ class StockFaDailyDataset:
     def get_stock_dataset(self) -> pd.DataFrame:
         df = pd.DataFrame()
 
-        iterable = tqdm(self.tickers) if self.program.args.verbose > 0 else self.tickers
+        iterable = tqdm(self.tickers) if self.program.args.project_verbose > 0 else self.tickers
         for tic in iterable:
             if type(iterable) is tqdm: iterable.set_description(f"Processing {tic}")
             raw_data: CompanyInfo = self.load_raw_data(tic)  # Load tickers data
@@ -89,12 +89,11 @@ class StockFaDailyDataset:
             df = pd.concat([feature_data, df])  # Add ticker to dataset
 
         df.insert(0, "date", df.index)
+        df = df.sort_values(by=['tic'])
         df = DE.clean_dataset_from_missing_tickers_by_date(df)
         df = df.sort_values(by=self.unique_columns)
         df.index = df["date"].factorize()[0]
-        self.check_dataset_correctness_assert(df)
-        # TODO: Add price change
-        # TODO: fix fillna
+        DE.check_dataset_correctness_assert(df)
         return df
 
     def add_fa_features(self, ticker_raw_data: CompanyInfo) -> pd.DataFrame:
@@ -154,18 +153,6 @@ class StockFaDailyDataset:
         df = df.fillna(0)  # Nan will be replaced with 0
         return df
 
-    @staticmethod
-    def add_price_change_features(df: pd.DataFrame) -> pd.DataFrame:
-        df['change'] = df['close'].pct_change(1)
-        return df
-
-    @staticmethod
-    def check_dataset_correctness_assert(df: pd.DataFrame):
-        """Check if all data are correct"""
-        assert df.groupby("date").size().unique().size == 1, \
-            "The size of each group must be equal, that means in each date is teh same number of stock data"
-        assert not df.isna().any().any(), "Can't be any Nan/np.inf values"
-
     # TODO: Create function for downloading data using yfinance and another one for TradingView
     def download(self, ticker,
                  exchange: str,
@@ -186,7 +173,7 @@ class StockFaDailyDataset:
         :param file_path:
         """
 
-        if self.program.args.verbose > 0:
+        if self.program.args.project_verbose > 0:
             print(f"Saving dataset to: {file_path}")
         self.dataset.to_csv(file_path, index=True)
 
@@ -205,7 +192,7 @@ class StockFaDailyDataset:
 
     def load_dataset(self, file_path: str) -> None:
         """Load dataset"""
-        if self.program.args.verbose > 0:
+        if self.program.args.project_verbose > 0:
             print(f"Loading dataset from: {file_path}")
         self.dataset = pd.read_csv(file_path, index_col=0)
 
@@ -214,7 +201,7 @@ def t1():
     from dotenv import load_dotenv
 
     program = Program()
-    program.args.verbose = 1
+    program.args.project_verbose = 1
     program.args.debug = True
     load_dotenv(dotenv_path=program.project_structure.root.as_posix())
     dataset = StockFaDailyDataset(

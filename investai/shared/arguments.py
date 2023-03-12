@@ -50,6 +50,8 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
     # Wandb arguments
+    parser.add_argument("--wandb", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
+                        help="Wandb logging", )
     parser.add_argument("--wandb-sweep", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
                         help="Wandb sweep tune hyper parameters", )
     parser.add_argument("--wandb-sweep-count", type=int, default=1, help="Wandb sweep count")
@@ -90,8 +92,6 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--exploration-noise", type=float, default=0.1, help="the scale of exploration noise")
     parser.add_argument("--noise-clip", type=float, default=0.5,
                         help="noise clip parameter of the Target Policy Smoothing Regularization")
-    parser.add_argument("--sb3-verbose", type=int, default=0,
-                        help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
     # Algorithm specific arguments
     parser.add_argument('--policy', type=str,

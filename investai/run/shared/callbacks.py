@@ -71,6 +71,13 @@ class WandbCallbackExtendMemory(WandbCallback):
             wandb.run.summary["portfolio_value_end"] = memory.df['portfolio_value'].iloc[-1]
             wandb.run.summary["date_start"] = memory.df['date'].unique()[0]
             wandb.run.summary["date_end"] = memory.df['date'].unique()[-1]
+        # if hasattr(self.locals['env'].envs[0].unwrapped, '_memory'):
+        #     memory: Memory = getattr(self.locals['env'].envs[0].unwrapped, '_memory')
+        #     wandb.run.summary["portfolio_return_sum"] = memory.df['portfolio_return'].sum()
+        #     wandb.run.summary["portfolio_value_start"] = memory.df['portfolio_value'].iloc[0]
+        #     wandb.run.summary["portfolio_value_end"] = memory.df['portfolio_value'].iloc[-1]
+        #     wandb.run.summary["date_start"] = memory.df['date'].unique()[0]
+        #     wandb.run.summary["date_end"] = memory.df['date'].unique()[-1]
         super()._on_training_end()
 
 

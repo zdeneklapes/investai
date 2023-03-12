@@ -70,3 +70,8 @@ class CandlestickEngineer:
         :return: ndarray: 1 - up, -1 - down
         """
         return np.where((dataframe["close"] - dataframe["open"]) > 0, 1, -1)
+
+    @staticmethod
+    def price_pct_change(dataframe: pd.DataFrame) -> pd.DataFrame:
+        """Get price percent change"""
+        return dataframe['close'].pct_change(1, fill_method='ffill')

@@ -9,6 +9,14 @@ class DataEngineer:
     """Data Engineer"""
 
     @staticmethod
+    def check_dataset_correctness_assert(dataframe: pd.DataFrame):
+        """Check if all data are correct"""
+        assert dataframe.groupby("date").size().unique().size == 1, \
+            "The size of each group must be equal, that means in each date is teh same number of stock data"
+        assert not dataframe.isna().any().any(), \
+            "Can't be any Nan/np.inf values"
+
+    @staticmethod
     def clean_dataset_from_missing_tickers_by_date(dataframe: pd.DataFrame) -> pd.DataFrame:
         """
         Take only those dates where we have data for all stock in each day
@@ -20,13 +28,12 @@ class DataEngineer:
         -------
         df: pd.DataFrame
         """
-        ticker_in_each_date = dataframe.groupby("date").size()
-        where_are_all_tickers = ticker_in_each_date.values == ticker_in_each_date.values.max()
-
-        # FIXME: This is not correct, because we can have missing data in the middle of the dataset
-        earliest_date = ticker_in_each_date[where_are_all_tickers].index[0]
-        df = dataframe[dataframe["date"] > earliest_date]
-        return df
+        tickers_count_in_date = dataframe.groupby("date").size()
+        binary_where_are_all_tickers = tickers_count_in_date.values == tickers_count_in_date.values.max()
+        # TODO: Fixme: This is not correct, because we can have missing data in the middle of the dataset
+        earliest_date = tickers_count_in_date[binary_where_are_all_tickers].index[0]
+        updated_dataframe = dataframe[dataframe["date"] > earliest_date]
+        return updated_dataframe
 
     @staticmethod
     def get_split_date(dataframe: pd.DataFrame, coef: float) -> str:

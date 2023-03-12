@@ -46,28 +46,30 @@ class Train:
     def _init_hyper_parameters(self) -> dict:
         """Hyper parameters"""
         # Algorithm parameters info
+
+        # Because __code__.co_varnames returns all variables inside function and I need only function parameters
         algorithm_init_parameter_count: int = Train.ALGORITHMS[self.algorithm].__init__.__code__.co_argcount
         algorithm_init_parameters = set(
             Train.ALGORITHMS[self.algorithm].__init__.__code__.co_varnames[:algorithm_init_parameter_count]
         )
-        sweep_config = {}
+        config = {}
 
         if self.program.args.wandb_sweep:
             # Get parameter for Algo from Wandb sweep configuration
-            sweep_config = deepcopy(dict(wandb.config.items()))
-            sweep_config_set = set(sweep_config.keys())
+            config = deepcopy(dict(wandb.config.items()))
+            sweep_config_set = set(config.keys())
+
             # Remove parameters that are not in algorithm
             for key in sweep_config_set - algorithm_init_parameters:
-                del sweep_config[key]
+                del config[key]
         else:
             # Get parameter for Algo from CLI arguments
-            # Because __code__.co_varnames returns all variables inside function and I need only function parameters
-            sweep_config = {key: self.program.args.__dict__[key] for key in algorithm_init_parameters if
-                            key in self.program.args.__dict__}
+            config = {key: self.program.args.__dict__[key] for key in algorithm_init_parameters if
+                      key in self.program.args.__dict__}
 
         # Return
-        sweep_config["tensorboard_log"] = self.program.project_structure.tensorboard.as_posix()
-        return sweep_config
+        config["tensorboard_log"] = self.program.project_structure.tensorboard.as_posix()
+        return config
 
     def _init_wandb(self) -> Union[Run, RunDisabled, None]:
         run = wandb.init(
@@ -94,7 +96,8 @@ class Train:
     def _init_environment(self):
         env = PortfolioAllocationEnv(df=self.stock_dataset.train_dataset,
                                      initial_portfolio_value=self.program.args.initial_cash,
-                                     tickers=self.stock_dataset.tickers, features=self.stock_dataset.get_features(),
+                                     tickers=self.stock_dataset.tickers,
+                                     features=self.stock_dataset.get_features(),
                                      start_data_from_index=self.program.args.start_data_from_index)
         env = Monitor(
             env,
@@ -107,13 +110,16 @@ class Train:
         callbacks = CallbackList([
             TensorboardCallback(),
             ProgressBarCallback(),
-            WandbCallbackExtendMemory(
+        ])
+
+        if self.program.args.wandb or self.program.args.wandb_sweep:
+            callbacks.callbacks.append(WandbCallbackExtendMemory(
                 verbose=self.program.args.wandb_verbose,
                 model_save_path=self.model_path.parent.as_posix() if self.program.args.wandb_model_save else None,
                 model_save_freq=self.program.args.wandb_model_save_freq if self.program.args.wandb_model_save else 0,
-                gradient_save_freq=self.program.args.wandb_gradient_save_freq,
-            ),
-        ])
+                gradient_save_freq=self.program.args.wandb_gradient_save_freq
+            ))
+
         return callbacks
 
     def _deinit_environment(self, env):
@@ -136,7 +142,8 @@ class Train:
 
     def train(self) -> None:
         # Init
-        run = self._init_wandb()
+        if self.program.args.wandb or self.program.args.wandb_sweep:
+            run = self._init_wandb()
         environment = self._init_environment()
         callbacks = self._init_callbacks()
 
@@ -144,22 +151,23 @@ class Train:
         model = self._init_model(environment, callbacks)
         model.save(self.model_path.as_posix())
 
-        # Wandb: Log artifacts
-        # Log dataset
-        artifact = wandb.Artifact("dataset", type="dataset")
-        artifact.add_file(self.program.args.dataset_path)
-        run.log_artifact(artifact)
-        # Log model
-        artifact = wandb.Artifact("model", type="model")
-        artifact.add_file(self.model_path.as_posix())
-        run.log_artifact(artifact)
+        if self.program.args.wandb or self.program.args.wandb_sweep:
+            # Wandb: Log artifacts
+            # Log dataset
+            artifact = wandb.Artifact("dataset", type="dataset")
+            artifact.add_file(self.program.args.dataset_path)
+            run.log_artifact(artifact)
+            # Log model
+            artifact = wandb.Artifact("model", type="model")
+            artifact.add_file(self.model_path.as_posix())
+            run.log_artifact(artifact)
 
-        # Wandb: summary
-        wandb.define_metric("total_reward", step_metric="total_timesteps")
+            # Wandb: summary
+            wandb.define_metric("total_reward", step_metric="total_timesteps")
+            self._deinit_wandb()
 
         # Deinit
         self._deinit_environment(environment)
-        self._deinit_wandb()
 
 
 def main():
