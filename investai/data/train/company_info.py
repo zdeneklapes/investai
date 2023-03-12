@@ -24,20 +24,20 @@ class CompanyInfo:
     dcf: Optional[pd.DataFrame] = None
 
     class Names(enum.Enum):
-        symbol = "symbol"
-        profile = "profile"
-        quotes = "quotes"
-        enterprise_value = "enterprise_value"
-        balance_sheet = "balance_sheet"
-        income = "income"
-        cash_flow = "cash_flow"
-        key_metrics = "key_metrics"
-        financial_ratios = "financial_ratios"
-        growth = "growth"
-        data_detailed = "data_detailed"
-        dividends = "dividends"
-        ratings = "ratings"
-        dcf = "dcf"
+        symbol: str = "symbol"
+        profile: str = "profile"
+        quotes: str = "quotes"
+        enterprise_value: str = "enterprise_value"
+        balance_sheet: str = "balance_sheet"
+        income: str = "income"
+        cash_flow: str = "cash_flow"
+        key_metrics: str = "key_metrics"
+        financial_ratios: str = "financial_ratios"
+        growth: str = "growth"
+        data_detailed: str = "data_detailed"
+        dividends: str = "dividends"
+        ratings: str = "ratings"
+        dcf: str = "dcf"
 
         @classmethod
         def list(cls):
