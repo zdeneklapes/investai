@@ -10,16 +10,16 @@ class Memory:
     """Memory class for storing the history of the agent performance in the environment"""
     df: pd.DataFrame
 
-    def append(self, portfolio_value, portfolio_return, action, date):
+    def append(self, portfolio_value, reward, action, date):
         """Append memory
         :param portfolio_value: Portfolio value
-        :param portfolio_return: Portfolio return
+        :param reward: Portfolio return
         :param action: Action
         :param date: Date
         """
         df_new = pd.DataFrame({
             "portfolio_value": [portfolio_value],
-            "portfolio_return": [portfolio_return],
+            "reward": [reward],
             "action": [action],
             "date": [date]
         })
@@ -29,11 +29,6 @@ class Memory:
     def _initial_portfolio_value(self) -> int:
         """Initial portfolio value"""
         return self.df["portfolio_value"].iloc[0]
-
-    @property
-    def _current_portfolio_value(self) -> int:
-        """Current portfolio value"""
-        return self.df["portfolio_value"].iloc[-1]
 
     def save_memory(self, save_path: Path):
         """Save memory to csv file

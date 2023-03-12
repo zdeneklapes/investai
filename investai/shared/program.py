@@ -31,3 +31,6 @@ class Program:
 
     def __attrs_post_init__(self):
         self.logger = self.init_logger(self.project_structure.out.joinpath('run.log').as_posix())
+
+    def is_wandb_enabled(self):
+        return self.args.wandb or self.args.wandb_sweep

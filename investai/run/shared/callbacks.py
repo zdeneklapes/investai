@@ -2,6 +2,7 @@
 from pathlib import Path
 from typing import Optional, Literal
 
+import pandas as pd
 import wandb
 from wandb.integration.sb3 import WandbCallback
 from stable_baselines3.common.callbacks import CheckpointCallback
@@ -64,20 +65,15 @@ class WandbCallbackExtendMemory(WandbCallback):
         return super()._on_step()
 
     def _on_training_end(self) -> None:
-        if hasattr(self.locals['env'].envs[0].unwrapped, '_memory'):
+        if hasattr(self.locals['env'].envs[0].unwrapped, '_memory') \
+            and hasattr(self.locals['env'].envs[0].unwrapped, '_df'):
             memory: Memory = getattr(self.locals['env'].envs[0].unwrapped, '_memory')
-            wandb.run.summary["portfolio_return_sum"] = memory.df['portfolio_return'].sum()
+            df: pd.DataFrame = getattr(self.locals['env'].envs[0].unwrapped, '_df')
+            wandb.run.summary["reward"] = memory.df['reward'].sum()
             wandb.run.summary["portfolio_value_start"] = memory.df['portfolio_value'].iloc[0]
             wandb.run.summary["portfolio_value_end"] = memory.df['portfolio_value'].iloc[-1]
-            wandb.run.summary["date_start"] = memory.df['date'].unique()[0]
-            wandb.run.summary["date_end"] = memory.df['date'].unique()[-1]
-        # if hasattr(self.locals['env'].envs[0].unwrapped, '_memory'):
-        #     memory: Memory = getattr(self.locals['env'].envs[0].unwrapped, '_memory')
-        #     wandb.run.summary["portfolio_return_sum"] = memory.df['portfolio_return'].sum()
-        #     wandb.run.summary["portfolio_value_start"] = memory.df['portfolio_value'].iloc[0]
-        #     wandb.run.summary["portfolio_value_end"] = memory.df['portfolio_value'].iloc[-1]
-        #     wandb.run.summary["date_start"] = memory.df['date'].unique()[0]
-        #     wandb.run.summary["date_end"] = memory.df['date'].unique()[-1]
+            wandb.run.summary["date_start"] = df['date'].unique()[0]
+            wandb.run.summary["date_end"] = df['date'].unique()[-1]
         super()._on_training_end()
 
 

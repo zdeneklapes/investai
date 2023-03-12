@@ -112,7 +112,7 @@ class Train:
             ProgressBarCallback(),
         ])
 
-        if self.program.args.wandb or self.program.args.wandb_sweep:
+        if self.program.is_wandb_enabled():
             callbacks.callbacks.append(WandbCallbackExtendMemory(
                 verbose=self.program.args.wandb_verbose,
                 model_save_path=self.model_path.parent.as_posix() if self.program.args.wandb_model_save else None,
@@ -142,7 +142,7 @@ class Train:
 
     def train(self) -> None:
         # Init
-        if self.program.args.wandb or self.program.args.wandb_sweep:
+        if self.program.is_wandb_enabled():
             run = self._init_wandb()
         environment = self._init_environment()
         callbacks = self._init_callbacks()
@@ -151,7 +151,7 @@ class Train:
         model = self._init_model(environment, callbacks)
         model.save(self.model_path.as_posix())
 
-        if self.program.args.wandb or self.program.args.wandb_sweep:
+        if self.program.is_wandb_enabled():
             # Wandb: Log artifacts
             # Log dataset
             artifact = wandb.Artifact("dataset", type="dataset")

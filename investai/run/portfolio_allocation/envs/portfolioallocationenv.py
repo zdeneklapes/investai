@@ -48,7 +48,7 @@ class PortfolioAllocationEnv(gym.Env):
         """
         self._data_index = self._start_from_index
         self._memory = Memory(df=pd.DataFrame(dict(portfolio_value=[initial_portfolio_value],
-                                                   portfolio_return=[0],
+                                                   reward=[0],
                                                    action=[[1 / len(self._tickers)] * len(self._tickers)],
                                                    date=[self._current_data.date.unique()[0]])))
 
@@ -68,46 +68,34 @@ class PortfolioAllocationEnv(gym.Env):
         # TODO: portfolio_value <= 0
         return self._data_index >= len(self._df.index.unique()) - 1
 
-    def _get_reward(self) -> float:
-        """Calculate reward based on portfolio value and actions"""
-        return (
-            (self._memory.df['portfolio_value'].iloc[-1] - self._memory.df['portfolio_value'].iloc[-2])
-            / self._memory.df['portfolio_value'].iloc[-2]
-        )
-
-    def _get_portfolio_return(self, weights) -> float:
-        """Calculate portfolio return
-        :param weights: Weights of the portfolio
-        :return: Portfolio return
-        """
-
-        current_close = self._current_data["close"].values
-        previous_close = self._df.loc[self._data_index - 1, "close"].values
-        individual_return = current_close / previous_close - 1
-        portfolio_return = (individual_return * weights).sum()
-        return portfolio_return
+    def _get_reward_pct(self, weights) -> float:
+        """Calculate reward"""
+        current_balance_pct = (
+            (self._df.loc[self._data_index, "close"].values / self._df.loc[self._data_index - 1, "close"].values)
+            * weights
+        ).sum()
+        return current_balance_pct - 1
 
     def step(self, action):
         # TODO: Why is softmax used here?
-        normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
-
         self._data_index += 1  # Go to next data (State & Observation Space)
+        normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
         current_portfolio_value = (
-            self._memory._current_portfolio_value
-            * (1 + self._get_portfolio_return(normalized_actions))
+            self._memory.df["portfolio_value"].iloc[-1]  # previous portfolio value
+            * (1 + self._get_reward_pct(normalized_actions))  # portfolio return
         )
 
         # Memory
         log_dict = {
             "portfolio_value": current_portfolio_value,
-            "portfolio_return": self._get_portfolio_return(normalized_actions),
+            "reward": self._get_reward_pct(normalized_actions),
             "action": normalized_actions,
             "date": self._current_data.date.unique()[0]
         }
         self._memory.append(**log_dict)
 
         # Observation, Reward, Terminated, Truncated, Info, Done
-        return self._current_state, self._get_reward(), self._terminal, log_dict
+        return self._current_state, self._get_reward_pct(weights=normalized_actions), self._terminal, log_dict
 
     def reset(
         self,

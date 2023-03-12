@@ -176,7 +176,9 @@ sweep_configuration = {
         },
         # 'env': ,
         'learning_rate': {'min': 0.0001, 'max': 0.01},
-        # 'n_steps': int,
+        'n_steps': {
+            "values": [32, 64, 128, 256, 512, 1024, 2048]
+        },
         'gamma': {'min': 0.9, 'max': 0.999},
         'gae_lambda': {'min': 0.8, 'max': 0.999},
         'ent_coef': {'min': 0.0001, 'max': 0.01},
@@ -193,14 +195,18 @@ sweep_configuration = {
         # 'seed': Optional,
         # 'device': Union,
         # '_init_setup_model': bool,
-        'batch_size': {'min': 32, 'max': 256},
+        'batch_size': {
+            "values": [32, 64, 128, 256, 512],
+        },
         'n_epochs': {'min': 1, 'max': 10},
         'clip_range': {"min": 0.1, "max": 0.3},
         'clip_range_vf': {
-            "values": [None, 0.1, 0.2]
+            "values": [None, 0.05, 0.1, 0.15, 0.2],
         },
         'target_kl': {'min': 0.01, 'max': 0.05},
-        'buffer_size': {'min': 1000, 'max': 10000},
+        'buffer_size': {
+            "values": [1000, 2000, 3000, 4000, 5000],
+        },
         'learning_starts': {'min': 100, 'max': 1000},
         'tau': {'min': 0.001, 'max': 0.01},
         'train_freq': {'min': 1, 'max': 4},
