@@ -3,6 +3,9 @@
 
 others/
 
+# rsync
+*.rsync_*
+
 # Env
 env/
 *.env*
