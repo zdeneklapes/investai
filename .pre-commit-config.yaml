@@ -1,6 +1,6 @@
 #default_language_version:
 #  python: python3.9
-default_stages: [ commit, push ]
+default_stages: [ commit ]
 files: '^(investai/)|(extra/)|(thesis/)|(.github/workflows/.*.yml)|(.vim/)$'
 #exclude: '^(venv.*/)|(env/)|(\.pytest_caches/)|(third_party/)|(.*__pycache__.*/)|()'
 fail_fast: false
