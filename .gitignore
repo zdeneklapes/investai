@@ -2,6 +2,7 @@
 .DS_Store
 
 others/
+.ruff_cache/
 
 # rsync
 *.rsync_*
@@ -66,6 +67,6 @@ logs/
 /data/
 
 # Output
-**out
-**wandb
+**out/
+**wandb/
 
