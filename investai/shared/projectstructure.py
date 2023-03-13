@@ -16,7 +16,7 @@ class ProjectStructure:
                 self.numerai = self.root.joinpath("numerai")
 
         def __init__(self, root: Path):
-            self.root = root.joinpath("data")
+            self.root = root.joinpath("raw_data")
             #
             self.exchanges = self.root.joinpath("exchanges")
             self.indexes = self.root.joinpath("indexes")

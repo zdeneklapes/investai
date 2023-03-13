@@ -14,7 +14,7 @@ class PortfolioAllocationEnvAI4Finance(gym.Env):
     Attributes
     ----------
         df: DataFrame
-            input data
+            input raw_data
         stock_dim : int
             number of unique stocks
         hmax : int
@@ -96,7 +96,7 @@ class PortfolioAllocationEnvAI4Finance(gym.Env):
             low=-np.inf, high=np.inf, shape=(self.state_space + len(self.tech_indicator_list), self.state_space)
         )
 
-        # load data from a pandas dataframe
+        # load raw_data from a pandas dataframe
         self.data = self.df.loc[self.day, :]
         self.covs = self.data["cov_list"].values[0]
         self.state = np.append(

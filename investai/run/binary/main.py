@@ -37,12 +37,12 @@ def calculate_binary_profit(trades_amount: int, payout_rate: float, success_rate
 
 class ForexDataset:
     def __init__(self):
-        # TODO: load data for all tickers
+        # TODO: load raw_data for all tickers
         self.tickers = None
         self.indicators = None
         self.dataset = None
 
-        # TODO: preprocess data
+        # TODO: preprocess raw_data
 
         # TODO: save dataset
 
@@ -96,14 +96,14 @@ class ForexDataset:
         threshhold = triu[(triu > threshold) & (triu < 1)]
         return threshhold
 
-    # TODO: Create function for downloading data using yfinance and another one for TradingView
+    # TODO: Create function for downloading raw_data using yfinance and another one for TradingView
     def download(self, ticker,
                  exchange: str,
                  interval: Interval | str,
                  period: str = '',  # FIXME: not used
                  n_bars: int = 10) -> pd.DataFrame:
-        """Return raw data"""
-        # df = yf.download(tickers=tickers, period=period, interval=interval) # BUG: yfinance bad candlestick data
+        """Return raw raw_data"""
+        # df = yf.download(tickers=tickers, period=period, interval=interval) # BUG: yfinance bad candlestick raw_data
 
         tv = TvDatafeed()
         df = tv.get_hist(symbol=ticker, exchange=exchange, interval=interval, n_bars=n_bars)
@@ -167,7 +167,7 @@ def t1():
     pearson_threshhold = pearson_triu[(pearson_triu > 0.7) & (pearson_triu < 1)]
 
     return {
-        'data': data,
+        'raw_data': data,
         'pearson': corr_pearson,
         'kendall': corr_kendall,
         'spearman': corr_spearman,
@@ -180,7 +180,7 @@ def t2():
     forex_dataset = ForexDataset()
     data = forex_dataset.download("EURUSD", exchange='OANDA', interval=Interval.in_1_minute, n_bars=1000)
     return {
-        'data': data,
+        'raw_data': data,
     }
 
 
@@ -188,7 +188,7 @@ def t3():
     forex_dataset = ForexDataset()
     df = forex_dataset.preprocess()
     return {
-        'data': df,
+        'raw_data': df,
     }
 
 

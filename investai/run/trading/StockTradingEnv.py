@@ -80,7 +80,7 @@ class StockTradingEnv(gym.Env):
     def _sell_stock(self, index, action):
         def _do_sell_normal():
             if self.state[index + 1] > 0:
-                # Sell only if the price is > 0 (no missing data in this particular date)
+                # Sell only if the price is > 0 (no missing raw_data in this particular date)
                 # perform sell action based on the sign of the action
                 if self.state[index + self.stock_dim + 1] > 0:
                     # Sell only if current asset is > 0
@@ -103,7 +103,7 @@ class StockTradingEnv(gym.Env):
         if self.turbulence_threshold is not None:
             if self.turbulence >= self.turbulence_threshold:
                 if self.state[index + 1] > 0:
-                    # Sell only if the price is > 0 (no missing data in this particular date)
+                    # Sell only if the price is > 0 (no missing raw_data in this particular date)
                     # if turbulence goes over threshold, just clear out all positions
                     if self.state[index + self.stock_dim + 1] > 0:
                         # Sell only if current asset is > 0
@@ -128,7 +128,7 @@ class StockTradingEnv(gym.Env):
     def _buy_stock(self, index, action):
         def _do_buy():
             if self.state[index + 1] > 0:
-                # Buy only if the price is > 0 (no missing data in this particular date)
+                # Buy only if the price is > 0 (no missing raw_data in this particular date)
                 available_amount = self.state[0] // self.state[index + 1]
                 # print('available_amount:{}'.format(available_amount))
 

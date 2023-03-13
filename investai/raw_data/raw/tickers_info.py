@@ -32,7 +32,7 @@ sys.path.append("../../../")
 ##
 from project_configs.project_dir import ProjectDir
 from utils.project import now_time
-from data.train.company_info import CompanyInfo
+from raw_data.train.company_info import CompanyInfo
 
 # ######################################################################################################################
 # Global Variables
@@ -107,7 +107,7 @@ def download(symbols: list, api_key: str, period: str = "quarter") -> tickers_ty
         #     result = {k: executor.submit(cb, symbol, api_key) for k, cb in key_cb.items()}
         #     for k in concurrent.futures.as_completed(result):
         #         try:
-        #             data[k] = result[k].result()
+        #             raw_data[k] = result[k].result()
         #         except Exception:
         #             problem = True
         #
@@ -115,7 +115,7 @@ def download(symbols: list, api_key: str, period: str = "quarter") -> tickers_ty
         #     result = {k: executor.submit(cb, symbol, api_key, period=period) for k, cb in key_cb_period.items()}
         #     for k in concurrent.futures.as_completed(result):
         #         try:
-        #             data[k] = result[k].result()
+        #             raw_data[k] = result[k].result()
         #         except Exception:
         #             problem = True
 
@@ -192,10 +192,10 @@ class SaveData:
             raise ValueError(f"ERROR: {e} ({self.filepath})") from e
 
     def update_symbol_data(self):
-        # Create new data
+        # Create new raw_data
         new_data = self._update_data()
 
-        # Save new data
+        # Save new raw_data
         new_path = copy.deepcopy(self.filepath)
 
         # Handle old path

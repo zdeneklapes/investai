@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# TODO: action +1 more action from 30 actions increase to 31 actions, because Agent can also decide for cash
 from typing import Any, Dict, Optional, List, Final
 
 import numpy as np
@@ -41,7 +42,7 @@ class PortfolioAllocationEnv(gym.Env):
 
     def __init_environment(self, initial_portfolio_value: int):
         """Initialize environment
-        self._data_index: Index of the current data
+        self._data_index: Index of the current raw_data
         self._portfolio_value: Portfolio value
         self._memory: Memory of the environment
         :param initial_portfolio_value:
@@ -78,7 +79,7 @@ class PortfolioAllocationEnv(gym.Env):
 
     def step(self, action):
         # TODO: Why is softmax used here?
-        self._data_index += 1  # Go to next data (State & Observation Space)
+        self._data_index += 1  # Go to next raw_data (State & Observation Space)
         normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
         current_portfolio_value = (
             self._memory.df["portfolio_value"].iloc[-1]  # previous portfolio value

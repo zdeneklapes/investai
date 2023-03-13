@@ -49,7 +49,7 @@ class DataBase(Yahoofinance):
 
         self.check_dir_exists(_filename)
 
-        print(f"Saving data into: {_filename}")
+        print(f"Saving raw_data into: {_filename}")
 
         ##
         if self.get_file_type(_filename) == FileType.JSON:
@@ -61,7 +61,7 @@ class DataBase(Yahoofinance):
 
         print(f"Data saved to json: {_filename}")
 
-    def get_filename(self, prj_dir: ProjectDir, name: str = "data") -> Path:
+    def get_filename(self, prj_dir: ProjectDir, name: str = "raw_data") -> Path:
         filename = prj_dir.data.ai4finance.joinpath(f"{name}_{now_time()}.json")
         return filename
 
@@ -80,7 +80,7 @@ class DataBase(Yahoofinance):
         """
         Source AI4Finance
         split the dataset into training or testing using date
-        :param data: (df) pandas dataframe, start, end
+        :param raw_data: (df) pandas dataframe, start, end
         :return: (df) pandas dataframe
         """
         data = df[(df[target_date_col] >= start) & (df[target_date_col] < end)]
@@ -95,7 +95,7 @@ class DataBase(Yahoofinance):
         elif data_type == DataBase.DataType.TEST:
             return self.data_split(df, date_divider, self.end_date)
         else:
-            raise ValueError(f"Unknown data type: {data_type}")
+            raise ValueError(f"Unknown raw_data type: {data_type}")
 
     def preprocess_data(self) -> pd.DataFrame:
         ...

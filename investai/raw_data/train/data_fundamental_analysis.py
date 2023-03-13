@@ -261,12 +261,12 @@ class DataFundamentalAnalysis(DataBase):
         list_date = list(pd.date_range(df["date"].min(), df["date"].max()))
         combination = list(itertools.product(list_date, list_ticker))
 
-        # Merge rl price data and ratios into one dataframe
+        # Merge rl price raw_data and ratios into one dataframe
         processed_full = pd.DataFrame(combination, columns=["date", "tic"]).merge(df, on=["date", "tic"], how="left")
         processed_full = processed_full.merge(final_ratios, how="left", on=["date", "tic"])
         processed_full = processed_full.sort_values(["tic", "date"])
 
-        # Backfill the ratio data to make them daily
+        # Backfill the ratio raw_data to make them daily
         processed_full = processed_full.bfill(axis="rows")
 
         # Calculate P/E, P/B and dividend yield using daily closing price
@@ -281,7 +281,7 @@ class DataFundamentalAnalysis(DataBase):
         processed_full = processed_full.fillna(0)
         processed_full = processed_full.replace(np.inf, 0)
 
-        # Check the final data
+        # Check the final raw_data
         processed_full.sort_values(["date", "tic"], ignore_index=True).head(10)
 
         # train_data = data_split(processed_full, TRAIN_START_DATE, TRAIN_END_DATE)

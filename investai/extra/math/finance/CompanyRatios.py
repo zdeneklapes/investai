@@ -5,7 +5,7 @@ from typing import Callable
 import numpy as np
 import pandas as pd
 
-from data.DataPreprocessing import DataPreprocessing
+from raw_data.DataPreprocessing import DataPreprocessing
 
 
 @dataclasses.dataclass

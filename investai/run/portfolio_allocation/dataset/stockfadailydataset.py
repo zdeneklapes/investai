@@ -9,7 +9,7 @@ from run.shared.tickers import DOW_30_TICKER
 from tqdm import tqdm
 from tvDatafeed import Interval, TvDatafeed
 
-from data.train.company_info import CompanyInfo
+from raw_data.train.company_info import CompanyInfo
 from shared.program import Program
 from run.shared.dataset.dataengineer import DataEngineer as DE
 from run.shared.dataset.candlestickengineer import CandlestickEngineer as CSE
@@ -84,7 +84,7 @@ class StockFaDailyDataset:
         iterable = tqdm(self.tickers) if self.program.args.project_verbose > 0 else self.tickers
         for tic in iterable:
             if type(iterable) is tqdm: iterable.set_description(f"Processing {tic}")
-            raw_data: CompanyInfo = self.load_raw_data(tic)  # Load tickers data
+            raw_data: CompanyInfo = self.load_raw_data(tic)  # Load tickers raw_data
             feature_data = self.add_fa_features(raw_data)  # Add features
             df = pd.concat([feature_data, df])  # Add ticker to dataset
 
@@ -153,14 +153,14 @@ class StockFaDailyDataset:
         df = df.fillna(0)  # Nan will be replaced with 0
         return df
 
-    # TODO: Create function for downloading data using yfinance and another one for TradingView
+    # TODO: Create function for downloading raw_data using yfinance and another one for TradingView
     def download(self, ticker,
                  exchange: str,
                  interval: Interval | str,
                  period: str = '',  # FIXME: not used
                  n_bars: int = 10) -> pd.DataFrame:
-        """Return raw data"""
-        # df = yf.download(tickers=tickers, period=period, interval=interval) # BUG: yfinance bad candlestick data
+        """Return raw raw_data"""
+        # df = yf.download(tickers=tickers, period=period, interval=interval) # BUG: yfinance bad candlestick raw_data
 
         tv = TvDatafeed()
         df = tv.get_hist(symbol=ticker, exchange=exchange, interval=interval, n_bars=n_bars)
@@ -178,7 +178,7 @@ class StockFaDailyDataset:
         self.dataset.to_csv(file_path, index=True)
 
     def load_raw_data(self, tic) -> CompanyInfo:
-        """Check if folders with ticker exists and load all data from them into CompanyInfo class"""
+        """Check if folders with ticker exists and load all raw_data from them into CompanyInfo class"""
         data = {"symbol": tic}
         files = deepcopy(CompanyInfo.Names.list())
         files.remove("symbol")

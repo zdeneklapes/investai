@@ -10,16 +10,16 @@ class DataEngineer:
 
     @staticmethod
     def check_dataset_correctness_assert(dataframe: pd.DataFrame):
-        """Check if all data are correct"""
+        """Check if all raw_data are correct"""
         assert dataframe.groupby("date").size().unique().size == 1, \
-            "The size of each group must be equal, that means in each date is teh same number of stock data"
+            "The size of each group must be equal, that means in each date is teh same number of stock raw_data"
         assert not dataframe.isna().any().any(), \
             "Can't be any Nan/np.inf values"
 
     @staticmethod
     def clean_dataset_from_missing_tickers_by_date(dataframe: pd.DataFrame) -> pd.DataFrame:
         """
-        Take only those dates where we have data for all stock in each day
+        Take only those dates where we have raw_data for all stock in each day
         Parameters
         ----------
         dataframe: pd.DataFrame
@@ -30,7 +30,7 @@ class DataEngineer:
         """
         tickers_count_in_date = dataframe.groupby("date").size()
         binary_where_are_all_tickers = tickers_count_in_date.values == tickers_count_in_date.values.max()
-        # TODO: Fixme: This is not correct, because we can have missing data in the middle of the dataset
+        # TODO: Fixme: This is not correct, because we can have missing raw_data in the middle of the dataset
         earliest_date = tickers_count_in_date[binary_where_are_all_tickers].index[0]
         updated_dataframe = dataframe[dataframe["date"] > earliest_date]
         return updated_dataframe
@@ -43,7 +43,7 @@ class DataEngineer:
 
     @staticmethod
     def fill_missing_data(dataframe: pd.DataFrame) -> pd.DataFrame:
-        """Fill missing data"""
+        """Fill missing raw_data"""
         df = dataframe.fillna(method="bfill")
         df = df.fillna(method="ffill")
         df = df.fillna(0)
