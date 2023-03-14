@@ -56,6 +56,29 @@ class WandbTrain:
         config["tensorboard_log"] = self.program.project_structure.tensorboard.as_posix()
         return config
 
+    def _init_wandb(self):
+        self.program.log.info("Init wandb")
+        wandb.init(
+            # Environment variables
+            project=self.program.args.wandb_project,
+            dir=self.program.args.wandb_dir,
+            group=self.program.args.wandb_group,
+            job_type=self.program.args.wandb_job_type,
+            mode=self.program.args.wandb_mode,
+            tags=self.program.args.wandb_tags,
+            # Other
+            config=(None
+                    if self.program.args.wandb_sweep
+                    else self._init_hyper_parameters()),
+            notes=f"Portfolio allocation with {self.algorithm} algorithm.",
+            allow_val_change=False,
+            resume=None,
+            force=True,  # True: User must be logged in to W&B, False: User can be logged in or not
+            sync_tensorboard=True,
+            monitor_gym=True,
+            save_code=True,
+        )
+
     def _init_environment(self):
         self.program.log.info("Init environment")
         env = PortfolioAllocationEnv(df=self.dataset.train_dataset,
@@ -114,10 +137,9 @@ class WandbTrain:
         self.program.log.info("Deinit wandb")
         wandb.finish()
 
-    def train_code(self):
+    def train_run(self):
         self.program.log.info(f"START Training {self.algorithm} algorithm.")
         # Initialize
-        # run = self._init_wandb() if self.program.is_wandb_enabled() else None
         environment = self._init_environment()
         callbacks = self._init_callbacks()
 
@@ -140,29 +162,11 @@ class WandbTrain:
 
     def train(self):
         if self.program.is_wandb_enabled():
-            with wandb.init(
-                # Environment variables
-                project=self.program.args.wandb_project,
-                dir=self.program.args.wandb_dir,
-                group=self.program.args.wandb_group,
-                job_type=self.program.args.wandb_job_type,
-                mode=self.program.args.wandb_mode,
-                tags=self.program.args.wandb_tags,
-                # Other
-                config=(None
-                if self.program.args.wandb_sweep
-                else self._init_hyper_parameters()),
-                notes=f"Portfolio allocation with {self.algorithm} algorithm.",
-                allow_val_change=False,
-                resume=None,
-                force=True,  # True: User must be logged in to W&B, False: User can be logged in or not
-                sync_tensorboard=True,
-                monitor_gym=True,
-                save_code=True,
-            ):
-                self.train_code()
+            self._init_wandb()
+            self.train_run()
+            self._deinit_wandb()
         else:
-            self.train_code()
+            self.train_run()
 
 
 def main():
