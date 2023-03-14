@@ -137,10 +137,20 @@ function docker_clean_all() {
 
 function requirement_for_workflow() {
     # Because "tvdatafeed" is not available on PyPi for Python 3.10
-#    source venv3.10/bin/activate && pip-chill >requirements.txt
+    #    source venv3.10/bin/activate && pip-chill >requirements.txt
     file_name="requirements_for_workflows.txt"
     cat requirements.txt | grep --invert-match "tvdatafeed\|finrl-meta\|pyfolio" >${file_name}
     git add ${file_name}
+}
+
+function run_test() {
+#    source venv3.10/bin/activate &&
+        PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/wandb_train.py --dataset-path=out/datasets/stockfadailydataset.csv --wandb-project="investai_exp_1" --wandb-job-type="train" --wandb=1 --wandb-sweep=0 --wandb-sweep-count=2 --algorithms ppo --project-verbose=1 --total-timesteps=1000
+}
+
+function run_sweep() {
+#    source venv3.10/bin/activate &&
+        PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/wandb_train.py --dataset-path=out/datasets/stockfadailydataset.csv --wandb-project="investai_sweep_1" --wandb-job-type="train" --wandb=0 --wandb-sweep=1 --wandb-sweep-count=100 --algorithms ppo a2c sac td3 dqn ddpg --project-verbose=1 --total-timesteps=400000
 }
 
 ##### PARSE CLI-ARGS
@@ -158,6 +168,9 @@ while [ "$#" -gt 0 ]; do
     '-dc' | '--docker-clean') docker_clean ;;
     '-dca' | '--docker-clean-all') docker_clean_all ;;
     '-dsrc' | '--docker-stop-remove-container') docker_stop_remove_container ;;
+        #
+    '-rt' | '--run-test') run_test ;;
+    '-rs' | '--run-sweep') run_sweep ;;
 
         #    '-cd' | '--clean-docker') clean_docker ;;
         #    '-id' | '--install-docker') install_docker_compose ;;
