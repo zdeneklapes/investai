@@ -22,6 +22,7 @@ class Program:
 
     def init_logger(self, file_path: str):
         from loguru import logger
+        open(file_path, 'w').close()  # clear log file
         logger.add(file_path,
                    rotation="1 MB",
                    backtrace=True,

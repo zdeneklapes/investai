@@ -57,15 +57,16 @@ class StockFaDailyDataset:
     def train_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
         if self.program.args.project_verbose > 0:
-            print("Train dataset from", self.dataset["date"].min(), "to",
-                  DE.get_split_date(self.dataset, self.dataset_split_coef))
-        df = self.dataset[self.dataset["date"] < DE.get_split_date(self.dataset, self.dataset_split_coef)]
+            self.program.log.info("Train dataset from", self.dataset["date"].min(), "to",
+                                  DE.get_split_date(self.dataset, self.dataset_split_coef))
+        df: pd.DataFrame = self.dataset[self.dataset["date"] < DE.get_split_date(self.dataset, self.dataset_split_coef)]
         return df
 
     @property
     def test_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
-        df = self.dataset[self.dataset["date"] >= DE.get_split_date(self.dataset, self.dataset_split_coef)]
+        df: pd.DataFrame = self.dataset[
+            self.dataset["date"] >= DE.get_split_date(self.dataset, self.dataset_split_coef)]
         df.index = df["date"].factorize()[0]
         return df
 
@@ -174,7 +175,7 @@ class StockFaDailyDataset:
         """
 
         if self.program.args.project_verbose > 0:
-            print(f"Saving dataset to: {file_path}")
+            self.program.log.info(f"Saving dataset to: {file_path}")
         self.dataset.to_csv(file_path, index=True)
 
     def load_raw_data(self, tic) -> CompanyInfo:
@@ -193,7 +194,7 @@ class StockFaDailyDataset:
     def load_dataset(self, file_path: str) -> None:
         """Load dataset"""
         if self.program.args.project_verbose > 0:
-            print(f"Loading dataset from: {file_path}")
+            self.program.log.info(f"Loading dataset from: {file_path}")
         self.dataset = pd.read_csv(file_path, index_col=0)
 
 

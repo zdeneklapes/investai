@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import argparse
-import os
 from argparse import Namespace
 from typing import Tuple
 from pprint import pprint  # noqa
@@ -50,18 +49,8 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
     # Wandb arguments
-    parser.add_argument("--wandb", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
-                        help="Wandb logging", )
-    parser.add_argument("--wandb-sweep", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
-                        help="Wandb sweep tune hyper parameters", )
-    parser.add_argument("--wandb-sweep-count", type=int, default=1, help="Wandb sweep count")
-    parser.add_argument("--wandb-job-type", type=str, default=None, help="the wandb's project name")
-    parser.add_argument("--wandb-project", type=str, default=None, help="the wandb's project name")
-    parser.add_argument("--wandb-entity", type=str, default=None, help="the entity (team/user) of wandb's project")
-    parser.add_argument("--wandb-group", type=str, default=os.path.basename(__file__).rstrip(".py"),
-                        help="the name of this experiment")
-    parser.add_argument("--wandb-mode", type=str, default="online", choices=["online", "offline", "disabled"],
-                        help="Mode of wandb")
+    parser.add_argument("--wandb", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, help="Wandb logging", )
+    parser.add_argument("--wandb_sweep", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, help="Wandb logging", )
     parser.add_argument("--wandb-model-save", action="store_true", help="Save model")
     parser.add_argument("--wandb-model-save-freq", type=int, default=100,
                         help="Save model every x steps (0 = no checkpoint)")

@@ -3,7 +3,6 @@
 # TODO: Add to action +1 more action from 30 actions increase to 31 actions, because Agent can als decide for cash
 # TODO: next datasets
 # TODO: Put into dataset change of price form one index to another index: e.g. 10->15=0.5, 10->5=-0.5
-import os
 from typing import Union
 from pathlib import Path
 from copy import deepcopy  # noqa
@@ -55,8 +54,7 @@ class WandbTrain:
             config = deepcopy(dict(wandb.config.items()))
             sweep_config_set = set(config.keys())
             # Remove parameters that are not in algorithm
-            for key in sweep_config_set - algorithm_init_parameters:
-                del config[key]
+            for key in sweep_config_set - algorithm_init_parameters: del config[key]
 
         # Get parameter for Algo from CLI arguments
         else:
@@ -68,17 +66,12 @@ class WandbTrain:
         return config
 
     def _init_wandb(self) -> Union[Run, RunDisabled, None]:
+        self.program.log.info("Init wandb")
         run = wandb.init(
-            job_type=self.program.args.wandb_job_type,
             config=(None
                     if self.program.args.wandb_sweep
                     else self._init_hyper_parameters()),
-            project=self.program.args.wandb_project,
-            entity=os.environ.get("WANDB_ENTITY"),
-            tags=[self.algorithm, "portfolio-allocation"],
             notes=f"Portfolio allocation with {self.algorithm} algorithm.",
-            group=self.program.args.wandb_group,
-            mode=self.program.args.wandb_mode,
             allow_val_change=False,
             resume=None,
             force=True,  # True: User must be logged in to W&B, False: User can be logged in or not
@@ -86,10 +79,10 @@ class WandbTrain:
             monitor_gym=True,
             save_code=True,
         )
-        os.environ["WANDB_DIR"] = self.program.project_structure.models.as_posix()
         return run
 
     def _init_environment(self):
+        self.program.log.info("Init environment")
         env = PortfolioAllocationEnv(df=self.stock_dataset.train_dataset,
                                      initial_portfolio_value=self.program.args.initial_cash,
                                      tickers=self.stock_dataset.tickers,
@@ -103,6 +96,7 @@ class WandbTrain:
         return env
 
     def _init_callbacks(self):
+        self.program.log.info("Init callbacks")
         callbacks = CallbackList([
             TensorboardCallback(),
             ProgressBarCallback(),
@@ -119,6 +113,7 @@ class WandbTrain:
         return callbacks
 
     def _deinit_environment(self, env):
+        self.program.log.info("Deinit environment")
         env.close()
 
     def _init_model(self, environment, callbacks):
@@ -134,12 +129,13 @@ class WandbTrain:
         return model
 
     def _deinit_wandb(self):
+        self.program.log.info("Deinit wandb")
         wandb.finish()
 
     def train(self) -> None:
+        self.program.log.info(f"START Training {self.algorithm} algorithm.")
         # Initialize
-        if self.program.is_wandb_enabled():
-            run = self._init_wandb()
+        if self.program.is_wandb_enabled(): run = self._init_wandb()
         environment = self._init_environment()
         callbacks = self._init_callbacks()
 
@@ -166,6 +162,7 @@ class WandbTrain:
 
         # Deinit
         self._deinit_environment(environment)
+        self.program.log.info(f"END Training {self.algorithm} algorithm.")
 
 
 def main():
@@ -177,9 +174,7 @@ def main():
     dataset.load_dataset(program.args.dataset_path)
 
     for algorithm in program.args.algorithms:
-        program.log.info(f"START Training {algorithm} algorithm.")
         WandbTrain(program=program, dataset=dataset, algorithm=algorithm).train()
-        program.log.info(f"END Training {algorithm} algorithm.")
 
 
 if __name__ == '__main__':
