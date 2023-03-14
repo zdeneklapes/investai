@@ -57,8 +57,9 @@ class StockFaDailyDataset:
     def train_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
         if self.program.args.project_verbose > 0:
-            self.program.log.info("Train dataset from", self.dataset["date"].min(), "to",
-                                  DE.get_split_date(self.dataset, self.dataset_split_coef))
+            self.program.log.info(
+                f"Train dataset from {self.dataset['date'].min()} to {DE.get_split_date(self.dataset, self.dataset_split_coef)}" # noqa
+            )
         df: pd.DataFrame = self.dataset[self.dataset["date"] < DE.get_split_date(self.dataset, self.dataset_split_coef)]
         return df
 

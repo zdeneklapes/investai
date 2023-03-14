@@ -8,7 +8,6 @@ import numpy as np
 import pandas as pd
 import pyfolio
 from pyfolio import timeseries
-from meta import config
 import yfinance as yf
 
 
@@ -45,8 +44,8 @@ def backtest_stats(account_value, value_col_name="account_value"):
 
 def backtest_plot(
     account_value,
-    baseline_start=config.TRADE_START_DATE,
-    baseline_end=config.TRADE_END_DATE,
+    baseline_start,
+    baseline_end,
     baseline_ticker="^DJI",
     value_col_name="account_value",
 ):
@@ -81,17 +80,14 @@ def get_baseline(ticker, start, end, time_interval="1d", time_zone: str = None) 
     return baseline_df
 
 
-def get_baseline_finrl(ticker, start, end, time_interval="1d", time_zone: str = None) -> pd.DataFrame:
-    # TODO: fixme FinRL-Meta Yahoofinance.download_data() is not working
-    from meta.data_processors.yahoofinance import Yahoofinance
-    import meta
-
-    if time_zone:
-        meta.config.TIME_ZONE_SELFDEFINED = meta.config.TIME_ZONE_PARIS
-        meta.config.USE_TIME_ZONE_SELFDEFINED = 1
-    meta_yf = Yahoofinance("yahoofinance", start, end, time_interval)
-    meta_yf.download_data([ticker])
-    return meta_yf.dataframe
+# def get_baseline_finrl(ticker, start, end, time_interval="1d", time_zone: str = None) -> pd.DataFrame:
+#     # TODO: fixme FinRL-Meta Yahoofinance.download_data() is not working
+#     if time_zone:
+#         meta.config.TIME_ZONE_SELFDEFINED = meta.config.TIME_ZONE_PARIS
+#         meta.config.USE_TIME_ZONE_SELFDEFINED = 1
+#     meta_yf = Yahoofinance("yahoofinance", start, end, time_interval)
+#     meta_yf.download_data([ticker])
+#     return meta_yf.dataframe
 
 
 def trx_plot(df_trade, df_actions, ticker_list):

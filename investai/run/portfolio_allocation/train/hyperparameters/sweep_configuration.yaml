@@ -1,11 +1,7 @@
 program: investai/run/portfolio_allocation/train/wandbtrain.py
 method: random
 commad:
-    --wandb-project="investai-sweep-1"
-    --wandb-job-type="train"
     --wandb-sweep
-    --wandb-mode="online"
-    --wandb-sweep-count=2
     --algorithms ppo
     --project-verbose=1
     --total-timesteps=1000
@@ -19,10 +15,10 @@ parameters:
             - MlpPolicy
     #        - CnnPolicy
     #        - MultiInputPolicy
-    learning_rate:
+    learning-rate:
         min: 0.0001
         max: 0.01
-    n_steps:
+    n-steps:
         values:
             - 32
             - 64
@@ -34,101 +30,101 @@ parameters:
     gamma:
         min: 0.9
         max: 0.999
-    gae_lambda:
+    gae-lambda:
         min: 0.8
         max: 0.999
-    ent_coef:
+    ent-coef:
         min: 0.0001
         max: 0.01
-    vf_coef:
+    vf-coef:
         min: 0.0001
         max: 0.01
-    max_grad_norm:
+    max-grad-norm:
         min: 0.5
         max: 0.99
-    rms_prop_eps:
+    rms-prop-eps:
         min: 0.0001
         max: 0.01
-    # 'use_rms_prop': bool,
-    # 'use_sde': bool,
-    sde_sample_freq:
+    # 'use-rms-prop': bool,
+    # 'use-sde': bool,
+    sde-sample-freq:
         min: 4
         max: 32
-    # 'normalize_advantage': bool,
-    # 'tensorboard_log': Optional,
-    # 'policy_kwargs': Optional,
+    # 'normalize-advantage': bool,
+    # 'tensorboard-log': Optional,
+    # 'policy-kwargs': Optional,
     # 'verbose': int,
     # 'seed': Optional,
     # 'device': Union,
-    # '_init_setup_model': bool,
-    batch_size:
+    # '-init-setup-model': bool,
+    batch-size:
         values:
             - 32
             - 64
             - 128
             - 256
             - 512
-    n_epochs:
+    n-epochs:
         min: 1
         max: 10
-    clip_range:
+    clip-range:
         min: 0.1
         max: 0.3
-    clip_range_vf:
+    clip-range-vf:
         values:
             - null
             - 0.05
             - 0.1
             - 0.15
             - 0.2
-    target_kl:
+    target-kl:
         min: 0.01
         max: 0.05
-    buffer_size:
+    buffer-size:
         values:
             - 1000
             - 2000
             - 3000
             - 4000
             - 5000
-    learning_starts:
+    learning-starts:
         min: 100
         max: 1000
     tau:
         min: 0.001
         max: 0.01
-    train_freq:
+    train-freq:
         min: 1
         max: 4
-    gradient_steps:
+    gradient-steps:
         min: 1
         max: 4
-    # 'action_noise': Optional,
-    # 'replay_buffer_class': Optional,
-    # 'replay_buffer_kwargs': Optional,
-    # 'optimize_memory_usage': bool,
-    target_update_interval:
+    # 'action-noise': Optional,
+    # 'replay-buffer-class': Optional,
+    # 'replay-buffer-kwargs': Optional,
+    # 'optimize-memory-usage': bool,
+    target-update-interval:
         min: 1
         max: 4
-    target_entropy:
+    target-entropy:
         min: 0.1
         max: 0.2
-    # 'use_sde_at_warmup': bool,
-    policy_delay:
+    # 'use-sde-at-warmup': bool,
+    policy-delay:
         min: 1
         max: 4
-    target_policy_noise:
+    target-policy-noise:
         min: 0.1
         max: 0.2
-    target_noise_clip:
+    target-noise-clip:
         min: 0.1
         max: 0.2
-    exploration_fraction:
+    exploration-fraction:
         min: 0.1
         max: 0.2
-    exploration_initial_eps:
+    exploration-initial-eps:
         min: 0.1
         max: 0.2
-    exploration_final_eps:
+    exploration-final-eps:
         min: 0.1
         max: 0.2

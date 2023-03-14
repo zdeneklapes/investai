@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import os
 import argparse
 from argparse import Namespace
 from typing import Tuple
@@ -33,8 +34,10 @@ def parse_arguments() -> Tuple[vars, Namespace]:
              const=True)
 
     # Project arguments
-    parser.add_argument("--train", help="Will train models based on hyper parameters", action="store_true", )
-    parser.add_argument("--test", help="Will test trained models", action="store_true", )
+    parser.add_argument("--train", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
+                        help="Will train models based on hyper parameters")
+    parser.add_argument("--test", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
+                        help="Will test trained models")
     parser.add_argument("--dataset-path", "-dp", help="Will test trained models", nargs="?", type=str, default=None)
     parser.add_argument("--dataset-split-coef", type=float, default=0.6,
                         help="Define what percentage of the dataset is used for training")
@@ -50,7 +53,20 @@ def parse_arguments() -> Tuple[vars, Namespace]:
 
     # Wandb arguments
     parser.add_argument("--wandb", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, help="Wandb logging", )
-    parser.add_argument("--wandb_sweep", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, help="Wandb logging", )
+    parser.add_argument("--wandb-sweep", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, help="Wandb logging", )
+    parser.add_argument("--wandb-project", default=os.environ.get("WANDB_PROJECT", None),
+                        help="Wandb project name")
+    parser.add_argument("--wandb-dir", default=os.environ.get("WANDB_DIR", None),
+                        help="Wandb directory")
+    parser.add_argument("--wandb-group", default=os.environ.get("WANDB_RUN_GROUP", None),
+                        help="Wandb run group")
+    parser.add_argument("--wandb-job-type", default=os.environ.get("WANDB_JOB_TYPE", None),
+                        help="Wandb job type")
+    parser.add_argument("--wandb-mode", default=os.environ.get("WANDB_MODE", None),
+                        help="Wandb mode")
+    parser.add_argument("--wandb-tags", default=os.environ.get("WANDB_TAGS", None),
+                        help="Wandb tags")
+    parser.add_argument("--wandb-sweep-count", type=int, default=1, help="Wandb sweep count")
     parser.add_argument("--wandb-model-save", action="store_true", help="Save model")
     parser.add_argument("--wandb-model-save-freq", type=int, default=100,
                         help="Save model every x steps (0 = no checkpoint)")
