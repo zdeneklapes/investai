@@ -171,6 +171,7 @@ while [ "$#" -gt 0 ]; do
         #
     '-rt' | '--run-test') run_test ;;
     '-rs' | '--run-sweep') run_sweep ;;
+    '-r3' | '--run-3') echo "TODO" ;;
 
         #    '-cd' | '--clean-docker') clean_docker ;;
         #    '-id' | '--install-docker') install_docker_compose ;;
