@@ -18,7 +18,7 @@ class Program:
     test_date_start: str = attr.field(default='xxx-xx-xx')
     test_date_end: str = attr.field(default='xxx-xx-xx')
     debug = getenv('DEBUG', None)
-    logger: logger = attr.field(default=logger)
+    log: logger = attr.field(default=logger)
 
     def init_logger(self, file_path: str):
         from loguru import logger
@@ -30,7 +30,7 @@ class Program:
         return logger
 
     def __attrs_post_init__(self):
-        self.logger = self.init_logger(self.project_structure.out.joinpath('run.log').as_posix())
+        self.log = self.init_logger(self.project_structure.out.joinpath('run.log').as_posix())
 
     def is_wandb_enabled(self):
         return self.args.wandb or self.args.wandb_sweep

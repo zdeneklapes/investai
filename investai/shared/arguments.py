@@ -60,6 +60,8 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--wandb-entity", type=str, default=None, help="the entity (team/user) of wandb's project")
     parser.add_argument("--wandb-group", type=str, default=os.path.basename(__file__).rstrip(".py"),
                         help="the name of this experiment")
+    parser.add_argument("--wandb-mode", type=str, default="online", choices=["online", "offline", "disabled"],
+                        help="Mode of wandb")
     parser.add_argument("--wandb-model-save", action="store_true", help="Save model")
     parser.add_argument("--wandb-model-save-freq", type=int, default=100,
                         help="Save model every x steps (0 = no checkpoint)")

@@ -18,14 +18,13 @@ from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
-from run.shared.hyperparameters.sweep_configuration import sweep_configuration
 from run.shared.callbacks import WandbCallbackExtendMemory
 from run.shared.callbacks import TensorboardCallback
 from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
 
 
-class Train:
+class WandbTrain:
     ALGORITHMS = {
         "ppo": PPO,
         "a2c": A2C,
@@ -42,37 +41,35 @@ class Train:
         self.model_path = self.program.project_structure.models.joinpath(f"{self.algorithm}.zip")
 
     def _init_hyper_parameters(self) -> dict:
-        """Hyper parameters"""
-        # Algorithm parameters info
-
-        # Because __code__.co_varnames returns all variables inside function and I need only function parameters
-        algorithm_init_parameter_count: int = Train.ALGORITHMS[self.algorithm].__init__.__code__.co_argcount
-        algorithm_init_parameters = set(
-            Train.ALGORITHMS[self.algorithm].__init__.__code__.co_varnames[:algorithm_init_parameter_count]
-        )
+        """Hyperparameters for algorithm"""
         config = {}
 
+        # Because __code__.co_varnames returns all variables inside function and I need only function parameters
+        algorithm_init_parameter_count: int = WandbTrain.ALGORITHMS[self.algorithm].__init__.__code__.co_argcount
+        algorithm_init_parameters = set(
+            WandbTrain.ALGORITHMS[self.algorithm].__init__.__code__.co_varnames[:algorithm_init_parameter_count]
+        )
+
+        # Get parameter for Algo from Wandb sweep configuration
         if self.program.args.wandb_sweep:
-            # Get parameter for Algo from Wandb sweep configuration
             config = deepcopy(dict(wandb.config.items()))
             sweep_config_set = set(config.keys())
-
             # Remove parameters that are not in algorithm
             for key in sweep_config_set - algorithm_init_parameters:
                 del config[key]
-        else:
-            # Get parameter for Algo from CLI arguments
-            config = {key: self.program.args.__dict__[key] for key in algorithm_init_parameters if
-                      key in self.program.args.__dict__}
 
-        # Return
+        # Get parameter for Algo from CLI arguments
+        else:
+            config = {key: self.program.args.__dict__[key]
+                      for key in algorithm_init_parameters
+                      if key in self.program.args.__dict__}
+
         config["tensorboard_log"] = self.program.project_structure.tensorboard.as_posix()
         return config
 
     def _init_wandb(self) -> Union[Run, RunDisabled, None]:
         run = wandb.init(
             job_type=self.program.args.wandb_job_type,
-            dir=self.program.project_structure.models.as_posix(),
             config=(None
                     if self.program.args.wandb_sweep
                     else self._init_hyper_parameters()),
@@ -81,7 +78,7 @@ class Train:
             tags=[self.algorithm, "portfolio-allocation"],
             notes=f"Portfolio allocation with {self.algorithm} algorithm.",
             group=self.program.args.wandb_group,
-            mode="online",
+            mode=self.program.args.wandb_mode,
             allow_val_change=False,
             resume=None,
             force=True,  # True: User must be logged in to W&B, False: User can be logged in or not
@@ -89,6 +86,7 @@ class Train:
             monitor_gym=True,
             save_code=True,
         )
+        os.environ["WANDB_DIR"] = self.program.project_structure.models.as_posix()
         return run
 
     def _init_environment(self):
@@ -124,7 +122,7 @@ class Train:
         env.close()
 
     def _init_model(self, environment, callbacks):
-        model = Train.ALGORITHMS[self.algorithm](
+        model = WandbTrain.ALGORITHMS[self.algorithm](
             env=environment,
             **self._init_hyper_parameters(),
         )
@@ -139,7 +137,7 @@ class Train:
         wandb.finish()
 
     def train(self) -> None:
-        # Init
+        # Initialize
         if self.program.is_wandb_enabled():
             run = self._init_wandb()
         environment = self._init_environment()
@@ -149,8 +147,8 @@ class Train:
         model = self._init_model(environment, callbacks)
         model.save(self.model_path.as_posix())
 
+        # Wandb: Log artifacts
         if self.program.is_wandb_enabled():
-            # Wandb: Log artifacts
             # Log dataset
             artifact = wandb.Artifact("dataset", type="dataset")
             artifact.add_file(self.program.args.dataset_path)
@@ -162,6 +160,8 @@ class Train:
 
             # Wandb: summary
             wandb.define_metric("total_reward", step_metric="total_timesteps")
+
+            # Wandb: Deinit
             self._deinit_wandb()
 
         # Deinit
@@ -177,16 +177,9 @@ def main():
     dataset.load_dataset(program.args.dataset_path)
 
     for algorithm in program.args.algorithms:
-        t = Train(program=program, dataset=dataset, algorithm=algorithm)
-        if program.args.wandb_sweep:
-            sweep_id = wandb.sweep(sweep_configuration,
-                                   entity=os.environ.get("WANDB_ENTITY"),
-                                   project=program.args.wandb_project, )
-            wandb.agent(sweep_id,
-                        function=t.train,
-                        count=program.args.wandb_sweep_count, )
-        else:
-            t.train()
+        program.log.info(f"START Training {algorithm} algorithm.")
+        WandbTrain(program=program, dataset=dataset, algorithm=algorithm).train()
+        program.log.info(f"END Training {algorithm} algorithm.")
 
 
 if __name__ == '__main__':

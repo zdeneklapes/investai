@@ -1,0 +1,134 @@
+program: investai/run/portfolio_allocation/train/wandbtrain.py
+method: random
+commad:
+    --wandb-project="investai-sweep-1"
+    --wandb-job-type="train"
+    --wandb-sweep
+    --wandb-mode="online"
+    --wandb-sweep-count=2
+    --algorithms ppo
+    --project-verbose=1
+    --total-timesteps=1000
+
+metric:
+    goal: minimize
+    name: train/loss
+parameters:
+    policy:
+        values:
+            - MlpPolicy
+    #        - CnnPolicy
+    #        - MultiInputPolicy
+    learning_rate:
+        min: 0.0001
+        max: 0.01
+    n_steps:
+        values:
+            - 32
+            - 64
+            - 128
+            - 256
+            - 512
+            - 1024
+            - 2048
+    gamma:
+        min: 0.9
+        max: 0.999
+    gae_lambda:
+        min: 0.8
+        max: 0.999
+    ent_coef:
+        min: 0.0001
+        max: 0.01
+    vf_coef:
+        min: 0.0001
+        max: 0.01
+    max_grad_norm:
+        min: 0.5
+        max: 0.99
+    rms_prop_eps:
+        min: 0.0001
+        max: 0.01
+    # 'use_rms_prop': bool,
+    # 'use_sde': bool,
+    sde_sample_freq:
+        min: 4
+        max: 32
+    # 'normalize_advantage': bool,
+    # 'tensorboard_log': Optional,
+    # 'policy_kwargs': Optional,
+    # 'verbose': int,
+    # 'seed': Optional,
+    # 'device': Union,
+    # '_init_setup_model': bool,
+    batch_size:
+        values:
+            - 32
+            - 64
+            - 128
+            - 256
+            - 512
+    n_epochs:
+        min: 1
+        max: 10
+    clip_range:
+        min: 0.1
+        max: 0.3
+    clip_range_vf:
+        values:
+            - null
+            - 0.05
+            - 0.1
+            - 0.15
+            - 0.2
+    target_kl:
+        min: 0.01
+        max: 0.05
+    buffer_size:
+        values:
+            - 1000
+            - 2000
+            - 3000
+            - 4000
+            - 5000
+    learning_starts:
+        min: 100
+        max: 1000
+    tau:
+        min: 0.001
+        max: 0.01
+    train_freq:
+        min: 1
+        max: 4
+    gradient_steps:
+        min: 1
+        max: 4
+    # 'action_noise': Optional,
+    # 'replay_buffer_class': Optional,
+    # 'replay_buffer_kwargs': Optional,
+    # 'optimize_memory_usage': bool,
+    target_update_interval:
+        min: 1
+        max: 4
+    target_entropy:
+        min: 0.1
+        max: 0.2
+    # 'use_sde_at_warmup': bool,
+    policy_delay:
+        min: 1
+        max: 4
+    target_policy_noise:
+        min: 0.1
+        max: 0.2
+    target_noise_clip:
+        min: 0.1
+        max: 0.2
+    exploration_fraction:
+        min: 0.1
+        max: 0.2
+    exploration_initial_eps:
+        min: 0.1
+        max: 0.2
+    exploration_final_eps:
+        min: 0.1
+        max: 0.2
