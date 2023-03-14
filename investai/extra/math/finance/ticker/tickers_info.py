@@ -30,9 +30,9 @@ sys.path.append("../../")
 sys.path.append("../../../")
 
 ##
-from project_configs.project_dir import ProjectDir
-from utils.project import now_time
-from raw_data.train.company_info import CompanyInfo
+from shared.projectstructure import ProjectStructure
+from shared.utils import now_time
+from shared.ticker import Ticker  # Previously CompanyInfo # noqa
 
 # ######################################################################################################################
 # Global Variables
@@ -49,7 +49,7 @@ problem_tickers = []
 
 @dataclasses.dataclass
 class Program:
-    prj_dir: ProjectDir
+    prj_dir: ProjectStructure
     api_key: Optional[str] = None
     DEBUG: bool = False
 
@@ -85,21 +85,21 @@ def download(symbols: list, api_key: str, period: str = "quarter") -> tickers_ty
         problem = False
 
         key_cb = {
-            CompanyInfo.Names.profile.value: fa.profile,
-            CompanyInfo.Names.quotes.value: fa.quote,
-            CompanyInfo.Names.enterprise_value.value: fa.enterprise,
-            CompanyInfo.Names.data_detailed.value: fa.stock_data_detailed,
-            CompanyInfo.Names.dividends.value: fa.stock_dividend,
-            CompanyInfo.Names.ratings.value: fa.rating,
+            Ticker.Names.profile.value: fa.profile,
+            Ticker.Names.quotes.value: fa.quote,
+            Ticker.Names.enterprise_value.value: fa.enterprise,
+            Ticker.Names.data_detailed.value: fa.stock_data_detailed,
+            Ticker.Names.dividends.value: fa.stock_dividend,
+            Ticker.Names.ratings.value: fa.rating,
         }
         key_cb_period = {
-            CompanyInfo.Names.balance_sheet.value: fa.balance_sheet_statement,
-            CompanyInfo.Names.income.value: fa.income_statement,
-            CompanyInfo.Names.cash_flow.value: fa.cash_flow_statement,
-            CompanyInfo.Names.key_metrics.value: fa.key_metrics,
-            CompanyInfo.Names.financial_ratios.value: fa.financial_ratios,
-            CompanyInfo.Names.growth.value: fa.financial_statement_growth,
-            CompanyInfo.Names.dcf.value: fa.discounted_cash_flow,
+            Ticker.Names.balance_sheet.value: fa.balance_sheet_statement,
+            Ticker.Names.income.value: fa.income_statement,
+            Ticker.Names.cash_flow.value: fa.cash_flow_statement,
+            Ticker.Names.key_metrics.value: fa.key_metrics,
+            Ticker.Names.financial_ratios.value: fa.financial_ratios,
+            Ticker.Names.growth.value: fa.financial_statement_growth,
+            Ticker.Names.dcf.value: fa.discounted_cash_flow,
         }
 
         # TODO: Make it multi-threaded od multi-process
@@ -240,7 +240,7 @@ def remove_already_downloaded_tickers(tickers: List[List[str]], program: Program
 # ######################################################################################################################
 if __name__ == "__main__":
     program = Program(
-        prj_dir=ProjectDir(__file__),
+        prj_dir=ProjectStructure(__file__),
         DEBUG=False,
     )
 

@@ -9,7 +9,7 @@ from raw_data.DataPreprocessing import DataPreprocessing
 
 
 @dataclasses.dataclass
-class CompanyRatios(DataPreprocessing):
+class Ratio(DataPreprocessing):
     def __init__(self, non_preproccesed_data: str, cb: Callable):
         super().__init__(non_preproccesed_data, cb)
         self.data = self.get_fundament_data_from_csv()

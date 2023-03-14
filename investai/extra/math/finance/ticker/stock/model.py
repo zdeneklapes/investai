@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-class StockModels:
+class Model:
     def three_statement(self):
         """TODO"""
         raise NotImplementedError

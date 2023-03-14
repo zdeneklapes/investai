@@ -54,7 +54,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     # Wandb arguments
     parser.add_argument("--wandb", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, help="Wandb logging", )
     parser.add_argument("--wandb-sweep", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, help="Wandb logging", )
-    parser.add_argument("--wandb-project", default=os.environ.get("WANDB_PROJECT", None),
+    parser.add_argument("--wandb-project", default=os.environ.get("WANDB_PROJECT", "investai"),
                         help="Wandb project name")
     parser.add_argument("--wandb-dir", default=os.environ.get("WANDB_DIR", None),
                         help="Wandb directory")

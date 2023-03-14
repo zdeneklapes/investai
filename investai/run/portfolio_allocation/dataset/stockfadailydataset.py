@@ -105,7 +105,7 @@ class StockFaDailyDataset:
         """
         # Prices
         prices = ticker_raw_data.data_detailed[self.base_columns]
-        prices.insert(0, "tic", ticker_raw_data.symbol)
+        prices.insert(0, "tic", ticker_raw_data.ticker)
 
         # Fill before or forward
         prices = prices.fillna(method="bfill")

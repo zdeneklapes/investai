@@ -104,20 +104,20 @@ class BinartOptionEnv(Env):
             self._day = self.get_observation(self.current_step, i, "_day")
             _action = math.floor(x)
             rewards[i] = self._calculate_reward(i, done)
-            if self.cf.symbol(self.assets[i], "limit_order"):
+            if self.cf.ticker(self.assets[i], "limit_order"):
                 self._limit_order_process(i, _action, done)
             if (
                 _action in (0, 1)
                 and not done
                 and self.current_holding[i]
-                < self.cf.symbol(self.assets[i], "max_current_holding")
+                < self.cf.ticker(self.assets[i], "max_current_holding")
             ):
                 # generating PT based on action fraction
                 _profit_taken = math.ceil(
-                    (x - _action) * self.cf.symbol(self.assets[i], "profit_taken_max")
-                ) + self.cf.symbol(self.assets[i], "stop_loss_max")
+                    (x - _action) * self.cf.ticker(self.assets[i], "profit_taken_max")
+                ) + self.cf.ticker(self.assets[i], "stop_loss_max")
                 self.ticket_id += 1
-                if self.cf.symbol(self.assets[i], "limit_order"):
+                if self.cf.ticker(self.assets[i], "limit_order"):
                     transaction = {
                         "Ticket": self.ticket_id,
                         "Symbol": self.assets[i],
@@ -125,14 +125,14 @@ class BinartOptionEnv(Env):
                         "Type": _action,
                         "Lot": 1,
                         "ActionPrice": self._l if _action == 0 else self._h,
-                        "SL": self.cf.symbol(self.assets[i], "stop_loss_max"),
+                        "SL": self.cf.ticker(self.assets[i], "stop_loss_max"),
                         "PT": _profit_taken,
                         "MaxDD": 0,
                         "Swap": 0.0,
                         "CloseTime": "",
                         "ClosePrice": 0.0,
                         "Point": 0,
-                        "Reward": -self.cf.symbol(self.assets[i], "transaction_fee"),
+                        "Reward": -self.cf.ticker(self.assets[i], "transaction_fee"),
                         "DateDuration": self._day,
                         "Status": 0,
                         "LimitStep": self.current_step,
@@ -148,14 +148,14 @@ class BinartOptionEnv(Env):
                         "Type": _action,
                         "Lot": 1,
                         "ActionPrice": self._c,
-                        "SL": self.cf.symbol(self.assets[i], "stop_loss_max"),
+                        "SL": self.cf.ticker(self.assets[i], "stop_loss_max"),
                         "PT": _profit_taken,
                         "MaxDD": 0,
                         "Swap": 0.0,
                         "CloseTime": "",
                         "ClosePrice": 0.0,
                         "Point": 0,
-                        "Reward": -self.cf.symbol(self.assets[i], "transaction_fee"),
+                        "Reward": -self.cf.ticker(self.assets[i], "transaction_fee"),
                         "DateDuration": self._day,
                         "Status": 0,
                         "LimitStep": self.current_step,
@@ -164,7 +164,7 @@ class BinartOptionEnv(Env):
                     }
                     self.current_holding[i] += 1
                     self.tranaction_open_this_step.append(transaction)
-                    self.balance -= self.cf.symbol(self.assets[i], "transaction_fee")
+                    self.balance -= self.cf.ticker(self.assets[i], "transaction_fee")
                     self.transaction_live.append(transaction)
 
         return sum(rewards)
@@ -174,11 +174,11 @@ class BinartOptionEnv(Env):
         _max_draw_down = 0
         for tr in self.transaction_live:
             if tr["Symbol"] == self.assets[i]:
-                _point = self.cf.symbol(self.assets[i], "point")
+                _point = self.cf.ticker(self.assets[i], "point")
                 # cash discount overnight
                 if self._day > tr["DateDuration"]:
                     tr["DateDuration"] = self._day
-                    tr["Reward"] -= self.cf.symbol(self.assets[i], "over_night_penalty")
+                    tr["Reward"] -= self.cf.ticker(self.assets[i], "over_night_penalty")
 
                 if tr["Type"] == 0:  # buy
                     # stop loss trigger
@@ -252,13 +252,13 @@ class BinartOptionEnv(Env):
                 ):
                     tr["ActionStep"] = self.current_step
                     self.current_holding[i] += 1
-                    self.balance -= self.cf.symbol(self.assets[i], "transaction_fee")
+                    self.balance -= self.cf.ticker(self.assets[i], "transaction_fee")
                     self.transaction_limit_order.remove(tr)
                     self.transaction_live.append(tr)
                     self.tranaction_open_this_step.append(tr)
                 elif (
                     tr["LimitStep"]
-                    + self.cf.symbol(self.assets[i], "limit_order_expiration")
+                    + self.cf.ticker(self.assets[i], "limit_order_expiration")
                     > self.current_step
                 ):
                     tr["CloseStep"] = self.current_step

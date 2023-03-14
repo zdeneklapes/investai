@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import enum
-import json
 from typing import Optional
 import dataclasses
 import pandas as pd
 
 
 @dataclasses.dataclass
-class CompanyInfo:
-    symbol: Optional[str] = None
+class Ticker:
+    """Ticker class to store all the data for a ticker"""
+    ticker: Optional[str] = None
     enterprise_value: Optional[pd.DataFrame] = None
     balance_sheet: Optional[pd.DataFrame] = None
     income: Optional[pd.DataFrame] = None
@@ -42,16 +42,3 @@ class CompanyInfo:
         @classmethod
         def list(cls):
             return [e.value for e in cls]
-
-    def __json__(self):
-        return {
-            "symbol": self.symbol,
-        }
-
-
-class CompanyEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, complex):
-            return [o.real, o.imag]
-        # Let the base class default method raise the TypeError
-        return json.JSONEncoder.default(self, o)

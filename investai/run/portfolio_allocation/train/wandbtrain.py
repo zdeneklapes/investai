@@ -174,20 +174,18 @@ def main():
 
     program = Program()
     load_dotenv(dotenv_path=program.project_structure.root.joinpath(".env").as_posix())
-    program.log.info(program.args.wandb_group)
 
     for algorithm in program.args.algorithms:
         if program.args.train:
             dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
             dataset.load_dataset(program.args.dataset_path)
-            wd = WandbTrain(program=program, dataset=dataset, algorithm=algorithm)
+            wandb_train = WandbTrain(program=program, dataset=dataset, algorithm=algorithm)
             if program.args.wandb_sweep:
                 sweep_id = wandb.sweep(sweep=sweep_configuration, project=program.args.wandb_project)
-                wandb.agent(sweep_id, function=wd.train, project=program.args.wandb_project,
+                wandb.agent(sweep_id, function=wandb_train.train, project=program.args.wandb_project,
                             count=program.args.wandb_sweep_count)
-                wandb.sweep
             else:
-                wd.train()
+                wandb_train.train()
 
 
 if __name__ == '__main__':
