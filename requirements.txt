@@ -65,9 +65,11 @@ pymdstat==0.4.2
 pympler==1.0.1
 pynvim==0.4.3
 pyportfolioopt==1.5.2
+pyright==1.1.298
 pysnmp==4.4.12
 pytest-depends==1.0.1
 pytest-xdist==3.1.0
+pythonlangutil==0.1
 rope==1.6.0
 scandir==1.10.0
 seaborn-image==0.5.1
