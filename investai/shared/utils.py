@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import warnings
 from pathlib import Path
-from typing import Literal
+from typing import List, Literal
 import cProfile
 import pstats
 
@@ -113,3 +113,19 @@ def find_git_root(path):
     if path == path.parent:
         raise Exception('Not a Git repository')
     return find_git_root(path.parent)
+
+
+def portfolio_value_from_returns(df: pd.DataFrame) -> pd.Series:
+    pass
+
+
+def get_return_from_weights(t_now: pd.Series, t_prev: pd.Series, weights: List[float]) -> float:
+    """
+    Calculate portfolio rewards
+    :param t_now: (pd.Series) current portfolio value
+    :param t_prev: (pd.Series) previous portfolio value
+    :param weights: (pd.Series) current portfolio weights
+    :return: (pd.Series) portfolio rewards
+    """
+    current_balance_pct = (t_now / t_prev * weights).sum()
+    return current_balance_pct - 1

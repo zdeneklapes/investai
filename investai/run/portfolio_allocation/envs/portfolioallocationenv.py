@@ -15,6 +15,7 @@ from gymnasium.utils import seeding
 from scipy.special import softmax
 
 from run.shared.memory import Memory
+from shared.utils import get_return_from_weights
 
 
 class PortfolioAllocationEnv(gym.Env):
@@ -69,35 +70,29 @@ class PortfolioAllocationEnv(gym.Env):
         # TODO: portfolio_value <= 0
         return self._data_index >= len(self._df.index.unique()) - 1
 
-    def _get_reward_pct(self, weights) -> float:
-        """Calculate reward"""
-        # TODO: Fixme
-        current_balance_pct = (
-            (self._df.loc[self._data_index, "close"].values / self._df.loc[self._data_index - 1, "close"].values)
-            * weights
-        ).sum()
-        return current_balance_pct - 1
-
     def step(self, action):
         # TODO: Why is softmax used here?
         self._data_index += 1  # Go to next raw_data (State & Observation Space)
         normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
+        reward = get_return_from_weights(self._df.iloc[self._data_index],
+                                         self._df.iloc[self._data_index - 1],
+                                         normalized_actions)
         current_portfolio_value = (
             self._memory.df["portfolio_value"].iloc[-1]  # previous portfolio value
-            * (1 + self._get_reward_pct(normalized_actions))  # portfolio return
+            * (1 + reward)  # portfolio return
         )
 
         # Memory
         log_dict = {
             "portfolio_value": current_portfolio_value,
-            "reward": self._get_reward_pct(normalized_actions),
+            "reward": reward,
             "action": normalized_actions,
             "date": self._current_data.date.unique()[0]
         }
         self._memory.append(**log_dict)
 
         # Observation, Reward, Terminated, Truncated, Info, Done
-        return self._current_state, self._get_reward_pct(weights=normalized_actions), self._terminal, log_dict
+        return self._current_state, reward, self._terminal, log_dict
 
     def reset(
         self,

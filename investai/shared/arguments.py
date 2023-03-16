@@ -41,6 +41,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--dataset-path", "-dp", help="Will test trained models", nargs="?", type=str, default=None)
     parser.add_argument("--dataset-split-coef", type=float, default=0.6,
                         help="Define what percentage of the dataset is used for training")
+    parser.add_argument("--baseline-path", "-bp", help="Baseline path", nargs="?", type=str, default=None)
     parser.add_argument("--models", help="Already trained model", nargs="+", )
     parser.add_argument("--stable_baseline", help="Use stable-baselines3", action="store_true", )
     parser.add_argument("--ray", help="Use ray-rllib", action="store_true", )
