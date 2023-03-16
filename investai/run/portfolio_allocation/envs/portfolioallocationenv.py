@@ -71,6 +71,7 @@ class PortfolioAllocationEnv(gym.Env):
 
     def _get_reward_pct(self, weights) -> float:
         """Calculate reward"""
+        # TODO: Fixme
         current_balance_pct = (
             (self._df.loc[self._data_index, "close"].values / self._df.loc[self._data_index - 1, "close"].values)
             * weights
