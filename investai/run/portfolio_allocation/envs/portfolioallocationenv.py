@@ -50,7 +50,7 @@ class PortfolioAllocationEnv(gym.Env):
         self._data_index = self._start_from_index
         self._memory = Memory(df=pd.DataFrame(dict(reward=[0],
                                                    action=[[1 / len(self._tickers)] * len(self._tickers)],
-                                                   date=[self._current_data.date.unique()[0]])))
+                                                   date=[self._current_data['date'].unique()[0]])))
 
     @property
     def _current_data(self) -> pd.DataFrame:
@@ -79,7 +79,7 @@ class PortfolioAllocationEnv(gym.Env):
         log_dict = {
             "reward": reward,
             "action": normalized_actions,
-            "date": self._current_data.date.unique()[0]
+            "date": self._current_data['date'].unique()[0]
         }
         self._memory.append(**log_dict)
 

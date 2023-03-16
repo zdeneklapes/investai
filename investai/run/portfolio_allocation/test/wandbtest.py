@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 
-from pythonlangutil.overload import Overload, signature
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 
@@ -33,12 +32,11 @@ class WandbTest:
         self.program.log.info("Deinit environment")
         env.close()
 
-    @Overload
-    @signature("self, model_path: Path")
     def test(self, model: ALGORITHM_SB3_TYPE, deterministic=True) -> None:
         environment = self._init_environment()
         obs = environment.reset()
-        for i in range(len(environment.df.index.unique())):
+        # -2 because we don't want to go till terminal state, because the environment will be reset
+        for i in range(len(environment.envs[0].env._df.index.unique()) - 2):
             action, _ = model.predict(obs, deterministic=deterministic)
             environment.step(action)
 
