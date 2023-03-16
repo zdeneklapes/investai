@@ -81,9 +81,7 @@ class WandbTrain:
 
     def _init_environment(self):
         self.program.log.info("Init environment")
-        env = PortfolioAllocationEnv(df=self.dataset.train_dataset,
-                                     initial_portfolio_value=self.program.args.initial_cash,
-                                     tickers=self.dataset.tickers,
+        env = PortfolioAllocationEnv(df=self.dataset.train_dataset, tickers=self.dataset.tickers,
                                      features=self.dataset.get_features(),
                                      start_data_from_index=self.program.args.start_data_from_index)
         env = Monitor(

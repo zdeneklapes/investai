@@ -19,9 +19,7 @@ class WandbTest:
 
     def _init_environment(self):
         self.program.log.info("Init environment")
-        env = PortfolioAllocationEnv(df=self.dataset.train_dataset,
-                                     initial_portfolio_value=self.program.args.initial_cash,
-                                     tickers=self.dataset.tickers,
+        env = PortfolioAllocationEnv(df=self.dataset.test_dataset, tickers=self.dataset.tickers,
                                      features=self.dataset.get_features(),
                                      start_data_from_index=self.program.args.start_data_from_index)
         env = Monitor(
@@ -37,13 +35,12 @@ class WandbTest:
 
     @Overload
     @signature("self, model_path: Path")
-    def test(self, model_path: Path = None) -> None:
-        pass
-
-    @test.overload
-    @signature("self, model: ALGORITHM_SB3_TYPE")
-    def test(self, model: ALGORITHM_SB3_TYPE) -> None:
-        pass
+    def test(self, model: ALGORITHM_SB3_TYPE, deterministic=True) -> None:
+        environment = self._init_environment()
+        obs = environment.reset()
+        for i in range(len(environment.df.index.unique())):
+            action, _ = model.predict(obs, deterministic=deterministic)
+            environment.step(action)
 
     # def test_model(self, model_path: Path) -> None:
     #     # Get files

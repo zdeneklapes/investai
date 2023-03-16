@@ -22,8 +22,7 @@ class PortfolioAllocationEnv(gym.Env):
     """Portfolio Allocation Environment using OpenAI gym"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, df: pd.DataFrame, initial_portfolio_value: int, tickers: List[str], features: List[str],
-                 start_data_from_index: int = 0):
+    def __init__(self, df: pd.DataFrame, tickers: List[str], features: List[str], start_data_from_index: int = 0):
         # Immutable
         self._df: Final = df
         self._start_from_index: Final = start_data_from_index
@@ -31,7 +30,7 @@ class PortfolioAllocationEnv(gym.Env):
         self._features: Final = features  # Used for Observation space
 
         # Sets: self._data_index, self._portfolio_value, self._memory
-        self.__init_environment(initial_portfolio_value=initial_portfolio_value)
+        self.__init_environment()
 
         # Inherited
         self.action_space = spaces.Box(low=0, high=1, shape=(len(self._tickers),))
@@ -41,7 +40,7 @@ class PortfolioAllocationEnv(gym.Env):
                                                    len(self._features))
                                             )
 
-    def __init_environment(self, initial_portfolio_value: int):
+    def __init_environment(self):
         """Initialize environment
         self._data_index: Index of the current raw_data
         self._portfolio_value: Portfolio value
@@ -49,8 +48,7 @@ class PortfolioAllocationEnv(gym.Env):
         :param initial_portfolio_value:
         """
         self._data_index = self._start_from_index
-        self._memory = Memory(df=pd.DataFrame(dict(portfolio_value=[initial_portfolio_value],
-                                                   reward=[0],
+        self._memory = Memory(df=pd.DataFrame(dict(reward=[0],
                                                    action=[[1 / len(self._tickers)] * len(self._tickers)],
                                                    date=[self._current_data.date.unique()[0]])))
 
@@ -74,17 +72,11 @@ class PortfolioAllocationEnv(gym.Env):
         # TODO: Why is softmax used here?
         self._data_index += 1  # Go to next raw_data (State & Observation Space)
         normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
-        reward = calculate_return_from_weights(self._df.iloc[self._data_index],
-                                               self._df.iloc[self._data_index - 1],
-                                               normalized_actions)
-        current_portfolio_value = (
-            self._memory.df["portfolio_value"].iloc[-1]  # previous portfolio value
-            * (1 + reward)  # portfolio return
-        )
-
+        reward = calculate_return_from_weights(self._df.loc[self._data_index, :]['close'].values,
+                                               self._df.loc[self._data_index - 1, :]['close'].values,
+                                               np.array(normalized_actions))
         # Memory
         log_dict = {
-            "portfolio_value": current_portfolio_value,
             "reward": reward,
             "action": normalized_actions,
             "date": self._current_data.date.unique()[0]
@@ -100,7 +92,7 @@ class PortfolioAllocationEnv(gym.Env):
         seed: Optional[int] = None,
         options: Optional[Dict[str, Any]] = None,
     ):
-        self.__init_environment(initial_portfolio_value=self._memory._initial_portfolio_value)
+        self.__init_environment()
         return self._current_state  # First observation
 
     def render(self, mode='human'):

@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 import warnings
 from pathlib import Path
-from typing import List, Literal
+from typing import Literal
 import cProfile
 import pstats
 
+import numpy as np
 import pandas as pd
 import matplotlib
 
@@ -124,7 +125,7 @@ def portfolio_value_from_returns(returns: pd.Series) -> pd.Series:
     return (returns + 1).cumprod()
 
 
-def calculate_return_from_weights(t_now: pd.Series, t_prev: pd.Series, weights: List[float]) -> float:
+def calculate_return_from_weights(t_now: np.array, t_prev: np.array, weights: np.array) -> float:
     """
     Calculate portfolio rewards
     :param t_now: (pd.Series) current portfolio value

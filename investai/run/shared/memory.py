@@ -10,15 +10,13 @@ class Memory:
     """Memory class for storing the history of the agent performance in the environment"""
     df: pd.DataFrame
 
-    def append(self, portfolio_value, reward, action, date):
+    def append(self, reward, action, date):
         """Append memory
-        :param portfolio_value: Portfolio value
         :param reward: Portfolio return
         :param action: Action
         :param date: Date
         """
         df_new = pd.DataFrame({
-            "portfolio_value": [portfolio_value],
             "reward": [reward],
             "action": [action],
             "date": [date]
