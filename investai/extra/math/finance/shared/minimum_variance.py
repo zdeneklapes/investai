@@ -8,6 +8,10 @@ from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDat
 from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
 
+# For Debugging
+from shared.utils import reload_module  # noqa
+from IPython.display import display  # noqa
+
 
 def minimum_variance(df: pd.DataFrame):
     """Source: https://github.com/AI4Finance-Foundation/FinRL-Tutorials"""
@@ -42,17 +46,20 @@ def minimum_variance(df: pd.DataFrame):
     portfolio.columns = ['account_value']
 
 
-def main():
+def t1():
     from dotenv import load_dotenv
 
     program = Program()
+    program.args.dataset_path=program.project_structure.datasets.joinpath("stockfadailydataset.csv").as_posix()
     load_dotenv(dotenv_path=program.project_structure.root.joinpath(".env").as_posix())
 
     dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER,
                                   dataset_split_coef=program.args.dataset_split_coef)
     dataset.load_dataset(program.args.dataset_path)
-    minimum_variance(dataset.dataset)
+    return {
+        "dataset": dataset,
+    }
 
 
 if __name__ == '__main__':
-    main()
+    t1()
