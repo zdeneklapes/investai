@@ -18,52 +18,56 @@ from IPython.display import display  # noqa
 class Baseline:
     def __init__(self, dataframe: pd.DataFrame, bounds: tuple = (0, 1)):
         self.dataframe = dataframe
+        self.dates = self.dataframe['date'].unique()
+        del self.dataframe['date']
         self.bounds = bounds
-        self.returns = None
+        self.returns = pd.DataFrame()
+
+    def get_weights(self, mean, s) -> pd.DataFrame:
+        ef = EfficientFrontier(mean, s, weight_bounds=self.bounds)
+        ef.min_volatility()
+        cleaned_weights_min_var = ef.clean_weights()
+        ef = EfficientFrontier(mean, s, weight_bounds=self.bounds)
+        ef.max_quadratic_utility()
+        cleaned_weights_max_quadratic_utility = ef.clean_weights()
+        ef = EfficientFrontier(mean, s, weight_bounds=self.bounds)
+        ef.max_sharpe()
+        cleaned_weights_max_sharpe = ef.clean_weights()
+        return {
+            "minimum_variance": cleaned_weights_min_var,
+            "maximum_quadratic_utility": cleaned_weights_max_quadratic_utility,
+            "maximum_sharpe": cleaned_weights_max_sharpe,
+        }
 
     def get_returns(self) -> pd.DataFrame:
         """Source: https://github.com/AI4Finance-Foundation/FinRL-Tutorials"""
-        if self.returns is not None:
+        if not self.returns.empty:
             return self.returns
 
-        portfolio = pd.DataFrame(columns=[
-            f"minimum_variance_{self.bounds[0]}_{self.bounds[1]}",
-            f"maximum_quadratic_utility_{self.bounds[0]}_{self.bounds[1]}",
-            f"maximum_sharpe_{self.bounds[0]}_{self.bounds[1]}",
-        ], data=0.0)
-        for date in self.dataframe.index.unique()[3:]:
-            mean_annual_return = mean_historical_return(self.dataframe[self.dataframe.index <= date])
-            s_covariance_matrix = CovarianceShrinkage(self.dataframe[self.dataframe.index <= date]).ledoit_wolf()
+        for i in range(4, self.dates.size - 1):
+            mean_annual_return = mean_historical_return(self.dataframe.iloc[:i])
+            s_covariance_matrix = CovarianceShrinkage(self.dataframe.iloc[:i]).ledoit_wolf()
 
             #
-            ef = EfficientFrontier(mean_annual_return, s_covariance_matrix, weight_bounds=self.bounds)
-            ef.min_volatility()
-            cleaned_weights_min_var = ef.clean_weights()
-            ef = EfficientFrontier(mean_annual_return, s_covariance_matrix, weight_bounds=self.bounds)
-            ef.max_quadratic_utility()
-            cleaned_weights_max_quadratic_utility = ef.clean_weights()
-            ef = EfficientFrontier(mean_annual_return, s_covariance_matrix, weight_bounds=self.bounds)
-            ef.max_sharpe()
-            cleaned_weights_max_sharpe = ef.clean_weights()
-
-            return_min_var = (self.dataframe.loc[date].values
-                              - self.dataframe.loc[self.dataframe.index < date].iloc[-1].values
-                              ) * list(cleaned_weights_min_var.values())
-            return_max_quadratic_utility = (self.dataframe.loc[date].values
-                                            - self.dataframe.loc[self.dataframe.index < date].iloc[-1].values
-                                            ) * list(cleaned_weights_max_quadratic_utility.values())
-            return_max_sharpe = (self.dataframe.loc[date].values
-                                 - self.dataframe.loc[self.dataframe.index < date].iloc[-1].values
-                                 ) * list(cleaned_weights_max_sharpe.values())
+            weights = self.get_weights(mean_annual_return, s_covariance_matrix)
 
             #
-            portfolio.loc[date] = {
+            return_min_var = (self.dataframe.iloc[i].values - self.dataframe.iloc[i - 1].values
+                              ) * list(weights["minimum_variance"].values())
+            return_max_quadratic_utility = (self.dataframe.iloc[i].values - self.dataframe.iloc[i - 1].values
+                                            ) * list(weights["maximum_quadratic_utility"].values())
+            return_max_sharpe = (self.dataframe.iloc[i].values - self.dataframe.iloc[i - 1].values
+                                 ) * list(weights["maximum_sharpe"].values())
+
+            #
+            self.returns = pd.concat([self.returns, pd.DataFrame({
+                "date": self.dates[i],
                 f"minimum_variance_{self.bounds[0]}_{self.bounds[1]}": sum(return_min_var),
                 f"maximum_quadratic_utility_{self.bounds[0]}_{self.bounds[1]}": sum(return_max_quadratic_utility),
                 f"maximum_sharpe_{self.bounds[0]}_{self.bounds[1]}": sum(return_max_sharpe),
-            }
-        self.returns = portfolio
-        return portfolio
+            }, index=[0])], ignore_index=True)
+
+        return self.returns
 
 
 def portfolio_value_from_returns(returns: pd.Series) -> pd.Series:
@@ -83,15 +87,15 @@ def t1():
     dataset.load_dataset(program.args.dataset_path)
 
     d_tics = dataset.dataset[['tic', 'close', 'date']].sort_values(by=['tic', 'date'])
-    index_date = d_tics['date'].unique()
-    df = pd.DataFrame({tic: d_tics[d_tics['tic'] == tic]['close'] for tic in d_tics['tic'].unique()})
-    df.index = pd.to_datetime(index_date, format="%Y-%m-%d")
+    d = {"date": d_tics['date'].unique()}
+    d.update({tic: d_tics[d_tics['tic'] == tic]['close'] for tic in d_tics['tic'].unique()})
+    df = pd.DataFrame(d)
     baseline = Baseline(df, bounds=(0, 1))
+    # baseline.get_returns()
 
     return {
         "dataset": dataset,
         "d_tics": d_tics,
-        "index_date": index_date,
         "df": df,
         "baseline": baseline,
     }
