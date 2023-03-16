@@ -15,7 +15,7 @@ from gymnasium.utils import seeding
 from scipy.special import softmax
 
 from run.shared.memory import Memory
-from shared.utils import get_return_from_weights
+from shared.utils import calculate_return_from_weights
 
 
 class PortfolioAllocationEnv(gym.Env):
@@ -74,9 +74,9 @@ class PortfolioAllocationEnv(gym.Env):
         # TODO: Why is softmax used here?
         self._data_index += 1  # Go to next raw_data (State & Observation Space)
         normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
-        reward = get_return_from_weights(self._df.iloc[self._data_index],
-                                         self._df.iloc[self._data_index - 1],
-                                         normalized_actions)
+        reward = calculate_return_from_weights(self._df.iloc[self._data_index],
+                                               self._df.iloc[self._data_index - 1],
+                                               normalized_actions)
         current_portfolio_value = (
             self._memory.df["portfolio_value"].iloc[-1]  # previous portfolio value
             * (1 + reward)  # portfolio return

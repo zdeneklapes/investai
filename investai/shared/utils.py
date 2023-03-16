@@ -115,11 +115,16 @@ def find_git_root(path):
     return find_git_root(path.parent)
 
 
-def portfolio_value_from_returns(df: pd.DataFrame) -> pd.Series:
-    pass
+def portfolio_value_from_returns(returns: pd.Series) -> pd.Series:
+    """
+    From returns calculate portfolio value
+    :param returns:
+    :return:
+    """
+    return (returns + 1).cumprod()
 
 
-def get_return_from_weights(t_now: pd.Series, t_prev: pd.Series, weights: List[float]) -> float:
+def calculate_return_from_weights(t_now: pd.Series, t_prev: pd.Series, weights: List[float]) -> float:
     """
     Calculate portfolio rewards
     :param t_now: (pd.Series) current portfolio value
@@ -129,3 +134,12 @@ def get_return_from_weights(t_now: pd.Series, t_prev: pd.Series, weights: List[f
     """
     current_balance_pct = (t_now / t_prev * weights).sum()
     return current_balance_pct - 1
+
+
+def calculate_sharpe(returns: pd.Series):
+    # TODO: check correctness
+    if returns.std() != 0:
+        sharpe = (252 ** 0.5) * returns.mean() / returns.std()
+        return sharpe
+    else:
+        return 0

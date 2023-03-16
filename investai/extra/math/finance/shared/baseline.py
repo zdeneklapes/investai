@@ -15,7 +15,7 @@ from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
 
 # For Debugging
-from shared.utils import reload_module, get_return_from_weights  # noqa
+from shared.utils import reload_module, calculate_return_from_weights  # noqa
 from IPython.display import display  # noqa
 
 
@@ -62,15 +62,15 @@ class Baseline:
             assert list(self.dataframe.iloc[i].index) == list(weights['minimum_variance'].keys())
 
             #
-            return_min_var = get_return_from_weights(self.dataframe.iloc[i].values,
-                                                     self.dataframe.iloc[i - 1].values,
-                                                     list(weights["minimum_variance"].values()))
-            return_max_quadratic_utility = get_return_from_weights(self.dataframe.iloc[i].values,
-                                                                   self.dataframe.iloc[i - 1].values,
-                                                                   list(weights["maximum_quadratic_utility"].values()))
-            return_max_sharpe = get_return_from_weights(self.dataframe.iloc[i].values,
-                                                        self.dataframe.iloc[i - 1].values,
-                                                        list(weights["maximum_sharpe"].values()))
+            return_min_var = calculate_return_from_weights(self.dataframe.iloc[i].values,
+                                                           self.dataframe.iloc[i - 1].values,
+                                                           list(weights["minimum_variance"].values()))
+            return_max_quadratic_utility = calculate_return_from_weights(self.dataframe.iloc[i].values,
+                                                                         self.dataframe.iloc[i - 1].values,
+                                                                         list(weights["maximum_quadratic_utility"].values()))
+            return_max_sharpe = calculate_return_from_weights(self.dataframe.iloc[i].values,
+                                                              self.dataframe.iloc[i - 1].values,
+                                                              list(weights["maximum_sharpe"].values()))
 
             #
             self.returns = pd.concat([self.returns, pd.DataFrame({
