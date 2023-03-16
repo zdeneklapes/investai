@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+Stock fundamental analysis dataset
+"""
 from copy import deepcopy
-from typing import List
+from typing import List, Dict
 
 import numpy as np
 import pandas as pd
@@ -9,7 +12,7 @@ from run.shared.tickers import DOW_30_TICKER
 from tqdm import tqdm
 from tvDatafeed import Interval, TvDatafeed
 
-from raw_data.train.company_info import CompanyInfo
+from extra.math.finance.ticker.ticker import Ticker
 from shared.program import Program
 from run.shared.dataset.dataengineer import DataEngineer as DE
 from run.shared.dataset.candlestickengineer import CandlestickEngineer as CSE
@@ -58,7 +61,7 @@ class StockFaDailyDataset:
         """Split dataset into train and test"""
         if self.program.args.project_verbose > 0:
             self.program.log.info(
-                f"Train dataset from {self.dataset['date'].min()} to {DE.get_split_date(self.dataset, self.dataset_split_coef)}" # noqa
+                f"Train dataset from {self.dataset['date'].iloc[0]} to {DE.get_split_date(self.dataset, self.dataset_split_coef)}" # noqa
             )
         df: pd.DataFrame = self.dataset[self.dataset["date"] < DE.get_split_date(self.dataset, self.dataset_split_coef)]
         return df
@@ -86,7 +89,7 @@ class StockFaDailyDataset:
         iterable = tqdm(self.tickers) if self.program.args.project_verbose > 0 else self.tickers
         for tic in iterable:
             if type(iterable) is tqdm: iterable.set_description(f"Processing {tic}")
-            raw_data: CompanyInfo = self.load_raw_data(tic)  # Load tickers raw_data
+            raw_data: Ticker = self.load_raw_data(tic)  # Load tickers raw_data
             feature_data = self.add_fa_features(raw_data)  # Add features
             df = pd.concat([feature_data, df])  # Add ticker to dataset
 
@@ -98,7 +101,7 @@ class StockFaDailyDataset:
         DE.check_dataset_correctness_assert(df)
         return df
 
-    def add_fa_features(self, ticker_raw_data: CompanyInfo) -> pd.DataFrame:
+    def add_fa_features(self, ticker_raw_data: Ticker) -> pd.DataFrame:
         """
         Add fundamental analysis features to dataset
         Merge tickers information into one pd.Dataframe
@@ -179,18 +182,18 @@ class StockFaDailyDataset:
             self.program.log.info(f"Saving dataset to: {file_path}")
         self.dataset.to_csv(file_path, index=True)
 
-    def load_raw_data(self, tic) -> CompanyInfo:
-        """Check if folders with ticker exists and load all raw_data from them into CompanyInfo class"""
-        data = {"symbol": tic}
-        files = deepcopy(CompanyInfo.Names.list())
+    def load_raw_data(self, tic) -> Ticker:
+        """Check if folders with ticker exists and load all raw_data from them into Ticker class"""
+        data = {"ticker": tic}
+        files = deepcopy(Ticker.Names.list())
         files.remove("symbol")
         for f in files:
-            tic_file = self.program.project_structure.data.tickers.joinpath(tic).joinpath(f + ".csv")
+            tic_file = self.program.project_structure.tickers.joinpath(tic).joinpath(f + ".csv")
             if tic_file.exists():
                 data[f] = pd.read_csv(tic_file, index_col=0)
             else:
                 raise FileExistsError(f"File not exists: {tic_file}")
-        return CompanyInfo(**data)
+        return Ticker(**data)
 
     def load_dataset(self, file_path: str) -> None:
         """Load dataset"""
@@ -199,20 +202,21 @@ class StockFaDailyDataset:
         self.dataset = pd.read_csv(file_path, index_col=0)
 
 
-def t1():
+def t1() -> Dict:
+    """
+    :return: dict
+    """
     from dotenv import load_dotenv
 
     program = Program()
     program.args.project_verbose = 1
     program.args.debug = True
     load_dotenv(dotenv_path=program.project_structure.root.as_posix())
-    dataset = StockFaDailyDataset(
-        program,
-        tickers=DOW_30_TICKER,
-        dataset_split_coef=program.args.dataset_split_coef
-    )
+
+    dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef)
     return {
-        "d": dataset.get_stock_dataset(),
+        "dataset": dataset,
+        "d": dataset.get_stock_dataset()
     }
 
 
