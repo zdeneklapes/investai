@@ -1,14 +1,18 @@
 # -*- coding: utf-8 -*-
+"""TODO docstring"""
 from pathlib import Path
 
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 
+from tqdm import trange
+import wandb
+
 from shared.program import Program
-from run.shared.tickers import DOW_30_TICKER
 from run.shared.algorithmsb3 import ALGORITHM_SB3_TYPE
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
+from run.shared.tickers import DOW_30_TICKER
 
 
 class WandbTest:
@@ -33,12 +37,27 @@ class WandbTest:
         env.close()
 
     def test(self, model: ALGORITHM_SB3_TYPE, deterministic=True) -> None:
-        environment = self._init_environment()
+        environment: DummyVecEnv = self._init_environment()
         obs = environment.reset()
         # -2 because we don't want to go till terminal state, because the environment will be reset
-        for i in range(len(environment.envs[0].env._df.index.unique()) - 2):
+        iterable = trange(len(environment.envs[0].env._df.index.unique()) - 2, desc="Test") \
+            if self.program.args.project_verbose \
+            else range(len(environment.envs[0].env._df.index.unique()) - 2)
+        for _ in iterable:
             action, _ = model.predict(obs, deterministic=deterministic)
+            if self.program.is_wandb_enabled():
+                memory_dict = environment.envs[0].env._memory.df.iloc[-1].to_dict()
+                del memory_dict['action']
+                del memory_dict['date']
+                log_dict = {f"memory/test_{k}": v for k, v in memory_dict.items()}
+                wandb.log(log_dict)
             environment.step(action)
+        if self.program.is_wandb_enabled():
+            wandb.run.summary["test/total_reward"] = (
+                (environment.envs[0].env._memory.df['reward'] + 1.0).cumprod().iloc[-1]
+            )
+            wandb.run.summary["test/start_date"] = environment.envs[0].env._df['date'].unique()[0]
+            wandb.run.summary["test/end_date"] = environment.envs[0].env._df['date'].unique()[-1]
 
     # def test_model(self, model_path: Path) -> None:
     #     # Get files

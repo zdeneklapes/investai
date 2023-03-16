@@ -60,7 +60,7 @@ class WandbCallbackExtendMemory(WandbCallback):
             memory_dict = memory.df.iloc[-1].to_dict()
             del memory_dict['action']
             del memory_dict['date']
-            log_dict = {f"memory/{k}": v for k, v in memory_dict.items()}
+            log_dict = {f"memory/train_{k}": v for k, v in memory_dict.items()}
             wandb.log(log_dict)
         return super()._on_step()
 
@@ -69,11 +69,9 @@ class WandbCallbackExtendMemory(WandbCallback):
             and hasattr(self.locals['env'].envs[0].unwrapped, '_df'):
             memory: Memory = getattr(self.locals['env'].envs[0].unwrapped, '_memory')
             df: pd.DataFrame = getattr(self.locals['env'].envs[0].unwrapped, '_df')
-            wandb.run.summary["reward"] = memory.df['reward'].sum()
-            wandb.run.summary["portfolio_value_start"] = memory.df['portfolio_value'].iloc[0]
-            wandb.run.summary["portfolio_value_end"] = memory.df['portfolio_value'].iloc[-1]
-            wandb.run.summary["date_start"] = df['date'].unique()[0]
-            wandb.run.summary["date_end"] = df['date'].unique()[-1]
+            wandb.run.summary["train/total_reward"] = (memory.df['reward'] + 1.0).cumprod().iloc[-1]
+            wandb.run.summary["train/start_date"] = df['date'].unique()[0]
+            wandb.run.summary["train/end_date"] = df['date'].unique()[-1]
         super()._on_training_end()
 
 
