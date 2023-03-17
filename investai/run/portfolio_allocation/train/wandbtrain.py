@@ -3,23 +3,19 @@
 # TODO: Add to action +1 more action from 30 actions increase to 31 actions, because Agent can als decide for cash
 # TODO: next datasets
 # TODO: Put into dataset change of price form one index to another index: e.g. 10->15=0.5, 10->5=-0.5
-from pathlib import Path
 from copy import deepcopy  # noqa
 
 import wandb
-from stable_baselines3.common.monitor import Monitor
-from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.test.wandbtest import WandbTest
-from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
-from run.portfolio_allocation.envs.portfolioallocation2env import PortfolioAllocation2Env
 from run.shared.callback.wandbcallbackextendmemory import WandbCallbackExtendMemory
-from run.shared.callback.tensorboardcallback import TensorboardCallback
+# from run.shared.callback.tensorboardcallback import TensorboardCallback
 from run.shared.tickers import DOW_30_TICKER
 from run.shared.algorithmsb3 import ALGORITHM_SB3
 from run.shared.hyperparameters.sweep_configuration import sweep_configuration
+from run.shared.environmentinitializer import EnvironmentInitializer
 from shared.program import Program
 
 
@@ -68,9 +64,7 @@ class WandbTrain:
             mode=self.program.args.wandb_mode,
             tags=self.program.args.wandb_tags,
             # Other
-            config=(None
-                    if self.program.args.wandb_sweep
-                    else self._init_hyper_parameters()),
+            config=(None if self.program.args.wandb_sweep else self._init_hyper_parameters()),
             notes=f"Portfolio allocation with {self.algorithm} algorithm.",
             allow_val_change=False,
             resume=None,
@@ -80,33 +74,9 @@ class WandbTrain:
             save_code=True,
         )
 
-    def _init_environment(self):
-        env = None
-        if self.program.args.portfolio_allocation_env == 0:
-            self.program.log.info(f"Init environment: {PortfolioAllocationEnv.__class__.__name__}")
-            env = PortfolioAllocationEnv(df=self.dataset.train_dataset,
-                                         tickers=self.dataset.tickers,
-                                         features=self.dataset.get_features(),
-                                         start_data_from_index=self.program.args.start_data_from_index)
-        elif self.program.args.portfolio_allocation_env == 1:
-            self.program.log.info(f"Init environment: {PortfolioAllocation2Env.__class__.__name__}")
-            env = PortfolioAllocation2Env(df=self.dataset.train_dataset,
-                                          tickers=self.dataset.tickers,
-                                          columns_to_drop_in_observation=['date', 'tic'],
-                                          start_time=self.program.args.start_data_from_index)
-        env = Monitor(
-            env,
-            Path(self.program.project_structure.wandb).as_posix(),
-            allow_early_resets=True)  # stable_baselines3.common.monitor.Monitor
-        env = DummyVecEnv([lambda: env])
-        return env
-
     def _init_callbacks(self):
         self.program.log.info("Init callbacks")
-        callbacks = CallbackList([
-            TensorboardCallback(),
-            ProgressBarCallback(),
-        ])
+        callbacks = CallbackList([ProgressBarCallback(), ])
 
         if self.program.is_wandb_enabled():
             callbacks.callbacks.append(WandbCallbackExtendMemory(
@@ -148,7 +118,8 @@ class WandbTrain:
     def train_run(self):
         self.program.log.info(f"START Training {self.algorithm} algorithm.")
         # Initialize
-        environment = self._init_environment()
+        environment = EnvironmentInitializer(self.program, self.dataset) \
+            .initialize_portfolio_allocation(self.dataset.train_dataset)
         callbacks = self._init_callbacks()
 
         # Model training
@@ -159,7 +130,6 @@ class WandbTrain:
         if self.program.is_wandb_enabled():
             self.log_artifact("dataset", "dataset", self.program.args.dataset_path)
             self.log_artifact("model", "model", self.model_path.as_posix())
-            wandb.define_metric("total_reward", step_metric="total_timesteps")  # Summary
 
         if self.program.args.test:
             WandbTest(program=self.program, dataset=self.dataset).test(model=model)

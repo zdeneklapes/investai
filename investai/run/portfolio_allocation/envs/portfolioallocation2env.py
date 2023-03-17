@@ -15,7 +15,6 @@ from gym import spaces
 from gymnasium.utils import seeding
 from scipy.special import softmax
 
-from run.shared.memory import Memory
 from shared.utils import calculate_return_from_weights
 
 
@@ -23,11 +22,11 @@ class PortfolioAllocation2Env(gym.Env):
     """Portfolio Allocation Environment using OpenAI gym"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, df: pd.DataFrame, tickers: List[str], columns_to_drop_in_observation: List[str],
-                 start_time: int = 0):
+    def __init__(self, dataset: pd.DataFrame, tickers: List[str], columns_to_drop_in_observation: List[str],
+                 start_index: int = 0):
         # Immutable
-        self._df: Final = df
-        self._start_time: Final = start_time
+        self._df: Final = dataset
+        self._start_time: Final = start_index
         self._tickers: Final = tickers  # Used for: Action and Observation space
         self._columns_to_drop_in_observation: Final = columns_to_drop_in_observation  # Used for Observation space
 
@@ -49,9 +48,9 @@ class PortfolioAllocation2Env(gym.Env):
         :param initial_portfolio_value:
         """
         self._time = self._start_time
-        self._memory = Memory(df=pd.DataFrame(dict(reward=[0],
-                                                   action=[[1 / len(self._tickers)] * len(self._tickers)],
-                                                   date=[self._current_data['date'].unique()[0]])))
+        # self._memory = Memory(df=pd.DataFrame(dict(reward=[0],
+        #                                            action=[[1 / len(self._tickers)] * len(self._tickers)],
+        #                                            date=[self._current_data['date'].unique()[0]])))
 
     @property
     def _current_data(self) -> pd.DataFrame:
@@ -73,19 +72,17 @@ class PortfolioAllocation2Env(gym.Env):
         # TODO: Why is softmax used here?
         self._time += 1  # Go to next raw_data (State & Observation Space)
         normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
+
+        # action are the tickers weight in the portfolio (without cash)
+        asset_allocation_actions = normalized_actions[1:]  # Remove cash
         reward = calculate_return_from_weights(self._df.loc[self._time, :]['close'].values,
                                                self._df.loc[self._time - 1, :]['close'].values,
-                                               np.array(normalized_actions))
-        # Memory
-        log_dict = {
-            "reward": reward,
-            "action": normalized_actions,
-            "date": self._current_data['date'].unique()[0]
-        }
-        self._memory.append(**log_dict)
+                                               np.array(asset_allocation_actions))
 
-        # Observation, Reward, Terminated, Truncated, Info, Done
-        return self._current_state, reward, self._terminal, log_dict
+        #
+        info_dict = {"date": self._current_data['date'].unique()[0]}
+        # Observation, Reward, Terminated, Info
+        return self._current_state, reward, self._terminal, info_dict
 
     def reset(
         self,

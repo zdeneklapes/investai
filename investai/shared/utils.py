@@ -137,7 +137,7 @@ def calculate_return_from_weights(t_now: np.array, t_prev: np.array, weights: np
     return current_balance_pct - 1
 
 
-def calculate_sharpe_ratio(returns: pd.Series):
+def calculate_sharpe_ratio(returns: np.ndarray):
     # TODO: check correctness
     if returns.std() != 0:
         sharpe = (252 ** 0.5) * returns.mean() / returns.std()

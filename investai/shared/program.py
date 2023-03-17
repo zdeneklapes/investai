@@ -4,6 +4,8 @@ from typing import Union
 from argparse import Namespace
 import attr
 
+from torch.utils.tensorboard import SummaryWriter
+
 from shared.projectstructure import ProjectStructure
 from shared.arguments import parse_arguments
 from loguru import logger
@@ -32,6 +34,11 @@ class Program:
 
     def __attrs_post_init__(self):
         self.log = self.init_logger(self.project_structure.out.joinpath('run.log').as_posix())
+        writer = SummaryWriter(self.project_structure.tensorboard.as_posix())
+        writer.add_text(
+            'hyperparameters',
+            "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key} |{value}|" for key, value in vars(self.args).items()])),
+        )
 
     def is_wandb_enabled(self):
         return self.args.wandb or self.args.wandb_sweep

@@ -7,6 +7,7 @@ from pprint import pprint  # noqa
 from distutils.util import strtobool  # noqa
 
 
+
 class _LoadArgumentsFromFile(argparse.Action):
     """Source: <https://stackoverflow.com/a/27434050/14471542>"""
 
@@ -90,7 +91,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--initial-cash", type=int, default=100_000, help="Initial amount of money")
     parser.add_argument("--reward-scaling", type=float, help="Reward scaling")
     parser.add_argument("--transaction-cost", type=float, default=0.5, help="Transaction cost in $")
-    parser.add_argument("--start-data-from-index", type=int, default=0, help="Start raw_data from index")
+    parser.add_argument("--start-index", type=int, default=0, help="Start index")
 
     # Algorithm arguments
     parser.add_argument("--env-id", type=str, default="", help="the id of the environment")
@@ -164,8 +165,6 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="Initial value of random action probability")
     parser.add_argument('--exploration-final-eps', type=float, default=0.02,
                         help="Final value of random action probability")
-
-    # TODO: Policy specific arguments
 
     return vars(parser.parse_args()), parser.parse_args()
 

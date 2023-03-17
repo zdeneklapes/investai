@@ -21,10 +21,10 @@ class PortfolioAllocationEnv(gym.Env):
     """Portfolio Allocation Environment using OpenAI gym"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, df: pd.DataFrame, tickers: List[str], features: List[str], start_data_from_index: int = 0):
+    def __init__(self, dataset: pd.DataFrame, tickers: List[str], features: List[str], start_index: int = 0):
         # Immutable
-        self._df: Final = df
-        self._start_from_index: Final = start_data_from_index
+        self._df: Final = dataset
+        self._start_from_index: Final = start_index
         self._tickers: Final = tickers  # Used for: Action and Observation space
         self._features: Final = features  # Used for Observation space
 
