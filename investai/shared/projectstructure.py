@@ -13,6 +13,7 @@ class ProjectStructure:
             raise FileNotFoundError(f"Root directory does not exist: {root}")
         self.root = root
         self.tickers = self.root.joinpath("data/tickers")
+
         self.out: Path = self.root.joinpath("out")
         self.datasets: Path = self.out.joinpath("datasets")
         self.baselines: Path = self.out.joinpath("baselines")

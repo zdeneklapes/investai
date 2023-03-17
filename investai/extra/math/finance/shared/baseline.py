@@ -67,7 +67,8 @@ class Baseline:
                                                            list(weights["minimum_variance"].values()))
             return_max_quadratic_utility = calculate_return_from_weights(self.dataframe.iloc[i].values,
                                                                          self.dataframe.iloc[i - 1].values,
-                                                                         list(weights["maximum_quadratic_utility"].values()))
+                                                                         list(weights[
+                                                                                  "maximum_quadratic_utility"].values()))
             return_max_sharpe = calculate_return_from_weights(self.dataframe.iloc[i].values,
                                                               self.dataframe.iloc[i - 1].values,
                                                               list(weights["maximum_sharpe"].values()))
@@ -142,9 +143,7 @@ def main():
     #
     baseline = Baseline(df, program, bounds=(0, 1))
     baseline.get_returns()
-    baseline.save(program.args.baseline_path
-                  if program.args.baseline_path
-                  else program.project_structure.baselines.joinpath("baseline.csv").as_posix())
+    baseline.save(program.args.baseline_path)
 
 
 if __name__ == '__main__':

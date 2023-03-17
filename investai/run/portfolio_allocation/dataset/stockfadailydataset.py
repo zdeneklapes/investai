@@ -230,9 +230,7 @@ def main():
         tickers=DOW_30_TICKER,
         dataset_split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
-    dataset.save_dataset((program.project_structure.datasets.joinpath(dataset.__class__.__name__.lower() + ".csv"))
-                         if program.args.dataset_path is None
-                         else program.args.dataset_path)
+    dataset.save_dataset(program.args.dataset_path)
 
 
 if __name__ == "__main__":
