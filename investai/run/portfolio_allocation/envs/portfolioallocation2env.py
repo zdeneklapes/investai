@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# TODO: action +1 more action from 30 actions increase to 31 actions, because Agent can also decide for cash
+# TODO: make it more reusable, so change self.features to self.not_include_in_observation_columns
 from typing import Any, Dict, Optional, List, Final
 
 import numpy as np
@@ -17,27 +19,27 @@ from run.shared.memory import Memory
 from shared.utils import calculate_return_from_weights
 
 
-class PortfolioAllocationEnv(gym.Env):
+class PortfolioAllocation2Env(gym.Env):
     """Portfolio Allocation Environment using OpenAI gym"""
     metadata = {'render.modes': ['human']}
 
-    def __init__(self, df: pd.DataFrame, tickers: List[str], features: List[str], start_data_from_index: int = 0):
+    def __init__(self, df: pd.DataFrame, tickers: List[str], columns_to_drop_in_observation: List[str],
+                 start_time: int = 0):
         # Immutable
         self._df: Final = df
-        self._start_from_index: Final = start_data_from_index
+        self._start_time: Final = start_time
         self._tickers: Final = tickers  # Used for: Action and Observation space
-        self._features: Final = features  # Used for Observation space
+        self._columns_to_drop_in_observation: Final = columns_to_drop_in_observation  # Used for Observation space
 
         # Sets: self._data_index, self._portfolio_value, self._memory
         self.__init_environment()
 
         # Inherited
-        self.action_space = spaces.Box(low=0, high=1, shape=(len(self._tickers),))
+        self.action_space = spaces.Box(low=0, high=1, shape=(len(self._tickers) + 1,))  # tickers + 1 cash
         self.observation_space = spaces.Box(low=-np.inf,
                                             high=np.inf,
                                             shape=(len(self._tickers),
-                                                   len(self._features))
-                                            )
+                                                   len(self._df.columns.drop(self._columns_to_drop_in_observation))))
 
     def __init_environment(self):
         """Initialize environment
@@ -46,7 +48,7 @@ class PortfolioAllocationEnv(gym.Env):
         self._memory: Memory of the environment
         :param initial_portfolio_value:
         """
-        self._data_index = self._start_from_index
+        self._time = self._start_time
         self._memory = Memory(df=pd.DataFrame(dict(reward=[0],
                                                    action=[[1 / len(self._tickers)] * len(self._tickers)],
                                                    date=[self._current_data['date'].unique()[0]])))
@@ -54,25 +56,25 @@ class PortfolioAllocationEnv(gym.Env):
     @property
     def _current_data(self) -> pd.DataFrame:
         """self._data_index must be set correctly"""
-        return self._df.loc[self._data_index, :]
+        return self._df.loc[self._time, :]
 
     @property
     def _current_state(self) -> object:
         """self._data_index must be set correctly"""
-        return self._current_data.drop(columns=["date", "tic"])
+        return self._current_data.drop(columns=self._columns_to_drop_in_observation)
 
     @property
     def _terminal(self) -> bool:
         """Check if the episode is terminated"""
         # TODO: portfolio_value <= 0
-        return self._data_index >= len(self._df.index.unique()) - 1
+        return self._time >= len(self._df.index.unique()) - 1
 
     def step(self, action):
         # TODO: Why is softmax used here?
-        self._data_index += 1  # Go to next raw_data (State & Observation Space)
+        self._time += 1  # Go to next raw_data (State & Observation Space)
         normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
-        reward = calculate_return_from_weights(self._df.loc[self._data_index, :]['close'].values,
-                                               self._df.loc[self._data_index - 1, :]['close'].values,
+        reward = calculate_return_from_weights(self._df.loc[self._time, :]['close'].values,
+                                               self._df.loc[self._time - 1, :]['close'].values,
                                                np.array(normalized_actions))
         # Memory
         log_dict = {

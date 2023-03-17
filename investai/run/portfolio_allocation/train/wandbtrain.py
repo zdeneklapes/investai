@@ -14,8 +14,9 @@ from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.test.wandbtest import WandbTest
 from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
-from run.shared.callbacks import WandbCallbackExtendMemory
-from run.shared.callbacks import TensorboardCallback
+from run.portfolio_allocation.envs.portfolioallocation2env import PortfolioAllocation2Env
+from run.shared.callback.wandbcallbackextendmemory import WandbCallbackExtendMemory
+from run.shared.callback.tensorboardcallback import TensorboardCallback
 from run.shared.tickers import DOW_30_TICKER
 from run.shared.algorithmsb3 import ALGORITHM_SB3
 from run.shared.hyperparameters.sweep_configuration import sweep_configuration
@@ -80,10 +81,19 @@ class WandbTrain:
         )
 
     def _init_environment(self):
-        self.program.log.info("Init environment")
-        env = PortfolioAllocationEnv(df=self.dataset.train_dataset, tickers=self.dataset.tickers,
-                                     features=self.dataset.get_features(),
-                                     start_data_from_index=self.program.args.start_data_from_index)
+        env = None
+        if self.program.args.portfolio_allocation_env == 0:
+            self.program.log.info(f"Init environment: {PortfolioAllocationEnv.__class__.__name__}")
+            env = PortfolioAllocationEnv(df=self.dataset.train_dataset,
+                                         tickers=self.dataset.tickers,
+                                         features=self.dataset.get_features(),
+                                         start_data_from_index=self.program.args.start_data_from_index)
+        elif self.program.args.portfolio_allocation_env == 1:
+            self.program.log.info(f"Init environment: {PortfolioAllocation2Env.__class__.__name__}")
+            env = PortfolioAllocation2Env(df=self.dataset.train_dataset,
+                                          tickers=self.dataset.tickers,
+                                          columns_to_drop_in_observation=['date', 'tic'],
+                                          start_time=self.program.args.start_data_from_index)
         env = Monitor(
             env,
             Path(self.program.project_structure.wandb).as_posix(),

@@ -43,12 +43,12 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="Define what percentage of the dataset is used for training")
     parser.add_argument("--baseline-path", "-bp", help="Baseline path", nargs="?", type=str, default=None)
     parser.add_argument("--models", help="Already trained model", nargs="+", )
+    parser.add_argument("--portfolio-allocation-env", help="Portfolio allocation environment", nargs="?", type=int,
+                        default=0)
     parser.add_argument("--stable_baseline", help="Use stable-baselines3", action="store_true", )
     parser.add_argument("--ray", help="Use ray-rllib", action="store_true", )
     parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
-    parser.add_argument("--debug",
-                        help="Debug mode",
-                        **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
+    parser.add_argument("--debug", help="Debug mode", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
     parser.add_argument('--project-verbose', type=int, default=0,
                         help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 

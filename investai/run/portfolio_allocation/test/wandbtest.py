@@ -13,6 +13,7 @@ from run.shared.algorithmsb3 import ALGORITHM_SB3_TYPE
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
 from run.shared.tickers import DOW_30_TICKER
+from run.shared.callback.wandb_util import wandb_summary
 
 
 class WandbTest:
@@ -53,11 +54,12 @@ class WandbTest:
                 wandb.log(log_dict)
             environment.step(action)
         if self.program.is_wandb_enabled():
-            wandb.run.summary["test/total_reward"] = (
-                (environment.envs[0].env._memory.df['reward'] + 1.0).cumprod().iloc[-1]
-            )
-            wandb.run.summary["test/start_date"] = environment.envs[0].env._df['date'].unique()[0]
-            wandb.run.summary["test/end_date"] = environment.envs[0].env._df['date'].unique()[-1]
+            info = {"test/total_reward": (environment.envs[0].env._memory.df['reward'] + 1.0).cumprod().iloc[-1],
+                    # TODO: Add sharpe ratio
+                    # TODO: reward annualized
+                    "test/start_date": environment.envs[0].env._df['date'].unique()[0],
+                    "test/end_date": environment.envs[0].env._df['date'].unique()[-1], }
+            wandb_summary(info)
 
     # def test_model(self, model_path: Path) -> None:
     #     # Get files
