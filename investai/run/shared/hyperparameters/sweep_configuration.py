@@ -196,7 +196,7 @@ sweep_configuration = {
         # 'device': Union,
         # '_init_setup_model': bool,
         'batch_size': {
-            "values": [32, 64, 128, 256, 512],
+            "values": [32, 64, 128, 256, 512, 1024, 2048, 4096, 8192],
         },
         'n_epochs': {'min': 1, 'max': 10},
         'clip_range': {"min": 0.1, "max": 0.3},
