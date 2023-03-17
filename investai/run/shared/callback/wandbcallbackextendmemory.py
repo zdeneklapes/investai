@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from typing import Optional, Literal
 
-import numpy as np
 import pandas as pd
 import wandb
 from wandb.integration.sb3 import WandbCallback
 
 from shared.utils import calculate_sharpe_ratio
 from run.shared.callback.wandb_util import wandb_summary
+from run.shared.memory import Memory
 
 
 class WandbCallbackExtendMemory(WandbCallback):
@@ -22,28 +22,28 @@ class WandbCallbackExtendMemory(WandbCallback):
         return super().__init__(verbose, model_save_path, model_save_freq, gradient_save_freq, log)
 
     def _on_step(self) -> bool:
-        for index, env in enumerate(self.locals['env'].envs):
-            log_dict = {f"env/{index}/train/reward": self.locals["rewards"][0],
-                        f"env/{index}/train/action": self.locals["actions"][0],
-                        f"env/{index}/train/observation": self.locals["new_obs"][0],
-                        f"env/{index}/train/date": self.locals["infos"][0]['date'], }
+        memory_dict: Memory = self.locals['env'].envs[0].unwrapped.memory.df.iloc[-1].to_dict()
+        del memory_dict['action']
+        del memory_dict['date']
+        for _, _ in enumerate(self.locals['env'].envs):
+            log_dict = {f"memory/train_{k}": v for k, v in memory_dict.items()}
             wandb.log(log_dict)
         return super()._on_step()
 
     def _on_training_end(self) -> None:
-        df: pd.DataFrame = getattr(self.locals['env'].envs[0].unwrapped, '_df')
-        rewards: np.ndarray = self.locals["replay_buffer"].rewards[:self.num_timesteps]
+        dataset: pd.DataFrame = self.locals['env'].envs[0].unwrapped.dataset
+        memory: Memory = self.locals['env'].envs[0].unwrapped.memory
         info = {
             # Rewards
-            "train/total_reward": (rewards + 1).cumprod()[-1],
+            "train/total_reward": (memory.df['reward'] + 1).cumprod().iloc[-1],
             # TODO: reward annualized
             # Dates
-            "train/dataset_start_date": df['date'].unique()[0],
-            "train/dataset_end_date": df['date'].unique()[-1],
-            "train/start_date": df['date'].unique()[0],
-            "train/end_date": self.locals['infos'][0]['date'],
+            "train/dataset_start_date": dataset['date'].unique()[0],
+            "train/dataset_end_date": dataset['date'].unique()[-1],
+            "train/start_date": dataset['date'].unique()[0],
+            "train/end_date": memory.df['date'].iloc[-1],
             # Ratios
-            "train/sharpe_ratio": calculate_sharpe_ratio(rewards),
+            "train/sharpe_ratio": calculate_sharpe_ratio(memory.df['reward']),
             # TODO: Calmar ratio
         }
         wandb_summary(info)

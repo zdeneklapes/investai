@@ -80,7 +80,7 @@ class PortfolioAllocationEnv(gym.Env):
             "action": normalized_actions,
             "date": self._current_data['date'].unique()[0]
         }
-        self._memory.append(**log_dict)
+        self._memory.concat(**log_dict)
 
         # Observation, Reward, Terminated, Truncated, Info, Done
         return self._current_state, reward, self._terminal, log_dict
