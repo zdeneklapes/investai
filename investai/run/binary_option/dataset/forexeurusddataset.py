@@ -1,38 +1,12 @@
 # -*- coding: utf-8 -*-
-from os import getenv
-from pathlib import Path
 from typing import Literal
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 from finta import TA
-from tvDatafeed import TvDatafeed, Interval
+from tvDatafeed import Interval, TvDatafeed
 
-from shared.Args import get_argparse
-from shared.utils import reload_module  # noqa # pylint: disable=unused-import
-from project_configs.experiment_dir import ExperimentDir
-
-TRAIN_DATE_START = '2019-01-01'
-TRAIN_DATE_END = '2020-01-01'
-TEST_DATE_START = '2020-01-01'
-TEST_DATE_END = '2021-01-01'
-DATASET_PATH = 'out/dataset.csv'
-DEBUG = getenv('DEBUG', False)
-
-
-def calculate_binary_profit(trades_amount: int, payout_rate: float, success_rate: float):
-    # Trading stats
-    profit_trades = success_rate * trades_amount
-    loss_trades = (1 - success_rate) * trades_amount
-
-    # Calculate profit and loss
-    profit = profit_trades * (1 + payout_rate)
-    loss = loss_trades * 1
-
-    # Results
-    print(f"{profit=}")
-    print(f"{loss=}")
-    print(f"{profit-loss=}")
+from run.binary_option.main import DATASET_PATH
 
 
 class ForexDataset:
@@ -118,97 +92,10 @@ class ForexDataset:
         """Load dataset"""
 
 
-class Train:
-    def __init__(self):
-        # TODO: load dataset
-        self.dataset: ForexDataset = None
-        self.model = None
-
-        # TODO: train
-
-        # TODO: save model
-
-    def train(self) -> None:
-        pass
-
-    def save_model(self) -> None:
-        pass
-
-    def load_model(self) -> None:
-        pass
+def main():
+    # TODO
+    pass
 
 
-class Test:
-    def __init__(self):
-        self.dataset = None
-        self.model = None
-        self.results = None
-
-    def test(self) -> None:
-        pass
-
-    def save_results(self) -> None:
-        pass
-
-    def load_results(self) -> None:
-        pass
-
-    def plot_results(self) -> None:
-        pass
-
-
-def t1():
-    forex_dataset = ForexDataset()
-    data = forex_dataset.preprocess()
-    corr_pearson = data.corr(method='pearson')
-    corr_kendall = data.corr(method='kendall')
-    corr_spearman = data.corr(method='spearman')
-    pearson_triu = pd.DataFrame(np.triu(corr_pearson.T).T, corr_spearman.columns, corr_pearson.columns)
-    pearson_threshhold = pearson_triu[(pearson_triu > 0.7) & (pearson_triu < 1)]
-
-    return {
-        'raw_data': data,
-        'pearson': corr_pearson,
-        'kendall': corr_kendall,
-        'spearman': corr_spearman,
-        'pearson_triu': pearson_triu,
-        'pearson_threshold': pearson_threshhold,
-    }
-
-
-def t2():
-    forex_dataset = ForexDataset()
-    data = forex_dataset.download("EURUSD", exchange='OANDA', interval=Interval.in_1_minute, n_bars=1000)
-    return {
-        'raw_data': data,
-    }
-
-
-def t3():
-    forex_dataset = ForexDataset()
-    df = forex_dataset.preprocess()
-    return {
-        'raw_data': df,
-    }
-
-
-if __name__ == "__main__":
-    args_vars, args = get_argparse()
-    experiment_dir = ExperimentDir(Path(__file__).parent)
-    experiment_dir.create_dirs()
-    # TODO: Create all unnesessary folders
-
-    if DEBUG:
-        forex_dataset = ForexDataset()
-        df = forex_dataset.preprocess()
-    if not DEBUG:
-        if args.dataset:
-            forex_dataset = ForexDataset()
-            forex_dataset.preprocess()
-            forex_dataset.save()
-        if args.train:
-            train = Train()
-            train.train()
-        if args.test:
-            test = Test()
-            test.test()
+if __name__ == '__main__':
+    main()

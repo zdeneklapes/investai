@@ -3,7 +3,6 @@
 # TODO: Add to action +1 more action from 30 actions increase to 31 actions, because Agent can als decide for cash
 # TODO: next datasets
 # TODO: Put into dataset change of price form one index to another index: e.g. 10->15=0.5, 10->5=-0.5
-import os
 from copy import deepcopy  # noqa
 
 import wandb
@@ -154,9 +153,6 @@ def main():
 
     program = Program()
     load_dotenv(dotenv_path=program.args.folder_root.joinpath(".env").as_posix())
-    program.log.info(os.environ.get("WANDB_DIR"))
-    exit()
-
 
     for algorithm in program.args.algorithms:
         if program.args.train:

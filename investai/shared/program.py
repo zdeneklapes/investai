@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from os import getenv
 from typing import Union
 from argparse import Namespace
 import attr
@@ -13,11 +12,6 @@ from loguru import logger
 @attr.define
 class Program:
     args: Union[vars, Namespace] = attr.field(default=parse_arguments()[1])
-    train_date_start: str = attr.field(default='xxx-xx-xx')
-    train_date_end: str = attr.field(default='xxx-xx-xx')
-    test_date_start: str = attr.field(default='xxx-xx-xx')
-    test_date_end: str = attr.field(default='xxx-xx-xx')
-    debug = getenv('DEBUG', None)
     log: logger = attr.field(default=logger)
 
     def init_logger(self, file_path: str):
