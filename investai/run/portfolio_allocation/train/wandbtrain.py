@@ -154,7 +154,9 @@ def main():
 
     program = Program()
     load_dotenv(dotenv_path=program.args.folder_root.joinpath(".env").as_posix())
-    program.log.info(os.environ.get("TEST"))
+    program.log.info(os.environ.get("WANDB_DIR"))
+    exit()
+
 
     for algorithm in program.args.algorithms:
         if program.args.train:

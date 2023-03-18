@@ -31,23 +31,23 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     # nargs="+": 1 or more arguments
 
     def postprocess_path_arguments(args: Namespace):
-        def create_dirs(args):
-            args.folder_root.mkdir(parents=True, exist_ok=True)
-            args.folder_ticker.mkdir(parents=True, exist_ok=True)
-            args.folder_out.mkdir(parents=True, exist_ok=True)
-            args.folder_dataset.mkdir(parents=True, exist_ok=True)
-            args.folder_baseline.mkdir(parents=True, exist_ok=True)
-            args.folder_model.mkdir(parents=True, exist_ok=True)
-            args.folder_tensorboard.mkdir(parents=True, exist_ok=True)
-            args.folder_wandb.mkdir(parents=True, exist_ok=True)
+        def create_dirs(folder: Path):
+            folder.mkdir(parents=True, exist_ok=True)
 
+        #
         if args.folder_ticker is None:  args.folder_ticker = args.folder_root.joinpath("data/ticker")
         if args.folder_out is None:  args.folder_out: Path = args.folder_root.joinpath("out")
         if args.folder_dataset is None:  args.folder_dataset: Path = args.folder_out.joinpath("dataset")
         if args.folder_baseline is None:  args.folder_baseline: Path = args.folder_out.joinpath("baseline")
         if args.folder_model is None:  args.folder_model: Path = args.folder_out.joinpath("model")
         if args.folder_tensorboard is None:  args.folder_tensorboard: Path = args.folder_model.joinpath("tensorboard")
-        if args.folder_wandb is None:  args.folder_wandb: Path = args.folder_model.joinpath("wandb")
+
+        #
+        for folder in [args.folder_ticker, args.folder_out, args.folder_dataset, args.folder_baseline,
+                       args.folder_model, args.folder_tensorboard, ]:
+            create_dirs(folder)
+
+        #
         create_dirs(args)
         return args
 
