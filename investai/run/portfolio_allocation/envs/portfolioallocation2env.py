@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# TODO Dataset: TA
+# TODO Dataset: TA + FA
 # TODO: action +1 more action from 30 actions increase to 31 actions, because Agent can also decide for cash
 # TODO: make it more reusable, so change self.features to self.not_include_in_observation_columns
 from typing import Any, Dict, Optional, List, Final

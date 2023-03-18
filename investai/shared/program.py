@@ -6,14 +6,12 @@ import attr
 
 from torch.utils.tensorboard import SummaryWriter
 
-from shared.projectstructure import ProjectStructure
 from shared.arguments import parse_arguments
 from loguru import logger
 
 
 @attr.define
 class Program:
-    project_structure: ProjectStructure = attr.field(default=ProjectStructure())
     args: Union[vars, Namespace] = attr.field(default=parse_arguments()[1])
     train_date_start: str = attr.field(default='xxx-xx-xx')
     train_date_end: str = attr.field(default='xxx-xx-xx')
@@ -33,8 +31,8 @@ class Program:
         return logger
 
     def __attrs_post_init__(self):
-        self.log = self.init_logger(self.project_structure.out.joinpath('run.log').as_posix())
-        writer = SummaryWriter(self.project_structure.tensorboard.as_posix())
+        self.log = self.init_logger(self.args.folder_out.joinpath('run.log').as_posix())
+        writer = SummaryWriter(self.args.folder_tensorboard.as_posix())
         writer.add_text(
             'hyperparameters',
             "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key} |{value}|" for key, value in vars(self.args).items()])),

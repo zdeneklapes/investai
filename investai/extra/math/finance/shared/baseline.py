@@ -99,8 +99,8 @@ def t1():
 
     program = Program()
     program.args.project_verbose = 1
-    program.args.dataset_path = program.project_structure.datasets.joinpath("stockfadailydataset.csv").as_posix()
-    load_dotenv(dotenv_path=program.project_structure.root.joinpath(".env").as_posix())
+    program.args.dataset_path = program.args.folder_dataset.joinpath("stockfadailydataset.csv").as_posix()
+    load_dotenv(dotenv_path=program.args.folder_root.joinpath(".env").as_posix())
 
     dataset = StockFaDailyDataset(program=program,
                                   tickers=DOW_30_TICKER,
@@ -127,8 +127,8 @@ def main():
 
     program = Program()
     program.args.project_verbose = 1
-    program.args.dataset_path = program.project_structure.datasets.joinpath("stockfadailydataset.csv").as_posix()
-    load_dotenv(dotenv_path=program.project_structure.root.joinpath(".env").as_posix())
+    program.args.dataset_path = program.args.folder_dataset.joinpath("stockfadailydataset.csv").as_posix()
+    load_dotenv(dotenv_path=program.args.folder_root.joinpath(".env").as_posix())
 
     #
     dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER,

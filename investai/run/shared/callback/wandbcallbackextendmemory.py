@@ -22,11 +22,8 @@ class WandbCallbackExtendMemory(WandbCallback):
         return super().__init__(verbose, model_save_path, model_save_freq, gradient_save_freq, log)
 
     def _on_step(self) -> bool:
-        memory_dict: Memory = self.locals['env'].envs[0].unwrapped.memory.df.iloc[-1].to_dict()
-        del memory_dict['action']
-        del memory_dict['date']
-        for _, _ in enumerate(self.locals['env'].envs):
-            log_dict = {f"memory/train_{k}": v for k, v in memory_dict.items()}
+        for index, env in enumerate(self.locals['env'].envs):
+            log_dict = {"memory/train_reward": env.unwrapped.memory.df.iloc[-1]['reward']}
             wandb.log(log_dict)
         return super()._on_step()
 

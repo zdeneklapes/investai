@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 import os
+from pathlib import Path
 import argparse
 from argparse import Namespace
 from typing import Tuple
 from pprint import pprint  # noqa
 from distutils.util import strtobool  # noqa
 
+from shared.utils import find_git_root
 
 
 class _LoadArgumentsFromFile(argparse.Action):
@@ -22,10 +24,32 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     Parse arguments from command line or file
     :return: Tuple[vars, Namespace]
     """
+
     # TODO: Use this: type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True
     # nargs="?": 1 optional argument
     # nargs="*": 0 or more arguments
     # nargs="+": 1 or more arguments
+
+    def postprocess_path_arguments(args: Namespace):
+        def create_dirs(args):
+            args.folder_root.mkdir(parents=True, exist_ok=True)
+            args.folder_ticker.mkdir(parents=True, exist_ok=True)
+            args.folder_out.mkdir(parents=True, exist_ok=True)
+            args.folder_dataset.mkdir(parents=True, exist_ok=True)
+            args.folder_baseline.mkdir(parents=True, exist_ok=True)
+            args.folder_model.mkdir(parents=True, exist_ok=True)
+            args.folder_tensorboard.mkdir(parents=True, exist_ok=True)
+            args.folder_wandb.mkdir(parents=True, exist_ok=True)
+
+        if args.folder_ticker is None:  args.folder_ticker = args.folder_root.joinpath("data/ticker")
+        if args.folder_out is None:  args.folder_out: Path = args.folder_root.joinpath("out")
+        if args.folder_dataset is None:  args.folder_dataset: Path = args.folder_out.joinpath("dataset")
+        if args.folder_baseline is None:  args.folder_baseline: Path = args.folder_out.joinpath("baseline")
+        if args.folder_model is None:  args.folder_model: Path = args.folder_out.joinpath("model")
+        if args.folder_tensorboard is None:  args.folder_tensorboard: Path = args.folder_model.joinpath("tensorboard")
+        if args.folder_wandb is None:  args.folder_wandb: Path = args.folder_model.joinpath("wandb")
+        create_dirs(args)
+        return args
 
     parser = argparse.ArgumentParser()
     BOOL_AS_STR_ARGUMENTS_for_parser_add_argument = \
@@ -39,13 +63,13 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="Will train models based on hyper parameters")
     parser.add_argument("--test", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument,
                         help="Will test trained models")
-    parser.add_argument("--dataset-path", "-dp", help="Will test trained models", nargs="?", type=str, default=None)
+    parser.add_argument("--dataset-path", "-dp", help="Will test trained models", nargs="?", type=Path, default=None)
     parser.add_argument("--dataset-split-coef", type=float, default=0.6,
                         help="Define what percentage of the dataset is used for training")
     parser.add_argument("--baseline-path", "-bp", help="Baseline path", nargs="?", type=str, default=None)
     parser.add_argument("--models", help="Already trained model", nargs="+", )
     parser.add_argument("--portfolio-allocation-env", help="Portfolio allocation environment", nargs="?", type=int,
-                        default=0)
+                        default=1)
     parser.add_argument("--stable_baseline", help="Use stable-baselines3", action="store_true", )
     parser.add_argument("--ray", help="Use ray-rllib", action="store_true", )
     parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
@@ -53,21 +77,19 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument('--project-verbose', type=int, default=0,
                         help="Verbosity level 0: not output 1: info 2: debug, default: 0")
 
-    # Wandb arguments
+    # Project structure arguments
+    parser.add_argument("--folder-root", "-pr", help="Project root", nargs="?", type=Path,
+                        default=find_git_root(Path(__file__).parent))
+    parser.add_argument("--folder-ticker", help="Path to ticker data folder", nargs="?", type=Path, default=None)
+    parser.add_argument("--folder-out", help="Path to output data folder", nargs="?", type=Path, default=None)
+    parser.add_argument("--folder-dataset", help="Path to datasets folder", nargs="?", type=Path, default=None)
+    parser.add_argument("--folder-baseline", help="Path to baselines folder", nargs="?", type=Path, default=None)
+    parser.add_argument("--folder-model", help="Path to models folder", nargs="?", type=Path, default=None)
+    parser.add_argument("--folder-tensorboard", help="Path to tensorboard folder", nargs="?", type=Path, default=None)
+
+    # W&B arguments
     parser.add_argument("--wandb", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, help="Wandb logging", )
     parser.add_argument("--wandb-sweep", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, help="Wandb logging", )
-    parser.add_argument("--wandb-project", default=os.environ.get("WANDB_PROJECT", "investai"),
-                        help="Wandb project name")
-    parser.add_argument("--wandb-dir", default=os.environ.get("WANDB_DIR", None),
-                        help="Wandb directory")
-    parser.add_argument("--wandb-group", default=os.environ.get("WANDB_RUN_GROUP", None),
-                        help="Wandb run group")
-    parser.add_argument("--wandb-job-type", default=os.environ.get("WANDB_JOB_TYPE", None),
-                        help="Wandb job type")
-    parser.add_argument("--wandb-mode", default=os.environ.get("WANDB_MODE", None),
-                        help="Wandb mode")
-    parser.add_argument("--wandb-tags", default=os.environ.get("WANDB_TAGS", None),
-                        help="Wandb tags")
     parser.add_argument("--wandb-sweep-count", type=int, default=1, help="Wandb sweep count")
     parser.add_argument("--wandb-model-save", action="store_true", help="Save model")
     parser.add_argument("--wandb-model-save-freq", type=int, default=100,
@@ -76,6 +98,16 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="Save gradient every x steps (0 = no checkpoint)")
     parser.add_argument("--wandb-verbose", type=int, default=0,
                         help="Verbosity level 0: not output 1: info 2: debug, default: 0")
+
+    # W&B Environment variables
+    parser.add_argument("--wandb-entity", default=os.environ.get("WANDB_ENTITY", None), help="Wandb entity")
+    parser.add_argument("--wandb-project", default=os.environ.get("WANDB_PROJECT", "portfolio-allocation"),
+                        help="Wandb project name")
+    parser.add_argument("--wandb-tags", default=os.environ.get("WANDB_TAGS", None), help="Wandb tags")
+    parser.add_argument("--wandb-job-type", default=os.environ.get("WANDB_JOB_TYPE", None), help="Wandb job type")
+    parser.add_argument("--wandb-run-group", default=os.environ.get("WANDB_RUN_GROUP", None), help="Wandb run group")
+    parser.add_argument("--wandb-mode", default=os.environ.get("WANDB_MODE", None), help="Wandb mode")
+    parser.add_argument("--wandb-dir", default=os.environ.get("WANDB_DIR", None), help="Wandb directory")
 
     # Training arguments
     parser.add_argument("--algorithms", type=str, default=["ppo"], choices=["ppo", "a2c", "sac", "td3", "dqn", "ddpg"],
@@ -166,16 +198,13 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument('--exploration-final-eps', type=float, default=0.02,
                         help="Final value of random action probability")
 
-    return vars(parser.parse_args()), parser.parse_args()
+    args = postprocess_path_arguments(parser.parse_args())
+    return vars(args), args
 
 
 def main():
-    print(f"==== START {main.__name__}() ====")
-    print("=== Parsing arguments ===")
-    args_as_dict, args = parse_arguments()
-    pprint(f"args_as_dict: {args_as_dict}")
-    pprint(args.wandb_sweep)
-    print(f"==== END {main.__name__}() ====")
+    args_dict, args = parse_arguments()
+    pprint(args_dict)
 
 
 if __name__ == '__main__':

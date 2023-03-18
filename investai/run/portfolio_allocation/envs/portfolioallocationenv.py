@@ -46,7 +46,7 @@ class PortfolioAllocationEnv(gym.Env):
         self._memory: Memory of the environment
         :param initial_portfolio_value:
         """
-        self._data_index = self._start_from_index
+        self._time = self._start_from_index
         self._memory = Memory(df=pd.DataFrame(dict(reward=[0],
                                                    action=[[1 / len(self._tickers)] * len(self._tickers)],
                                                    date=[self._current_data['date'].unique()[0]])))
@@ -54,7 +54,7 @@ class PortfolioAllocationEnv(gym.Env):
     @property
     def _current_data(self) -> pd.DataFrame:
         """self._data_index must be set correctly"""
-        return self._df.loc[self._data_index, :]
+        return self._df.loc[self._time, :]
 
     @property
     def _current_state(self) -> object:
@@ -65,25 +65,25 @@ class PortfolioAllocationEnv(gym.Env):
     def _terminal(self) -> bool:
         """Check if the episode is terminated"""
         # TODO: portfolio_value <= 0
-        return self._data_index >= len(self._df.index.unique()) - 1
+        return self._time >= len(self._df.index.unique()) - 1
 
     def step(self, action):
         # TODO: Why is softmax used here?
-        self._data_index += 1  # Go to next raw_data (State & Observation Space)
+        self._time += 1  # Go to next raw_data (State & Observation Space)
         normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
-        reward = calculate_return_from_weights(self._df.loc[self._data_index, :]['close'].values,
-                                               self._df.loc[self._data_index - 1, :]['close'].values,
+        reward = calculate_return_from_weights(self._df.loc[self._time, :]['close'].values,
+                                               self._df.loc[self._time - 1, :]['close'].values,
                                                np.array(normalized_actions))
         # Memory
-        log_dict = {
+        info = pd.DataFrame({
             "reward": reward,
             "action": normalized_actions,
             "date": self._current_data['date'].unique()[0]
-        }
-        self._memory.concat(**log_dict)
+        })
+        self._memory.concat(**info)
 
         # Observation, Reward, Terminated, Truncated, Info, Done
-        return self._current_state, reward, self._terminal, log_dict
+        return self._current_state, reward, self._terminal, info.to_dict()
 
     def reset(
         self,

@@ -3,6 +3,7 @@
 # TODO: Add to action +1 more action from 30 actions increase to 31 actions, because Agent can als decide for cash
 # TODO: next datasets
 # TODO: Put into dataset change of price form one index to another index: e.g. 10->15=0.5, 10->5=-0.5
+import os
 from copy import deepcopy  # noqa
 
 import wandb
@@ -24,7 +25,7 @@ class WandbTrain:
         self.dataset: StockFaDailyDataset = dataset
         self.program: Program = program
         self.algorithm: str = algorithm
-        self.model_path = self.program.project_structure.models.joinpath(f"{self.algorithm}.zip")
+        self.model_path = self.program.args.folder_model.joinpath(f"{self.algorithm}.zip")
 
     def _init_hyper_parameters(self) -> dict:
         """Hyperparameters for algorithm"""
@@ -50,19 +51,20 @@ class WandbTrain:
                       for key in algorithm_init_parameters
                       if key in self.program.args.__dict__}
 
-        config["tensorboard_log"] = self.program.project_structure.tensorboard.as_posix()
+        config["tensorboard_log"] = self.program.args.folder_tensorboard.as_posix()
         return config
 
     def _init_wandb(self):
         self.program.log.info("Init wandb")
         wandb.init(
             # Environment variables
+            entity=self.program.args.wandb_entity,
             project=self.program.args.wandb_project,
-            dir=self.program.args.wandb_dir,
-            group=self.program.args.wandb_group,
+            group=self.program.args.wandb_run_group,
             job_type=self.program.args.wandb_job_type,
             mode=self.program.args.wandb_mode,
             tags=self.program.args.wandb_tags,
+            dir=self.program.args.wandb_dir.as_posix(),
             # Other
             config=(None if self.program.args.wandb_sweep else self._init_hyper_parameters()),
             notes=f"Portfolio allocation with {self.algorithm} algorithm.",
@@ -151,19 +153,20 @@ def main():
     from dotenv import load_dotenv
 
     program = Program()
-    load_dotenv(dotenv_path=program.project_structure.root.joinpath(".env").as_posix())
+    load_dotenv(dotenv_path=program.args.folder_root.joinpath(".env").as_posix())
+    program.log.info(os.environ.get("TEST"))
 
     for algorithm in program.args.algorithms:
         if program.args.train:
             dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
             dataset.load_dataset(program.args.dataset_path)
             wandb_train = WandbTrain(program=program, dataset=dataset, algorithm=algorithm)
-            if program.args.wandb_sweep:
+            if not program.args.wandb_sweep:
+                wandb_train.train()
+            else:
                 sweep_id = wandb.sweep(sweep=sweep_configuration, project=program.args.wandb_project)
                 wandb.agent(sweep_id, function=wandb_train.train, project=program.args.wandb_project,
                             count=program.args.wandb_sweep_count)
-            else:
-                wandb_train.train()
 
 
 if __name__ == '__main__':

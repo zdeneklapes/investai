@@ -35,9 +35,7 @@ class WandbTest:
             environment.step(action)
             if self.program.is_wandb_enabled():
                 memory_dict = environment.envs[0].env.memory.df.iloc[-1].to_dict()
-                del memory_dict['action']
-                del memory_dict['date']
-                log_dict = {f"memory/test_{k}": v for k, v in memory_dict.items()}
+                log_dict = {"memory/test_reward": memory_dict['reward']}
                 wandb.log(log_dict)
         if self.program.is_wandb_enabled():
             df = environment.envs[0].env.dataset
@@ -56,6 +54,8 @@ class WandbTest:
                 # TODO: Calmar ratio
             }
             wandb_summary(info)
+            # TODO: Charts baselines vs model
+            # wandb.plot_table()
 
 
 def get_best_model(self): pass
@@ -65,7 +65,7 @@ def main():
     from dotenv import load_dotenv
 
     program = Program()
-    load_dotenv(dotenv_path=program.project_structure.root.as_posix())
+    load_dotenv(dotenv_path=program.args.folder_root.as_posix())
     dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
     dataset.load_dataset(program.args.dataset_path)
 
