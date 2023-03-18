@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""TODO add docstring"""
 import argparse
 import os
 from argparse import Namespace
@@ -25,7 +26,6 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     :return: Tuple[vars, Namespace]
     """
 
-    # TODO: Use this: type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True
     # nargs="?": 1 optional argument
     # nargs="*": 0 or more arguments
     # nargs="+": 1 or more arguments
