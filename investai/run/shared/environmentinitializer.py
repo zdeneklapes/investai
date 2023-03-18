@@ -38,7 +38,7 @@ class EnvironmentInitializer:
                 start_index=self.program.args.start_index,
             )
         env = Monitor(
-            env, Path(self.program.args.folder_wandb).as_posix(), allow_early_resets=True
+            env, Path(self.program.args.wandb_dir).as_posix(), allow_early_resets=True
         )  # stable_baselines3.common.monitor.Monitor
         env = DummyVecEnv([lambda: env])
         return env
