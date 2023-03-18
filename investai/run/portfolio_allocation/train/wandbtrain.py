@@ -4,6 +4,7 @@
 # TODO: next datasets
 # TODO: Put into dataset change of price form one index to another index: e.g. 10->15=0.5, 10->5=-0.5
 from copy import deepcopy  # noqa
+from pprint import pprint  # noqa
 
 import wandb
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
@@ -11,7 +12,6 @@ from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.test.wandbtest import WandbTest
 from run.shared.callback.wandbcallbackextendmemory import WandbCallbackExtendMemory
-# from run.shared.callback.tensorboardcallback import TensorboardCallback
 from run.shared.tickers import DOW_30_TICKER
 from run.shared.algorithmsb3 import ALGORITHM_SB3
 from run.shared.hyperparameters.sweep_configuration import sweep_configuration
@@ -149,10 +149,9 @@ class WandbTrain:
 
 
 def main():
-    from dotenv import load_dotenv
-
     program = Program()
-    load_dotenv(dotenv_path=program.args.folder_root.joinpath(".env").as_posix())
+    pprint(vars(program.args))
+    exit()
 
     for algorithm in program.args.algorithms:
         if program.args.train:

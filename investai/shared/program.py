@@ -1,20 +1,23 @@
 # -*- coding: utf-8 -*-
-from typing import Union
 from argparse import Namespace
-import attr
 
 from torch.utils.tensorboard import SummaryWriter
 
 from shared.arguments import parse_arguments
 from loguru import logger
 
+from shared.utils import find_git_root
 
-@attr.define
+
 class Program:
-    args: Union[vars, Namespace] = attr.field(default=parse_arguments()[1])
-    log: logger = attr.field(default=logger)
+    def __init__(self):
+        from dotenv import load_dotenv
+        load_dotenv(dotenv_path=find_git_root(__file__).joinpath(".env").as_posix())
+        self.args: Namespace = parse_arguments()[1]
+        self.log: logger = logger
+        self.__post_init__()
 
-    def init_logger(self, file_path: str):
+    def __init_logger__(self, file_path: str):
         from loguru import logger
         open(file_path, 'w').close()  # clear log file
         logger.add(file_path,
@@ -24,8 +27,8 @@ class Program:
                    enqueue=True)
         return logger
 
-    def __attrs_post_init__(self):
-        self.log = self.init_logger(self.args.folder_out.joinpath('run.log').as_posix())
+    def __post_init__(self):
+        self.log = self.__init_logger__(self.args.folder_out.joinpath('run.log').as_posix())
         writer = SummaryWriter(self.args.folder_tensorboard.as_posix())
         writer.add_text(
             'hyperparameters',

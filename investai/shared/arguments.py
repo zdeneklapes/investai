@@ -89,42 +89,43 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--folder-tensorboard", help="Path to tensorboard folder", nargs="?", type=Path, default=None)
 
     # W&B arguments
-    parser.add_argument("--wandb", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, help="Wandb logging", )
-    parser.add_argument("--wandb-sweep", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, help="Wandb logging", )
-    parser.add_argument("--wandb-sweep-count", type=int, default=1, help="Wandb sweep count")
-    parser.add_argument("--wandb-model-save", action="store_true", help="Save model")
-    parser.add_argument("--wandb-model-save-freq", type=int, default=100,
-                        help="Save model every x steps (0 = no checkpoint)")
-    parser.add_argument("--wandb-gradient-save-freq", type=int, default=100,
-                        help="Save gradient every x steps (0 = no checkpoint)")
-    parser.add_argument("--wandb-verbose", type=int, default=0,
-                        help="Verbosity level 0: not output 1: info 2: debug, default: 0")
+    parser.add_argument("--wandb", help="Wandb logging", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, )
+    parser.add_argument("--wandb-sweep", help="Wandb logging", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument, )
+    parser.add_argument("--wandb-sweep-count", help="Wandb sweep count", type=int, default=1, )
+    parser.add_argument("--wandb-model-save", help="Save model", action="store_true", )
+    parser.add_argument("--wandb-model-save-freq", help="Save model every x steps (0 = no checkpoint)", type=int,
+                        default=100, )
+    parser.add_argument("--wandb-gradient-save-freq", help="Save gradient every x steps (0 = no checkpoint)", type=int,
+                        default=100, )
+    parser.add_argument("--wandb-verbose", help="Verbosity level 0: not output 1: info 2: debug, default: 0", type=int,
+                        default=0, )
 
     # W&B Environment variables
-    parser.add_argument("--wandb-entity", default=os.environ.get("WANDB_ENTITY", None), help="Wandb entity")
-    parser.add_argument("--wandb-project", default=os.environ.get("WANDB_PROJECT", "portfolio-allocation"),
-                        help="Wandb project name")
-    parser.add_argument("--wandb-tags", default=os.environ.get("WANDB_TAGS", None), help="Wandb tags")
-    parser.add_argument("--wandb-job-type", default=os.environ.get("WANDB_JOB_TYPE", None), help="Wandb job type")
-    parser.add_argument("--wandb-run-group", default=os.environ.get("WANDB_RUN_GROUP", None), help="Wandb run group")
-    parser.add_argument("--wandb-mode", default=os.environ.get("WANDB_MODE", None), help="Wandb mode")
-    parser.add_argument("--wandb-dir", default=os.environ.get("WANDB_DIR", None), help="Wandb directory")
+    parser.add_argument("--wandb-entity", help="Wandb entity", default=os.environ.get("WANDB_ENTITY", None), )
+    parser.add_argument("--wandb-project", help="Wandb project name",
+                        default=os.environ.get("WANDB_PROJECT", "portfolio-allocation"), )
+    parser.add_argument("--wandb-tags", help="Wandb tags", default=os.environ.get("WANDB_TAGS", None), )
+    parser.add_argument("--wandb-job-type", help="Wandb job type", default=os.environ.get("WANDB_JOB_TYPE", None), )
+    parser.add_argument("--wandb-run-group", help="Wandb run group", default=os.environ.get("WANDB_RUN_GROUP", None), )
+    parser.add_argument("--wandb-mode", help="Wandb mode", default=os.environ.get("WANDB_MODE", None), )
+    parser.add_argument("--wandb-dir", help="Wandb directory", type=Path, default=os.environ.get("WANDB_DIR", None), )
 
     # Training arguments
-    parser.add_argument("--algorithms", type=str, default=["ppo"], choices=["ppo", "a2c", "sac", "td3", "dqn", "ddpg"],
-                        nargs="+", help="the algorithm to use")
-    parser.add_argument("--torch-deterministic", action="store_true",
-                        help="if toggled, `torch.backends.cudnn.deterministic=False`")
-    parser.add_argument("--track", action="store_true",
-                        help="if toggled, this experiment will be tracked with Weights and Biases")
-    parser.add_argument("--capture-video", action="store_true",
-                        help="whether to capture videos of the agent performances (check out `videos` folder)")
+    parser.add_argument("--algorithms", help="the algorithm to use",
+                        type=str, default=["ppo"], choices=["ppo", "a2c", "sac", "td3", "dqn", "ddpg"], nargs="+", )
+    parser.add_argument("--torch-deterministic", help="if toggled, `torch.backends.cudnn.deterministic=False`",
+                        action="store_true", )
+    parser.add_argument("--track", help="if toggled, this experiment will be tracked with Weights and Biases",
+                        action="store_true", )
+    parser.add_argument("--capture-video",
+                        help="whether to capture videos of the agent performances (check out `videos` folder)",
+                        action="store_true", )
 
     # Environment arguments
-    parser.add_argument("--initial-cash", type=int, default=100_000, help="Initial amount of money")
-    parser.add_argument("--reward-scaling", type=float, help="Reward scaling")
-    parser.add_argument("--transaction-cost", type=float, default=0.5, help="Transaction cost in $")
-    parser.add_argument("--start-index", type=int, default=0, help="Start index")
+    parser.add_argument("--initial-cash", help="Initial amount of money", type=int, default=100_000, )
+    parser.add_argument("--reward-scaling", help="Reward scaling", type=float, )
+    parser.add_argument("--transaction-cost", help="Transaction cost in $", type=float, default=0.5, )
+    parser.add_argument("--start-index", help="Start index", type=int, default=0, )
 
     # Algorithm arguments
     parser.add_argument("--env-id", type=str, default="", help="the id of the environment")
@@ -136,68 +137,71 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         help="noise clip parameter of the Target Policy Smoothing Regularization")
 
     # Algorithm specific arguments
-    parser.add_argument('--policy', type=str,
-                        choices=["MlpPolicy", "MlpLstmPolicy", "MlpLnLstmPolicy",
-                                 "CnnPolicy", "CnnLstmPolicy", "CnnLnLstmPolicy", ],
-                        default="MlpPolicy", help="the policy model to use")
-    parser.add_argument('--learning-rate', type=float, default=3e-4, help="the learning rate of the optimizer")
-    parser.add_argument('--n-steps', type=int, default=20,
-                        help="the number of steps to run in each environment per update")
-    parser.add_argument('--gamma', type=float, default=0.99, help="the discount factor gamma")
-    parser.add_argument('--gae-lambda', type=float, default=0.95,
-                        help="the lambda for the general advantage estimation")
-    parser.add_argument('--ent-coef', type=float, default=0.0, help="the coefficient of the entropy")
-    parser.add_argument('--vf-coef', type=float, default=0.5, help="the coefficient of the value function")
-    parser.add_argument('--max-grad-norm', type=float, default=0.5, help="the maximum value for the gradient clipping")
-    parser.add_argument('--rms-prop-eps', type=float, default=1e-5,
-                        help="RMSProp optimizer epsilon (stabilizes square root)")
-    parser.add_argument('--use-rms-prop', action="store_true", help="whether to use RMSProp (otherwise, use Adam)")
-    parser.add_argument('--use-sde', action="store_true", help="whether to use generalized State Dependent Exploration")
-    parser.add_argument('--sde-sample-freq', type=int, default=-1,
-                        help="Sample a new noise matrix every n steps (-1 = only at the beginning of the rollout)")
-    parser.add_argument('--normalize-advantage', action="store_true", help="whether to normalize the advantage")
-    # parser.add_argument('--tensorboard-log', type=str, default=None,
-    #                     help="the log location for tensorboard (if None, no logging)")
-    # parser.add_argument('--policy-kwargs', type=str, default="",
-    #                     help="Additional keyword argument to pass to the policy on creation")
-    parser.add_argument('--verbose', type=int, default=0,
-                        help="the verbosity level: 0 none, 1 training information, 2 tensorflow debug")
-    parser.add_argument('--seed', type=int, default=0, help="Random generator seed")
-    parser.add_argument('--device', type=str, default='auto', help="Device (cpu, cuda, auto)")
-    parser.add_argument('---init-setup-model', action="store_true",
-                        help="Whether or not to setup the model with default hyperparameters")
-    parser.add_argument('--batch-size', type=int, default=20, help="Batch size for each gradient update")
-    parser.add_argument('--n-epochs', type=int, default=10, help="Number of epoch when learning")
-    parser.add_argument('--clip-range', type=float, default=0.2, help="Clipping parameter (policy loss)")
-    parser.add_argument('--clip-range-vf', type=float, default=None, help="Clipping parameter (value loss)")
-    parser.add_argument('--target-kl', type=float, default=None, help="Target KL divergence")
-    parser.add_argument('--buffer-size', type=int, default=50000, help="Size of the replay buffer")
-    parser.add_argument('--learning-starts', type=int, default=1000,
-                        help="Number of steps before learning for the warm-up")
-    parser.add_argument('--tau', type=float, default=0.005, help="Target smoothing coefficient (1-tau)")
-    parser.add_argument('--train-freq', type=int, default=1, help="Update the model every ``train_freq`` steps")
-    parser.add_argument('--gradient-steps', type=int, default=-1,
-                        help="How many gradient update after each step")
-    parser.add_argument('--action-noise', type=str, default=None, help="Action noise type (None, normal, ou)")
-    parser.add_argument('--replay-buffer-class', type=str, default=None, help="Replay buffer class")
-    parser.add_argument('--replay-buffer-kwargs', type=str, default=None,
-                        help="Additional keyword argument to pass to the replay buffer on creation")
-    parser.add_argument('--optimize-memory-usage', action="store_true",
-                        help="Enable a memory efficient variant of the replay buffer")
-    parser.add_argument('--target-update-interval', type=int, default=1,
-                        help="Number of gradient update before each target network update")
-    parser.add_argument('--target-entropy', type=str, default="auto", help="Target entropy to be used by SAC/TD3")
-    parser.add_argument('--use-sde-at-warmup', action="store_true",
-                        help="Use gSDE instead of normal action noise at warmup")
-    parser.add_argument('--policy-delay', type=int, default=2, help="Number of timesteps to delay the policy updates")
-    parser.add_argument('--target-policy-noise', type=float, default=0.2, help="Noise added to target policy")
-    parser.add_argument('--target-noise-clip', type=float, default=0.5, help="Range to clip target policy noise")
-    parser.add_argument('--exploration-fraction', type=float, default=0.1,
-                        help="Fraction of entire training period over which the exploration rate is annealed")
-    parser.add_argument('--exploration-initial-eps', type=float, default=1.0,
-                        help="Initial value of random action probability")
-    parser.add_argument('--exploration-final-eps', type=float, default=0.02,
-                        help="Final value of random action probability")
+    parser.add_argument('--policy', help="the policy model to use", type=str,
+                        choices=["MlpPolicy", "MlpLstmPolicy", "MlpLnLstmPolicy", "CnnPolicy", "CnnLstmPolicy",
+                                 "CnnLnLstmPolicy", ], default="MlpPolicy", )
+    parser.add_argument('--learning-rate', help="the learning rate of the optimizer", type=float, default=3e-4, )
+    parser.add_argument('--n-steps', help="the number of steps to run in each environment per update", type=int,
+                        default=20, )
+    parser.add_argument('--gamma', help="the discount factor gamma", type=float, default=0.99, )
+    parser.add_argument('--gae-lambda', help="the lambda for the general advantage estimation", type=float,
+                        default=0.95, )
+    parser.add_argument('--ent-coef', help="the coefficient of the entropy", type=float, default=0.0, )
+    parser.add_argument('--vf-coef', help="the coefficient of the value function", type=float, default=0.5, )
+    parser.add_argument('--max-grad-norm', help="the maximum value for the gradient clipping", type=float,
+                        default=0.5, )
+    parser.add_argument('--rms-prop-eps', help="RMSProp optimizer epsilon (stabilizes square root)", type=float,
+                        default=1e-5, )
+    parser.add_argument('--use-rms-prop', help="whether to use RMSProp (otherwise, use Adam)", action="store_true", )
+    parser.add_argument('--use-sde', help="whether to use generalized State Dependent Exploration",
+                        action="store_true", )
+    parser.add_argument('--sde-sample-freq',
+                        help="Sample a new noise matrix every n steps (-1 = only at the beginning of the rollout)",
+                        type=int, default=-1, )
+    parser.add_argument('--normalize-advantage', help="whether to normalize the advantage", action="store_true", )
+    parser.add_argument('--tensorboard-log', help="the log location for tensorboard (if None, no logging)", type=str,
+                        default=None, )
+    parser.add_argument('--policy-kwargs', help="Additional keyword argument to pass to the policy on creation",
+                        type=str, default="", )
+    parser.add_argument('--verbose', help="the verbosity level: 0 none, 1 training information, 2 tensorflow debug",
+                        type=int, default=0, )
+    parser.add_argument('--seed', help="Random generator seed", type=int, default=0, )
+    parser.add_argument('--device', help="Device (cpu, cuda, auto)", type=str, default='auto', )
+    parser.add_argument('---init-setup-model', help="Whether or not to setup the model with default hyperparameters",
+                        action="store_true", )
+    parser.add_argument('--batch-size', help="Batch size for each gradient update", type=int, default=20, )
+    parser.add_argument('--n-epochs', help="Number of epoch when learning", type=int, default=10, )
+    parser.add_argument('--clip-range', help="Clipping parameter (policy loss)", type=float, default=0.2, )
+    parser.add_argument('--clip-range-vf', help="Clipping parameter (value loss)", type=float, default=None, )
+    parser.add_argument('--target-kl', help="Target KL divergence", type=float, default=None, )
+    parser.add_argument('--buffer-size', help="Size of the replay buffer", type=int, default=50000, )
+    parser.add_argument('--learning-starts', help="Number of steps before learning for the warm-up", type=int,
+                        default=1000, )
+    parser.add_argument('--tau', help="Target smoothing coefficient (1-tau)", type=float, default=0.005, )
+    parser.add_argument('--train-freq', help="Update the model every ``train_freq`` steps", type=int, default=1, )
+    parser.add_argument('--gradient-steps', help="How many gradient update after each step", type=int, default=-1, )
+    parser.add_argument('--action-noise', help="Action noise type (None, normal, ou)", type=str, default=None, )
+    parser.add_argument('--replay-buffer-class', help="Replay buffer class", type=str, default=None, )
+    parser.add_argument('--replay-buffer-kwargs',
+                        help="Additional keyword argument to pass to the replay buffer on creation", type=str,
+                        default=None, )
+    parser.add_argument('--optimize-memory-usage', help="Enable a memory efficient variant of the replay buffer",
+                        action="store_true", )
+    parser.add_argument('--target-update-interval', help="Number of gradient update before each target network update",
+                        type=int, default=1, )
+    parser.add_argument('--target-entropy', help="Target entropy to be used by SAC/TD3", type=str, default="auto", )
+    parser.add_argument('--use-sde-at-warmup', help="Use gSDE instead of normal action noise at warmup",
+                        action="store_true", )
+    parser.add_argument('--policy-delay', help="Number of timesteps to delay the policy updates", type=int, default=2, )
+    parser.add_argument('--target-policy-noise', help="Noise added to target policy", type=float, default=0.2, )
+    parser.add_argument('--target-noise-clip', help="Range to clip target policy noise", type=float, default=0.5, )
+    parser.add_argument('--exploration-fraction',
+                        help="Fraction of entire training period over which the exploration rate is annealed",
+                        type=float, default=0.1, )
+    parser.add_argument('--exploration-initial-eps', help="Initial value of random action probability", type=float,
+                        default=1.0, )
+    parser.add_argument('--exploration-final-eps', help="Final value of random action probability", type=float,
+                        default=0.02, )
 
     args = postprocess_folder_arguments(parser.parse_args())
     return vars(args), args

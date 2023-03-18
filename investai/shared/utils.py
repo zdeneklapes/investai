@@ -107,7 +107,7 @@ def ignore_warnings():
     warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
-def find_git_root(path):
+def find_git_root(path) -> Path:
     path = Path(path).resolve()
     if (path / '.git').is_dir():
         return path
