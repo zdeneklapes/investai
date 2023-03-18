@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
+import gym
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from gym.utils import seeding
-import gym
 from gym import spaces
+from gym.utils import seeding
 from stable_baselines3.common.vec_env import DummyVecEnv
-import matplotlib.pyplot as plt
 
 
 class PortfolioAllocationEnvAI4Finance(gym.Env):

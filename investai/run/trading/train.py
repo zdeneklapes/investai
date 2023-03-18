@@ -22,14 +22,14 @@ import pandas as pd
 
 #
 from finrl.config import A2C_PARAMS
-from stable_baselines3.common.logger import configure
+from project_configs.experiment_dir import ExperimentDir
 
 #
 from project_configs.project_dir import ProjectDir
-from project_configs.experiment_dir import ExperimentDir
 from rl.envs.StockTradingEnv import StockTradingEnv
-from rl.experiments.common.classes import Program
 from rl.experiments.common.agents import CustomDRLAgent
+from rl.experiments.common.classes import Program
+from stable_baselines3.common.logger import configure
 
 # ######################################################################################################################
 # Configurations
@@ -79,12 +79,13 @@ def get_env_kwargs(dataset: pd.DataFrame) -> Dict[str, Any]:
         "initial_amount": 1000000,
         "buy_cost_pct": 0.001,
         "sell_cost_pct": 0.001,
-        "state_space": (1
-                        # portfolio value
-                        + 2 * stock_dimension
-                        # stock price & stock owned  # len(fa_ratios) * len(stocks)
-                        + len(ratios_cols) * stock_dimension
-                        ),
+        "state_space": (
+            1
+            # portfolio value
+            + 2 * stock_dimension
+            # stock price & stock owned  # len(fa_ratios) * len(stocks)
+            + len(ratios_cols) * stock_dimension
+        ),
         "stock_dim": stock_dimension,
         "tech_indicator_list": ratios_cols,
         "action_space": stock_dimension,

@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pyfolio
-from pyfolio import timeseries
 import yfinance as yf
+from pyfolio import timeseries
 
 
 def get_daily_return(df, value_col_name="account_value"):

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from typing import Union
-from stable_baselines3 import PPO, A2C, SAC, TD3, DQN, DDPG
+
+from stable_baselines3 import A2C, DDPG, DQN, PPO, SAC, TD3
 
 ALGORITHM_SB3_TYPE = Union[PPO, A2C, SAC, TD3, DQN, DDPG]
 

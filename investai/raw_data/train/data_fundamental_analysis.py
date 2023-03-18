@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-from typing import Callable
-import pandas as pd
-import numpy as np
 import itertools
+from typing import Callable
 
+import numpy as np
+import pandas as pd
 from rl.data import DataBase
 
 

@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
-import os
 import dataclasses
+import os
 from pathlib import Path
 
-import tqdm
 import pandas as pd
+import tqdm
 from meta.data_processors.yahoofinance import Yahoofinance
-
 from project_configs.project_dir import ProjectDir
 from shared.Args import Args
 from shared.utils import now_time
@@ -14,7 +13,7 @@ from shared.utils import now_time
 
 @dataclasses.dataclass(init=False)
 class DataBase(Yahoofinance):
-    from rl.data.types import TimeInterval, FileType, DataType
+    from rl.data.types import DataType, FileType, TimeInterval
 
     def __init__(
         self,

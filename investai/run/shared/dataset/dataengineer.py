@@ -11,10 +11,10 @@ class DataEngineer:
     @staticmethod
     def check_dataset_correctness_assert(dataframe: pd.DataFrame):
         """Check if all raw_data are correct"""
-        assert dataframe.groupby("date").size().unique().size == 1, \
-            "The size of each group must be equal, that means in each date is teh same number of stock raw_data"
-        assert not dataframe.isna().any().any(), \
-            "Can't be any Nan/np.inf values"
+        assert (
+            dataframe.groupby("date").size().unique().size == 1
+        ), "The size of each group must be equal, that means in each date is teh same number of stock raw_data"
+        assert not dataframe.isna().any().any(), "Can't be any Nan/np.inf values"
 
     @staticmethod
     def clean_dataset_from_missing_tickers_by_date(dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -52,9 +52,9 @@ class DataEngineer:
         return df
 
     @staticmethod
-    def feature_correlation_matrix(dataframe: pd.DataFrame,
-                                   threshold: float = 0.6,
-                                   method: Literal['pearson', 'kendall', 'spearman'] = 'pearson') -> pd.DataFrame:
+    def feature_correlation_matrix(
+        dataframe: pd.DataFrame, threshold: float = 0.6, method: Literal["pearson", "kendall", "spearman"] = "pearson"
+    ) -> pd.DataFrame:
         """
         Return correlation matrix of features
         :param dataframe: pd.DataFrame

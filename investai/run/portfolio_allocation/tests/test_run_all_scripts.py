@@ -3,12 +3,15 @@ import pytest
 
 
 @pytest.mark.skip(reason="Not implemented yet")
-def test_run_baseline(): pass
+def test_run_baseline():
+    pass
 
 
 @pytest.mark.skip(reason="Not implemented yet")
-def test_run_dataset(): pass
+def test_run_dataset():
+    pass
 
 
 @pytest.mark.skip(reason="Not implemented yet")
-def test_run_wandbtrain(): pass
+def test_run_wandbtrain():
+    pass

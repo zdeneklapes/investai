@@ -1,30 +1,29 @@
 # -*- coding: utf-8 -*-
-# TODO: add baseline S@P500
-# TODO: add baseline DJI30
-
 from copy import deepcopy  # noqa
+
 import numpy as np  # noqa
 import pandas as pd
+from IPython.display import display  # noqa
 from pypfopt import EfficientFrontier
 from pypfopt.expected_returns import mean_historical_return
 from pypfopt.risk_models import CovarianceShrinkage
-from tqdm import trange
-
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
+from shared.utils import calculate_return_from_weights, reload_module  # noqa
+from tqdm import trange
 
-# For Debugging
-from shared.utils import reload_module, calculate_return_from_weights  # noqa
-from IPython.display import display  # noqa
+
+# TODO: add baseline S@P500
+# TODO: add baseline DJI30
 
 
 class Baseline:
-    def __init__(self, dataframe: pd.DataFrame, program, bounds: tuple = (0, 1)):
+    def __init__(self, program, dataframe: pd.DataFrame, bounds: tuple = (0, 1)):
         self.program = program
         self.dataframe = dataframe
-        self.dates = self.dataframe['date'].unique()
-        del self.dataframe['date']
+        self.dates = self.dataframe["date"].unique()
+        del self.dataframe["date"]
         self.bounds = bounds
         self.returns = pd.DataFrame()
 
@@ -49,9 +48,9 @@ class Baseline:
         if not self.returns.empty:
             return self.returns
 
-        iterable = trange(4, self.dates.size - 1) \
-            if self.program.args.project_verbose \
-            else range(4, self.dates.size - 1)
+        iterable = (
+            trange(4, self.dates.size - 1) if self.program.args.project_verbose else range(4, self.dates.size - 1)
+        )
         for i in iterable:
             mean_annual_return = mean_historical_return(self.dataframe.iloc[:i])
             s_covariance_matrix = CovarianceShrinkage(self.dataframe.iloc[:i]).ledoit_wolf()
@@ -59,27 +58,41 @@ class Baseline:
             #
             weights = self.get_weights(mean_annual_return, s_covariance_matrix)
 
-            assert list(self.dataframe.iloc[i].index) == list(weights['minimum_variance'].keys())
+            assert list(self.dataframe.iloc[i].index) == list(weights["minimum_variance"].keys())
 
             #
-            return_min_var = calculate_return_from_weights(self.dataframe.iloc[i].values,
-                                                           self.dataframe.iloc[i - 1].values,
-                                                           list(weights["minimum_variance"].values()))
-            return_max_quadratic_utility = calculate_return_from_weights(self.dataframe.iloc[i].values,
-                                                                         self.dataframe.iloc[i - 1].values,
-                                                                         list(weights[
-                                                                                  "maximum_quadratic_utility"].values()))
-            return_max_sharpe = calculate_return_from_weights(self.dataframe.iloc[i].values,
-                                                              self.dataframe.iloc[i - 1].values,
-                                                              list(weights["maximum_sharpe"].values()))
+            return_min_var = calculate_return_from_weights(
+                self.dataframe.iloc[i].values,
+                self.dataframe.iloc[i - 1].values,
+                list(weights["minimum_variance"].values()),
+            )
+            return_max_quadratic_util = calculate_return_from_weights(
+                self.dataframe.iloc[i].values,
+                self.dataframe.iloc[i - 1].values,
+                list(weights["maximum_quadratic_utility"].values()),
+            )
+            return_max_sharpe = calculate_return_from_weights(
+                self.dataframe.iloc[i].values,
+                self.dataframe.iloc[i - 1].values,
+                list(weights["maximum_sharpe"].values()),
+            )
 
             #
-            self.returns = pd.concat([self.returns, pd.DataFrame({
-                "date": self.dates[i],
-                f"minimum_variance_{self.bounds[0]}_{self.bounds[1]}": return_min_var,
-                f"maximum_quadratic_utility_{self.bounds[0]}_{self.bounds[1]}": return_max_quadratic_utility,
-                f"maximum_sharpe_{self.bounds[0]}_{self.bounds[1]}": return_max_sharpe,
-            }, index=[0])], ignore_index=True)
+            self.returns = pd.concat(
+                [
+                    self.returns,
+                    pd.DataFrame(
+                        {
+                            "date": self.dates[i],
+                            f"minimum_variance_{self.bounds[0]}_{self.bounds[1]}": return_min_var,
+                            f"maximum_quadratic_utility_{self.bounds[0]}_{self.bounds[1]}": return_max_quadratic_util,
+                            f"maximum_sharpe_{self.bounds[0]}_{self.bounds[1]}": return_max_sharpe,
+                        },
+                        index=[0],
+                    ),
+                ],
+                ignore_index=True,
+            )
 
         return self.returns
 
@@ -102,16 +115,16 @@ def t1():
     program.args.dataset_path = program.args.folder_dataset.joinpath("stockfadailydataset.csv").as_posix()
     load_dotenv(dotenv_path=program.args.folder_root.joinpath(".env").as_posix())
 
-    dataset = StockFaDailyDataset(program=program,
-                                  tickers=DOW_30_TICKER,
-                                  dataset_split_coef=program.args.dataset_split_coef)
+    dataset = StockFaDailyDataset(
+        program=program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef
+    )
     dataset.load_dataset(program.args.dataset_path)
 
-    d_tics = dataset.dataset[['tic', 'close', 'date']].sort_values(by=['tic', 'date'])
-    d = {"date": d_tics['date'].unique()}
-    d.update({tic: d_tics[d_tics['tic'] == tic]['close'] for tic in d_tics['tic'].unique()})
+    d_tics = dataset.dataset[["tic", "close", "date"]].sort_values(by=["tic", "date"])
+    d = {"date": d_tics["date"].unique()}
+    d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
     df = pd.DataFrame(d)
-    baseline = Baseline(df, program, bounds=(0, 1))
+    baseline = Baseline(program, df, bounds=(0, 1))
     # baseline.get_returns()
 
     return {
@@ -131,20 +144,21 @@ def main():
     load_dotenv(dotenv_path=program.args.folder_root.joinpath(".env").as_posix())
 
     #
-    dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER,
-                                  dataset_split_coef=program.args.dataset_split_coef)
+    dataset = StockFaDailyDataset(
+        program=program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef
+    )
     dataset.load_dataset(program.args.dataset_path)
 
-    d_tics = dataset.dataset[['tic', 'close', 'date']].sort_values(by=['tic', 'date'])
-    d = {"date": d_tics['date'].unique()}
-    d.update({tic: d_tics[d_tics['tic'] == tic]['close'] for tic in d_tics['tic'].unique()})
+    d_tics = dataset.dataset[["tic", "close", "date"]].sort_values(by=["tic", "date"])
+    d = {"date": d_tics["date"].unique()}
+    d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
     df = pd.DataFrame(d)
 
     #
-    baseline = Baseline(df, program, bounds=(0, 1))
+    baseline = Baseline(program, df, bounds=(0, 1))
     baseline.get_returns()
     baseline.save(program.args.baseline_path)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

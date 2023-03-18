@@ -3,7 +3,6 @@ from typing import Callable
 
 import pandas as pd
 from finrl.meta.preprocessor.preprocessors import FeatureEngineer
-
 from rl.data import DataBase
 
 

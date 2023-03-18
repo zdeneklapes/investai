@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 
-from stable_baselines3.common.callbacks import CheckpointCallback
-
 from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
 from run.shared.memory import Memory
+from stable_baselines3.common.callbacks import CheckpointCallback
 
 
 class CustomCheckpointCallback(CheckpointCallback):
@@ -31,8 +30,8 @@ class CustomCheckpointCallback(CheckpointCallback):
         return super()._on_step()
 
     def _on_training_end(self) -> None:
-        for env in self.locals['env'].envs:
+        for env in self.locals["env"].envs:
             if isinstance(env, PortfolioAllocationEnv):
-                memory: Memory = self.locals['env'].envs[0]._memory
+                memory: Memory = self.locals["env"].envs[0]._memory
                 memory_path = Path(self.save_path).joinpath(self.memory_name)
                 memory.save(memory_path)

@@ -3,30 +3,30 @@
 # TODO Dataset: TA + FA
 # TODO: action +1 more action from 30 actions increase to 31 actions, because Agent can also decide for cash
 # TODO: make it more reusable, so change self.features to self.not_include_in_observation_columns
-from typing import Any, Dict, Optional, List, Final
-
-import numpy as np
-import pandas as pd
+from typing import Any, Dict, Final, List, Optional
 
 # FIXME: Stable-baselines3 requires gym.spaces not gymnasium.spaces
 import gym
+import numpy as np
+import pandas as pd
 from gym import spaces
+from gymnasium.utils import seeding
+from run.shared.memory import Memory
+from scipy.special import softmax
+from shared.utils import calculate_return_from_weights
+
 # import gymnasium as gym
 # from gymnasium import spaces
-
-from gymnasium.utils import seeding
-from scipy.special import softmax
-
-from shared.utils import calculate_return_from_weights
-from run.shared.memory import Memory
 
 
 class PortfolioAllocation2Env(gym.Env):
     """Portfolio Allocation Environment using OpenAI gym"""
-    metadata = {'render.modes': ['human']}
 
-    def __init__(self, dataset: pd.DataFrame, tickers: List[str], columns_to_drop_in_observation: List[str],
-                 start_index: int = 0):
+    metadata = {"render.modes": ["human"]}
+
+    def __init__(
+        self, dataset: pd.DataFrame, tickers: List[str], columns_to_drop_in_observation: List[str], start_index: int = 0
+    ):
         # Immutable
         self.dataset: Final = dataset
         self._start_time: Final = start_index
@@ -37,11 +37,11 @@ class PortfolioAllocation2Env(gym.Env):
 
         # Inherited
         self.action_space = spaces.Box(low=0, high=1, shape=(len(self._tickers) + 1,))  # tickers + 1 cash
-        self.observation_space = spaces.Box(low=-np.inf,
-                                            high=np.inf,
-                                            shape=(len(self._tickers),
-                                                   len(self.dataset.columns.drop(
-                                                       self._columns_to_drop_in_observation))))
+        self.observation_space = spaces.Box(
+            low=-np.inf,
+            high=np.inf,
+            shape=(len(self._tickers), len(self.dataset.columns.drop(self._columns_to_drop_in_observation))),
+        )
 
     def __init_environment(self):
         """Initialize environment
@@ -74,16 +74,14 @@ class PortfolioAllocation2Env(gym.Env):
 
         # action are the tickers weight in the portfolio (without cash)
         asset_allocation_actions = normalized_actions[1:]  # Remove cash
-        reward = calculate_return_from_weights(self.dataset.loc[self._time, :]['close'].values,
-                                               self.dataset.loc[self._time - 1, :]['close'].values,
-                                               np.array(asset_allocation_actions))
+        reward = calculate_return_from_weights(
+            self.dataset.loc[self._time, :]["close"].values,
+            self.dataset.loc[self._time - 1, :]["close"].values,
+            np.array(asset_allocation_actions),
+        )
 
         #
-        info = pd.DataFrame({
-            "reward": reward,
-            "action": action,
-            "date": self._current_data['date'].unique()[0]
-        })
+        info = pd.DataFrame({"reward": reward, "action": action, "date": self._current_data["date"].unique()[0]})
         self.memory.concat(info)
 
         # Observation, Reward, Terminated, Info
@@ -98,7 +96,7 @@ class PortfolioAllocation2Env(gym.Env):
         self.__init_environment()
         return self._current_state  # First observation
 
-    def render(self, mode='human'):
+    def render(self, mode="human"):
         return self._current_state
 
     def _seed(self, seed=None):

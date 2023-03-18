@@ -4,9 +4,8 @@ from typing import Literal
 import numpy as np
 import pandas as pd
 from finta import TA
-from tvDatafeed import Interval, TvDatafeed
-
 from run.binary_option.main import DATASET_PATH
+from tvDatafeed import Interval, TvDatafeed
 
 
 class ForexDataset:
@@ -23,7 +22,7 @@ class ForexDataset:
     def preprocess(self) -> pd.DataFrame:
         """Return dataset"""
         #
-        df = self.download("EURUSD", exchange='OANDA', interval=Interval.in_1_minute, n_bars=1000)
+        df = self.download("EURUSD", exchange="OANDA", interval=Interval.in_1_minute, n_bars=1000)
         df = self.add_ta_features(df)
         df = self.add_candlestick_features(df)
 
@@ -62,8 +61,9 @@ class ForexDataset:
         df["candle_direction"] = np.where((df["close"] - df["open"]) > 0, 1, 0)  # 1 - up, 0 - down
         return df
 
-    def feature_correlation_drop(self, df: pd.DataFrame, threshold: float = 0.6,
-                                 method: Literal['pearson', 'kendall', 'spearman'] = 'pearson') -> pd.DataFrame:
+    def feature_correlation_drop(
+        self, df: pd.DataFrame, threshold: float = 0.6, method: Literal["pearson", "kendall", "spearman"] = "pearson"
+    ) -> pd.DataFrame:
         """Drop features with correlation higher than threshold"""
         corr = df.corr(method=method)
         triu = pd.DataFrame(np.triu(corr.T).T, corr.columns, corr.columns)
@@ -71,11 +71,9 @@ class ForexDataset:
         return threshhold
 
     # TODO: Create function for downloading raw_data using yfinance and another one for TradingView
-    def download(self, ticker,
-                 exchange: str,
-                 interval: Interval | str,
-                 period: str = '',  # FIXME: not used
-                 n_bars: int = 10) -> pd.DataFrame:
+    def download(
+        self, ticker, exchange: str, interval: Interval | str, period: str = "", n_bars: int = 10  # FIXME: not used
+    ) -> pd.DataFrame:
         """Return raw raw_data"""
         # df = yf.download(tickers=tickers, period=period, interval=interval) # BUG: yfinance bad candlestick raw_data
 
@@ -97,5 +95,5 @@ def main():
     pass
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

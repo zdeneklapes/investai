@@ -2,21 +2,22 @@
 # ######################################################################################################################
 # Imports
 # ######################################################################################################################
+import concurrent.futures
+import copy
+import dataclasses
 import os
 import sys
-import copy
 import warnings
-import concurrent.futures
-from typing import Dict, List, Optional
-import dataclasses
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
+
+import fundamentalanalysis as fa
+import matplotlib
 
 ##
 import pandas as pd
-import matplotlib
 import tqdm
-import fundamentalanalysis as fa
 from dotenv import load_dotenv
 
 ##
@@ -31,8 +32,8 @@ sys.path.append("../../../")
 
 ##
 from shared.projectstructure import ProjectStructure
-from shared.utils import now_time
 from shared.ticker import Ticker  # Previously CompanyInfo # noqa
+from shared.utils import now_time
 
 # ######################################################################################################################
 # Global Variables
@@ -274,7 +275,7 @@ if __name__ == "__main__":
         bunches = [(i, i + _step) for i in range(_start, _stop, _step)]
         current_time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
         print(current_time, bunches)
-        tickers_bunches = [tickers[b[0]: b[1]] for b in bunches]
+        tickers_bunches = [tickers[b[0] : b[1]] for b in bunches]
         # print(tickers_bunches)
         # continue
 

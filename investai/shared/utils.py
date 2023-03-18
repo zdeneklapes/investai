@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
+import cProfile
+import pstats
 import warnings
 from pathlib import Path
 from typing import Literal
-import cProfile
-import pstats
 
+import matplotlib
 import numpy as np
 import pandas as pd
-import matplotlib
 
 
 def now_time(_format: str = "%Y-%m-%dT%H-%M-%S") -> str:
@@ -59,6 +59,7 @@ def cProfile_decorator(sort_by: str):
 # This function reload the module
 def reload_module(module):
     import importlib
+
     importlib.reload(module)
 
 
@@ -109,10 +110,10 @@ def ignore_warnings():
 
 def find_git_root(path) -> Path:
     path = Path(path).resolve()
-    if (path / '.git').is_dir():
+    if (path / ".git").is_dir():
         return path
     if path == path.parent:
-        raise Exception('Not a Git repository')
+        raise Exception("Not a Git repository")
     return find_git_root(path.parent)
 
 
@@ -140,7 +141,7 @@ def calculate_return_from_weights(t_now: np.array, t_prev: np.array, weights: np
 def calculate_sharpe_ratio(returns: np.ndarray):
     # TODO: check correctness
     if returns.std() != 0:
-        sharpe = (252 ** 0.5) * returns.mean() / returns.std()
+        sharpe = (252**0.5) * returns.mean() / returns.std()
         return sharpe
     else:
         return 0

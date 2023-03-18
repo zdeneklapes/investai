@@ -3,23 +3,22 @@
 Stock fundamental analysis dataset
 """
 from copy import deepcopy
-from typing import List, Dict
+from typing import Dict, List
 
 import numpy as np
 import pandas as pd
-from finta import TA
-from run.shared.tickers import DOW_30_TICKER
-from tqdm import tqdm
-from tvDatafeed import Interval, TvDatafeed
-
 from extra.math.finance.ticker.ticker import Ticker
-from shared.program import Program
-from run.shared.dataset.dataengineer import DataEngineer as DE
+from finta import TA
+from IPython.display import display  # noqa
 from run.shared.dataset.candlestickengineer import CandlestickEngineer as CSE
+from run.shared.dataset.dataengineer import DataEngineer as DE
+from run.shared.tickers import DOW_30_TICKER
+from shared.program import Program
 
 # For Debugging
 from shared.utils import reload_module  # noqa
-from IPython.display import display  # noqa
+from tqdm import tqdm
+from tvDatafeed import Interval, TvDatafeed
 
 
 class StockFaDailyDataset:
@@ -61,7 +60,7 @@ class StockFaDailyDataset:
         """Split dataset into train and test"""
         if self.program.args.project_verbose > 0:
             self.program.log.info(
-                f"Train dataset from {self.dataset['date'].iloc[0]} to {DE.get_split_date(self.dataset, self.dataset_split_coef)}" # noqa
+                f"Train dataset from {self.dataset['date'].iloc[0]} to {DE.get_split_date(self.dataset, self.dataset_split_coef)}"  # noqa
             )
         df: pd.DataFrame = self.dataset[self.dataset["date"] < DE.get_split_date(self.dataset, self.dataset_split_coef)]
         return df
@@ -70,7 +69,8 @@ class StockFaDailyDataset:
     def test_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
         df: pd.DataFrame = self.dataset[
-            self.dataset["date"] >= DE.get_split_date(self.dataset, self.dataset_split_coef)]
+            self.dataset["date"] >= DE.get_split_date(self.dataset, self.dataset_split_coef)
+        ]
         df.index = df["date"].factorize()[0]
         return df
 
@@ -88,13 +88,14 @@ class StockFaDailyDataset:
 
         iterable = tqdm(self.tickers) if self.program.args.project_verbose > 0 else self.tickers
         for tic in iterable:
-            if type(iterable) is tqdm: iterable.set_description(f"Processing {tic}")
+            if type(iterable) is tqdm:
+                iterable.set_description(f"Processing {tic}")
             raw_data: Ticker = self.load_raw_data(tic)  # Load tickers raw_data
             feature_data = self.add_fa_features(raw_data)  # Add features
             df = pd.concat([feature_data, df])  # Add ticker to dataset
 
         df.insert(0, "date", df.index)
-        df = df.sort_values(by=['tic'])
+        df = df.sort_values(by=["tic"])
         df = DE.clean_dataset_from_missing_tickers_by_date(df)
         df = df.sort_values(by=self.unique_columns)
         df.index = df["date"].factorize()[0]
@@ -121,8 +122,7 @@ class StockFaDailyDataset:
         ratios = ratios.fillna(0)
         ratios = ratios.replace(np.inf, 0)
 
-        merge = pd.merge(prices, ratios,
-                         how="outer", left_index=True, right_index=True)
+        merge = pd.merge(prices, ratios, how="outer", left_index=True, right_index=True)
         filled = merge.fillna(method="bfill")
         filled = filled.fillna(method="ffill")
         clean = filled.drop(filled[~filled.index.str.contains(r"\d{4}-\d{2}-\d{2}")].index)  # Remove non-dates
@@ -159,11 +159,9 @@ class StockFaDailyDataset:
         return df
 
     # TODO: Create function for downloading raw_data using yfinance and another one for TradingView
-    def download(self, ticker,
-                 exchange: str,
-                 interval: Interval | str,
-                 period: str = '',  # FIXME: not used
-                 n_bars: int = 10) -> pd.DataFrame:
+    def download(
+        self, ticker, exchange: str, interval: Interval | str, period: str = "", n_bars: int = 10  # FIXME: not used
+    ) -> pd.DataFrame:
         """Return raw raw_data"""
         # df = yf.download(tickers=tickers, period=period, interval=interval) # BUG: yfinance bad candlestick raw_data
 
@@ -214,10 +212,7 @@ def t1() -> Dict:
     load_dotenv(dotenv_path=program.args.folder_root.as_posix())
 
     dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef)
-    return {
-        "dataset": dataset,
-        "d": dataset.get_stock_dataset()
-    }
+    return {"dataset": dataset, "d": dataset.get_stock_dataset()}
 
 
 def main():
@@ -225,10 +220,7 @@ def main():
 
     program = Program()
     load_dotenv(dotenv_path=program.args.folder_root.as_posix())
-    dataset = StockFaDailyDataset(
-        program,
-        tickers=DOW_30_TICKER,
-        dataset_split_coef=program.args.dataset_split_coef)
+    dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
     dataset.save_dataset(program.args.dataset_path)
 

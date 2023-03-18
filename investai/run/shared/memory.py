@@ -8,6 +8,7 @@ import pandas as pd
 @attrs.define
 class Memory:
     """Memory class for storing the history of the agent performance in the environment"""
+
     df: pd.DataFrame
 
     def concat(self, memory: pd.DataFrame):

@@ -7,9 +7,7 @@ import pandas as pd
 from numpy import ndarray
 
 
-def check_dataframe_columns(
-    required_columns=["open", "high", "low", "close"]
-):
+def check_dataframe_columns(required_columns=["open", "high", "low", "close"]):
     """Check if dataframe has the required columns"""
 
     def decorator(func):
@@ -51,15 +49,21 @@ class CandlestickEngineer:
     @check_dataframe_columns(required_columns=["open", "close", "high"])
     def candlestick_up_shadow(dataframe: pd.DataFrame) -> ndarray:
         """Get upper shadow"""
-        return np.where((dataframe["close"] > dataframe["open"]), dataframe["high"] - dataframe["close"],
-                        dataframe["high"] - dataframe["open"])
+        return np.where(
+            (dataframe["close"] > dataframe["open"]),
+            dataframe["high"] - dataframe["close"],
+            dataframe["high"] - dataframe["open"],
+        )
 
     @staticmethod
     @check_dataframe_columns(required_columns=["open", "close", "low"])
     def candlestick_down_shadow(dataframe: pd.DataFrame) -> ndarray:
         """Get lower shadow"""
-        return np.where((dataframe["close"] > dataframe["open"]), dataframe["open"] - dataframe["low"],
-                        dataframe["close"] - dataframe["low"])
+        return np.where(
+            (dataframe["close"] > dataframe["open"]),
+            dataframe["open"] - dataframe["low"],
+            dataframe["close"] - dataframe["low"],
+        )
 
     @staticmethod
     @check_dataframe_columns(required_columns=["open", "close"])
@@ -74,4 +78,4 @@ class CandlestickEngineer:
     @staticmethod
     def price_pct_change(dataframe: pd.DataFrame) -> pd.DataFrame:
         """Get price percent change"""
-        return dataframe['close'].pct_change(1, fill_method='ffill')
+        return dataframe["close"].pct_change(1, fill_method="ffill")

@@ -7,16 +7,15 @@ from copy import deepcopy  # noqa
 from pprint import pprint  # noqa
 
 import wandb
-from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
-
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.test.wandbtest import WandbTest
-from run.shared.callback.wandbcallbackextendmemory import WandbCallbackExtendMemory
-from run.shared.tickers import DOW_30_TICKER
 from run.shared.algorithmsb3 import ALGORITHM_SB3
-from run.shared.hyperparameters.sweep_configuration import sweep_configuration
+from run.shared.callback.wandbcallbackextendmemory import WandbCallbackExtendMemory
 from run.shared.environmentinitializer import EnvironmentInitializer
+from run.shared.hyperparameters.sweep_configuration import sweep_configuration
+from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
+from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 
 
 class WandbTrain:
@@ -46,9 +45,11 @@ class WandbTrain:
 
         # Get parameter for Algo from CLI arguments
         else:
-            config = {key: self.program.args.__dict__[key]
-                      for key in algorithm_init_parameters
-                      if key in self.program.args.__dict__}
+            config = {
+                key: self.program.args.__dict__[key]
+                for key in algorithm_init_parameters
+                if key in self.program.args.__dict__
+            }
 
         config["tensorboard_log"] = self.program.args.folder_tensorboard.as_posix()
         return config
@@ -77,15 +78,23 @@ class WandbTrain:
 
     def _init_callbacks(self):
         self.program.log.info("Init callbacks")
-        callbacks = CallbackList([ProgressBarCallback(), ])
+        callbacks = CallbackList(
+            [
+                ProgressBarCallback(),
+            ]
+        )
 
         if self.program.is_wandb_enabled():
-            callbacks.callbacks.append(WandbCallbackExtendMemory(
-                verbose=self.program.args.wandb_verbose,
-                model_save_path=self.model_path.parent.as_posix() if self.program.args.wandb_model_save else None,
-                model_save_freq=self.program.args.wandb_model_save_freq if self.program.args.wandb_model_save else 0,
-                gradient_save_freq=self.program.args.wandb_gradient_save_freq
-            ))
+            callbacks.callbacks.append(
+                WandbCallbackExtendMemory(
+                    verbose=self.program.args.wandb_verbose,
+                    model_save_path=self.model_path.parent.as_posix() if self.program.args.wandb_model_save else None,
+                    model_save_freq=self.program.args.wandb_model_save_freq
+                    if self.program.args.wandb_model_save
+                    else 0,
+                    gradient_save_freq=self.program.args.wandb_gradient_save_freq,
+                )
+            )
 
         return callbacks
 
@@ -99,9 +108,7 @@ class WandbTrain:
             **self._init_hyper_parameters(),
         )
         model.learn(
-            total_timesteps=self.program.args.total_timesteps,
-            tb_log_name=f"{self.algorithm}",
-            callback=callbacks
+            total_timesteps=self.program.args.total_timesteps, tb_log_name=f"{self.algorithm}", callback=callbacks
         )
         return model
 
@@ -119,8 +126,9 @@ class WandbTrain:
     def train_run(self):
         self.program.log.info(f"START Training {self.algorithm} algorithm.")
         # Initialize
-        environment = EnvironmentInitializer(self.program, self.dataset) \
-            .portfolio_allocation(self.dataset.train_dataset)
+        environment = EnvironmentInitializer(self.program, self.dataset).portfolio_allocation(
+            self.dataset.train_dataset
+        )
         callbacks = self._init_callbacks()
 
         # Model training
@@ -160,9 +168,13 @@ def main():
                 wandb_train.train()
             else:
                 sweep_id = wandb.sweep(sweep=sweep_configuration, project=program.args.wandb_project)
-                wandb.agent(sweep_id, function=wandb_train.train, project=program.args.wandb_project,
-                            count=program.args.wandb_sweep_count)
+                wandb.agent(
+                    sweep_id,
+                    function=wandb_train.train,
+                    project=program.args.wandb_project,
+                    count=program.args.wandb_sweep_count,
+                )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

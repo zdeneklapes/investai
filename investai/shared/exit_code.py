@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from enum import IntEnum, auto
 
+
 class ExitCode(IntEnum):
     """Exit codes for training process are in range 0000-1000."""
 

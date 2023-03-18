@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 """TODO docstring"""
-from tqdm import trange
 import wandb
-
-from shared.program import Program
+from extra.math.finance.shared.baseline import Baseline
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.shared.algorithmsb3 import ALGORITHM_SB3_TYPE
-from run.shared.tickers import DOW_30_TICKER
-from run.shared.environmentinitializer import EnvironmentInitializer
 from run.shared.callback.wandb_util import wandb_summary
+from run.shared.environmentinitializer import ENVIRONMENT_TYPE, EnvironmentInitializer
 from run.shared.memory import Memory
+from run.shared.tickers import DOW_30_TICKER
+from shared.program import Program
 from shared.utils import calculate_sharpe_ratio
+from stable_baselines3.common.vec_env import DummyVecEnv
+from tqdm import trange
 
 
 class WandbTest:
@@ -23,54 +24,57 @@ class WandbTest:
         env.close()
 
     def test(self, model: ALGORITHM_SB3_TYPE, deterministic=True) -> None:
-        environment = EnvironmentInitializer(self.program, self.dataset).portfolio_allocation(self.dataset.test_dataset)
+        environment: DummyVecEnv = EnvironmentInitializer(self.program, self.dataset).portfolio_allocation(
+            self.dataset.test_dataset
+        )
         obs = environment.reset()
 
         # "-2" because we don't want to go till terminal state, because the environment will be reset
-        iterable = trange(len(environment.envs[0].env.dataset.index.unique()) - 2, desc="Test") \
-            if self.program.args.project_verbose \
+        iterable = (
+            trange(len(environment.envs[0].env.dataset.index.unique()) - 2, desc="Test")
+            if self.program.args.project_verbose
             else range(len(environment.envs[0].env.dataset.index.unique()) - 2)
+        )
 
         # Test
         for _ in iterable:
             action, _ = model.predict(obs, deterministic=deterministic)
             environment.step(action)
             if self.program.is_wandb_enabled():
-                self.wandb_logging(environment.envs[0].env.memory)
+                self.create_log(environment.envs[0].env.memory)
 
-        # Finish
-        self.create_summary(environment)
-        self.create_baseline_chart()
+        if self.program.is_wandb_enabled():
+            # Finish
+            self.create_summary(environment.envs[0].env)
+            self.create_baseline_chart(environment.envs[0].env)
 
-    def wandb_logging(self, memory: Memory):
-        log_dict = {"memory/test_reward": memory.df.iloc[-1]['reward']}
+    def create_log(self, memory: Memory):
+        log_dict = {"memory/test_reward": memory.df.iloc[-1]["reward"]}
         wandb.log(log_dict)
 
-    def create_summary(self, environment):
-        if self.program.is_wandb_enabled():
-            df = environment.envs[0].env.dataset
-            memory: Memory = environment.envs[0].env.memory
-            info = {
-                # Rewards
-                "test/total_reward": (memory.df['reward'] + 1).cumprod().iloc[-1],
-                # TODO: reward annualized
-                # Dates
-                "test/dataset_start_date": df['date'].unique()[0],
-                "test/dataset_end_date": df['date'].unique()[-1],
-                "test/start_date": df['date'].unique()[0],
-                "test/end_date": memory.df['date'].iloc[-1],
-                # Ratios
-                "test/sharpe_ratio": calculate_sharpe_ratio(memory.df['reward']),
-                # TODO: Calmar ratio
-            }
-            wandb_summary(info)
+    def create_summary(self, environment: ENVIRONMENT_TYPE):
+        info = {
+            # Rewards
+            "test/total_reward": (environment.memory.df["reward"] + 1).cumprod().iloc[-1],
+            # TODO: reward annualized
+            # Dates
+            "test/dataset_start_date": environment.dataset["date"].unique()[0],
+            "test/dataset_end_date": environment.dataset["date"].unique()[-1],
+            "test/start_date": environment.dataset["date"].unique()[0],
+            "test/end_date": environment.memory.df["date"].iloc[-1],
+            # Ratios
+            "test/sharpe_ratio": calculate_sharpe_ratio(environment.memory.df["reward"]),
+            # TODO: Calmar ratio
+        }
+        wandb_summary(info)
 
-    def create_baseline_chart(self):
-        # TODO: Charts baselines vs model: wandb.plot_table()
-        pass
+    def create_baseline_chart(self, environment: ENVIRONMENT_TYPE):
+        baseline = Baseline(self.program, self.dataset.test_dataset)
+        baseline.load(self.program.args.baseline_path.as_posix())
 
 
-def get_best_model(self): pass
+def get_best_model(self):
+    pass
 
 
 def main():
@@ -85,5 +89,5 @@ def main():
     # get_best_model()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

@@ -1,14 +1,17 @@
 # -*- coding: utf-8 -*-
+"""TODO docstring"""
 from pathlib import Path
+from typing import Union
 
 import pandas as pd
+from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
+from run.portfolio_allocation.envs.portfolioallocation2env import PortfolioAllocation2Env
+from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
+from shared.program import Program
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 
-from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
-from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
-from run.portfolio_allocation.envs.portfolioallocation2env import PortfolioAllocation2Env
-from shared.program import Program
+ENVIRONMENT_TYPE = Union[PortfolioAllocationEnv, PortfolioAllocation2Env]
 
 
 class EnvironmentInitializer:
@@ -20,15 +23,22 @@ class EnvironmentInitializer:
         env = None
         if self.program.args.portfolio_allocation_env == 0:
             self.program.log.info(f"Init environment: {PortfolioAllocationEnv.__name__}")
-            env = PortfolioAllocationEnv(dataset=dataset, tickers=self.dataset.tickers,
-                                         features=self.dataset.get_features(),
-                                         start_index=self.program.args.start_index)
+            env = PortfolioAllocationEnv(
+                dataset=dataset,
+                tickers=self.dataset.tickers,
+                features=self.dataset.get_features(),
+                start_index=self.program.args.start_index,
+            )
         elif self.program.args.portfolio_allocation_env == 1:
             self.program.log.info(f"Init environment: {PortfolioAllocation2Env.__name__}")
-            env = PortfolioAllocation2Env(dataset=dataset, tickers=self.dataset.tickers,
-                                          columns_to_drop_in_observation=['date', 'tic'],
-                                          start_index=self.program.args.start_index)
-        env = Monitor(env, Path(self.program.args.folder_wandb).as_posix(),
-                      allow_early_resets=True)  # stable_baselines3.common.monitor.Monitor
+            env = PortfolioAllocation2Env(
+                dataset=dataset,
+                tickers=self.dataset.tickers,
+                columns_to_drop_in_observation=["date", "tic"],
+                start_index=self.program.args.start_index,
+            )
+        env = Monitor(
+            env, Path(self.program.args.folder_wandb).as_posix(), allow_early_resets=True
+        )  # stable_baselines3.common.monitor.Monitor
         env = DummyVecEnv([lambda: env])
         return env

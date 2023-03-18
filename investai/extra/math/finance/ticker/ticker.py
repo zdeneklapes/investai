@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
+import dataclasses
 import enum
 from typing import Optional
-import dataclasses
+
 import pandas as pd
 
 
 @dataclasses.dataclass
 class Ticker:
     """Ticker class to store all the data for a ticker"""
+
     ticker: Optional[str] = None
     enterprise_value: Optional[pd.DataFrame] = None
     balance_sheet: Optional[pd.DataFrame] = None
