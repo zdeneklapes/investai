@@ -23,20 +23,30 @@ class WandbTest:
         env.close()
 
     def test(self, model: ALGORITHM_SB3_TYPE, deterministic=True) -> None:
-        environment = EnvironmentInitializer(self.program, self.dataset) \
-            .initialize_portfolio_allocation(self.dataset.test_dataset)
+        environment = EnvironmentInitializer(self.program, self.dataset).portfolio_allocation(self.dataset.test_dataset)
         obs = environment.reset()
-        # -2 because we don't want to go till terminal state, because the environment will be reset
+
+        # "-2" because we don't want to go till terminal state, because the environment will be reset
         iterable = trange(len(environment.envs[0].env.dataset.index.unique()) - 2, desc="Test") \
             if self.program.args.project_verbose \
             else range(len(environment.envs[0].env.dataset.index.unique()) - 2)
+
+        # Test
         for _ in iterable:
             action, _ = model.predict(obs, deterministic=deterministic)
             environment.step(action)
             if self.program.is_wandb_enabled():
-                memory_dict = environment.envs[0].env.memory.df.iloc[-1].to_dict()
-                log_dict = {"memory/test_reward": memory_dict['reward']}
-                wandb.log(log_dict)
+                self.wandb_logging(environment.envs[0].env.memory)
+
+        # Finish
+        self.create_summary(environment)
+        self.create_baseline_chart()
+
+    def wandb_logging(self, memory: Memory):
+        log_dict = {"memory/test_reward": memory.df.iloc[-1]['reward']}
+        wandb.log(log_dict)
+
+    def create_summary(self, environment):
         if self.program.is_wandb_enabled():
             df = environment.envs[0].env.dataset
             memory: Memory = environment.envs[0].env.memory
@@ -54,8 +64,10 @@ class WandbTest:
                 # TODO: Calmar ratio
             }
             wandb_summary(info)
-            # TODO: Charts baselines vs model
-            # wandb.plot_table()
+
+    def create_baseline_chart(self):
+        # TODO: Charts baselines vs model: wandb.plot_table()
+        pass
 
 
 def get_best_model(self): pass

@@ -120,7 +120,7 @@ class WandbTrain:
         self.program.log.info(f"START Training {self.algorithm} algorithm.")
         # Initialize
         environment = EnvironmentInitializer(self.program, self.dataset) \
-            .initialize_portfolio_allocation(self.dataset.train_dataset)
+            .portfolio_allocation(self.dataset.train_dataset)
         callbacks = self._init_callbacks()
 
         # Model training

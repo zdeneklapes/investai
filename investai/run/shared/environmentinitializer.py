@@ -16,7 +16,7 @@ class EnvironmentInitializer:
         self.program = program
         self.dataset = dataset
 
-    def initialize_portfolio_allocation(self, dataset: pd.DataFrame) -> DummyVecEnv:
+    def portfolio_allocation(self, dataset: pd.DataFrame) -> DummyVecEnv:
         env = None
         if self.program.args.portfolio_allocation_env == 0:
             self.program.log.info(f"Init environment: {PortfolioAllocationEnv.__name__}")
