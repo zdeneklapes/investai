@@ -150,8 +150,6 @@ class WandbTrain:
 
 def main():
     program = Program()
-    pprint(vars(program.args))
-    exit()
 
     for algorithm in program.args.algorithms:
         if program.args.train:
