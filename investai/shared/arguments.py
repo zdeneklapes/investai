@@ -30,7 +30,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     # nargs="*": 0 or more arguments
     # nargs="+": 1 or more arguments
 
-    def postprocess_path_arguments(args: Namespace):
+    def postprocess_folder_arguments(args: Namespace):
         def create_dirs(args):
             args.folder_root.mkdir(parents=True, exist_ok=True)
             args.folder_ticker.mkdir(parents=True, exist_ok=True)
@@ -199,7 +199,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument('--exploration-final-eps', type=float, default=0.02,
                         help="Final value of random action probability")
 
-    args = postprocess_path_arguments(parser.parse_args())
+    args = postprocess_folder_arguments(parser.parse_args())
     return vars(args), args
 
 
