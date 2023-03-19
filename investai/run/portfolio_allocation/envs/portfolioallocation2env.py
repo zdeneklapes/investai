@@ -15,6 +15,7 @@ from run.shared.memory import Memory
 from scipy.special import softmax
 from shared.utils import calculate_return_from_weights
 
+
 # import gymnasium as gym
 # from gymnasium import spaces
 
@@ -24,10 +25,10 @@ class PortfolioAllocation2Env(gym.Env):
 
     metadata = {"render.modes": ["human"]}
 
-    def __init__(
-        self, dataset: pd.DataFrame, tickers: List[str], columns_to_drop_in_observation: List[str], start_index: int = 0
-    ):
+    def __init__(self, program, dataset: pd.DataFrame, tickers: List[str], columns_to_drop_in_observation: List[str],
+                 start_index: int = 0):
         # Immutable
+        self.program: Final = program
         self.dataset: Final = dataset
         self._start_time: Final = start_index
         self._tickers: Final = tickers  # Used for: Action and Observation space
@@ -49,7 +50,7 @@ class PortfolioAllocation2Env(gym.Env):
         self._portfolio_value: Portfolio value
         """
         self._time = self._start_time
-        self.memory = Memory(df=pd.DataFrame())
+        self.memory = Memory(program=self.program)
 
     @property
     def _current_data(self) -> pd.DataFrame:

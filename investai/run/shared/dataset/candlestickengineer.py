@@ -7,6 +7,7 @@ import pandas as pd
 from numpy import ndarray
 
 
+# TODO: Add df_name and get the arg from **kwargs
 def check_dataframe_columns(required_columns=["open", "high", "low", "close"]):
     """Check if dataframe has the required columns"""
 

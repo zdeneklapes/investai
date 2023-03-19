@@ -134,7 +134,7 @@ class WandbTrain:
 
         # Model training
         model = self._init_model(environment, callbacks)
-        model.save(self.model_path.as_posix())
+        model.save_json(self.model_path.as_posix())
 
         # Wandb: Log artifacts
         if self.program.is_wandb_enabled():

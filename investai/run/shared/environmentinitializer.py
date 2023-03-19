@@ -31,12 +31,9 @@ class EnvironmentInitializer:
             )
         elif self.program.args.portfolio_allocation_env == 1:
             self.program.log.info(f"Init environment: {PortfolioAllocation2Env.__name__}")
-            env = PortfolioAllocation2Env(
-                dataset=dataset,
-                tickers=self.dataset.tickers,
-                columns_to_drop_in_observation=["date", "tic"],
-                start_index=self.program.args.start_index,
-            )
+            env = PortfolioAllocation2Env(self.program, dataset=dataset, tickers=self.dataset.tickers,
+                                          columns_to_drop_in_observation=["date", "tic"],
+                                          start_index=self.program.args.start_index)
         env = Monitor(
             env, Path(self.program.args.wandb_dir).as_posix(), allow_early_resets=True
         )  # stable_baselines3.common.monitor.Monitor

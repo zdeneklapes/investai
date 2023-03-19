@@ -4,6 +4,9 @@ import wandb
 from stable_baselines3.common.vec_env import DummyVecEnv
 from tqdm import trange
 import pandas as pd
+import matplotlib.pyplot as plt  # noqa
+import seaborn as sns  # noqa
+import numpy as np  # noqa
 
 from extra.math.finance.shared.baseline import Baseline
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
@@ -46,7 +49,7 @@ class WandbTest:
             if self.program.is_wandb_enabled():
                 self.create_log(environment_portfolio_allocation.memory)
 
-        environment_portfolio_allocation.memory.save(
+        environment_portfolio_allocation.memory.save_json(
             self.program.args.folder_out.joinpath("test_memory.json").as_posix())
 
         # Finish
@@ -77,7 +80,7 @@ class WandbTest:
     def create_baseline_chart(self, memory: Memory):
         baseline = Baseline(self.program)
         baseline.load(self.program.args.baseline_path.as_posix())
-        df_chart = pd.merge(memory.df[memory.df.columns.difference(['action'])], baseline.returns, on='date')
+        df_chart = pd.merge(memory.df[memory.df.columns.difference(['action'])], baseline.df, on='date')
         df_chart[df_chart.columns.difference(['date'])] = (df_chart[df_chart.columns.difference(['date'])] + 1).apply(
             lambda x: x.cumprod())
 
@@ -93,10 +96,13 @@ def t1():
     program.args.memory_path = program.args.folder_out.joinpath("test_memory.json")
     program.args.project_verbose = True
 
+    #
     baseline = Baseline(program)
     baseline.load(program.args.baseline_path.as_posix())
-    memory = Memory(df=pd.DataFrame())
+    memory = Memory(program=program)
     memory.load(program.args.folder_out.joinpath("test_memory.json").as_posix())
+
+    #
     # df_chart = pd.merge(memory.df[memory.df.columns.difference(['action'])], baseline.returns, on='date')
     # df_chart[df_chart.columns.difference(['date'])] = (df_chart[df_chart.columns.difference(['date'])] + 1).apply(
     #     lambda x: x.cumprod())

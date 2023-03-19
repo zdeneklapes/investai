@@ -47,6 +47,6 @@ class WandbCallbackExtendMemory(WandbCallback):
             # TODO: Calmar ratio
         }
         wandb_summary(info)
-        environment_portfolio_allocation.memory.save(
+        environment_portfolio_allocation.memory.save_json(
             self.program.args.folder_out.joinpath("train_memory.json").as_posix())
         super()._on_training_end()

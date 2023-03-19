@@ -22,7 +22,7 @@ from tvDatafeed import Interval, TvDatafeed
 
 
 class StockFaDailyDataset:
-    def __init__(self, program: Program, tickers: List[str], dataset_split_coef: float):
+    def __init__(self, program: Program, tickers: List[str], split_coef: float):
         TICKERS = deepcopy(tickers)
         TICKERS.remove("DOW")  # TODO: Fixme: "DOW" is not in DJI30 or what?
         #
@@ -53,7 +53,7 @@ class StockFaDailyDataset:
 
         # Final dataset for training and testing
         self.dataset = None
-        self.dataset_split_coef = dataset_split_coef
+        self.dataset_split_coef = split_coef
 
     @property
     def train_dataset(self) -> pd.DataFrame:
@@ -211,7 +211,7 @@ def t1() -> Dict:
     program.args.debug = True
     load_dotenv(dotenv_path=program.args.folder_root.as_posix())
 
-    dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef)
+    dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, split_coef=program.args.dataset_split_coef)
     return {"dataset": dataset, "d": dataset.get_stock_dataset()}
 
 
@@ -220,7 +220,7 @@ def main():
 
     program = Program()
     load_dotenv(dotenv_path=program.args.folder_root.as_posix())
-    dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef)
+    dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
     dataset.save_dataset(program.args.dataset_path)
 

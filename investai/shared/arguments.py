@@ -37,6 +37,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
             args.folder_out.mkdir(parents=True, exist_ok=True)
             args.folder_dataset.mkdir(parents=True, exist_ok=True)
             args.folder_baseline.mkdir(parents=True, exist_ok=True)
+            args.folder_memory.mkdir(parents=True, exist_ok=True)
             args.folder_model.mkdir(parents=True, exist_ok=True)
             args.folder_tensorboard.mkdir(parents=True, exist_ok=True)
 
@@ -44,6 +45,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
         if args.folder_out is None: args.folder_out: Path = args.folder_root.joinpath("out")
         if args.folder_dataset is None: args.folder_dataset: Path = args.folder_out.joinpath("dataset")
         if args.folder_baseline is None: args.folder_baseline: Path = args.folder_out.joinpath("baseline")
+        if args.folder_memory is None: args.folder_memory: Path = args.folder_out.joinpath("memory")
         if args.folder_model is None: args.folder_model: Path = args.folder_out.joinpath("model")
         if args.folder_tensorboard is None: args.folder_tensorboard: Path = args.folder_model.joinpath("tensorboard")
 
@@ -78,6 +80,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--folder-out", help="Path to output data folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-dataset", help="Path to datasets folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-baseline", help="Path to baselines folder", nargs="?", type=Path, default=None)
+    parser.add_argument("--folder-memory", help="Path to memory folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-model", help="Path to models folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-tensorboard", help="Path to tensorboard folder", nargs="?", type=Path, default=None)
 

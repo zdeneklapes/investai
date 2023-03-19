@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from copy import deepcopy  # noqa
-from typing import Tuple
+from typing import Dict, Tuple
 
 import numpy as np  # noqa
 import pandas as pd
@@ -12,26 +12,31 @@ from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDat
 from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
 from shared.utils import calculate_return_from_weights, reload_module  # noqa
+from run.shared.memory import Memory
 from tqdm import trange
 
 
 # TODO: add baseline S@P500
 # TODO: add baseline DJI30
 
+class Baseline(Memory):
+    def __init__(self, program: Program, df: pd.DataFrame = pd.DataFrame()):
+        super().__init__(program, df)
 
-class Baseline:
-    def __init__(self, program):
-        self.program = program
-        self.returns = pd.DataFrame()
+    def warren_buffet_returns(self) -> pd.DataFrame:
+        """Source:"""
 
-    def get_weights(self, mean, s) -> pd.DataFrame:
-        ef = EfficientFrontier(mean, s, weight_bounds=self.bounds)
+    def indexes_returns(self, program: Program, dataset: pd.DataFrame) -> pd.DataFrame:
+        """Source:"""
+
+    def _create_weights(self, mean, s, bounds: Tuple) -> Dict:
+        ef = EfficientFrontier(mean, s, weight_bounds=bounds)
         ef.min_volatility()
         cleaned_weights_min_var = ef.clean_weights()
-        ef = EfficientFrontier(mean, s, weight_bounds=self.bounds)
+        ef = EfficientFrontier(mean, s, weight_bounds=bounds)
         ef.max_quadratic_utility()
         cleaned_weights_max_quadratic_utility = ef.clean_weights()
-        ef = EfficientFrontier(mean, s, weight_bounds=self.bounds)
+        ef = EfficientFrontier(mean, s, weight_bounds=bounds)
         ef.max_sharpe()
         cleaned_weights_max_sharpe = ef.clean_weights()
         return {
@@ -40,43 +45,42 @@ class Baseline:
             "maximum_sharpe": cleaned_weights_max_sharpe,
         }
 
-    def get_returns(self, df: pd.DataFrame, bounds: Tuple = (0, 1)) -> pd.DataFrame:
-        """Source: https://github.com/AI4Finance-Foundation/FinRL-Tutorials
-        :param df:
-        :param bounds:
+    def pypfopt_returns(self, dataset: pd.DataFrame, bounds: Tuple = (0, 1)) -> pd.DataFrame:
         """
-        dates = df["date"].unique()
-        del df["date"]
+        source: https://github.com/AI4Finance-Foundation/FinRL-Tutorials
+        Create returns using pyportfolioopt library and results are stored in self.df and returned
+        :param dataset: pd.DataFrame: dataset
+        :param bounds: Tuple: (min, max) bounds for weights
+        :return: pd.DataFrame: self.df with returns
+        """
+        rewards = pd.DataFrame()
+        dates = dataset["date"].unique()
+        del dataset["date"]
 
-        if not self.returns.empty:
-            return self.returns
-
-        iterable = (
-            trange(4, dates.size - 1) if self.program.args.project_verbose else range(4, dates.size - 1)
-        )
+        iterable = (trange(4, dates.size - 1) if self.program.args.project_verbose else range(4, dates.size - 1))
         for i in iterable:
-            mean_annual_return = mean_historical_return(df.iloc[:i])
-            s_covariance_matrix = CovarianceShrinkage(df.iloc[:i]).ledoit_wolf()
+            mean_annual_return = mean_historical_return(dataset.iloc[:i])
+            s_covariance_matrix = CovarianceShrinkage(dataset.iloc[:i]).ledoit_wolf()
 
             #
-            weights = self.get_weights(mean_annual_return, s_covariance_matrix)
+            weights = self._create_weights(mean_annual_return, s_covariance_matrix, bounds)
 
-            assert list(df.iloc[i].index) == list(weights["minimum_variance"].keys())
+            assert list(dataset.iloc[i].index) == list(weights["minimum_variance"].keys())
 
             #
             return_min_var = calculate_return_from_weights(
-                df.iloc[i].values,
-                df.iloc[i - 1].values,
+                dataset.iloc[i].values,
+                dataset.iloc[i - 1].values,
                 list(weights["minimum_variance"].values()),
             )
             return_max_quadratic_util = calculate_return_from_weights(
-                df.iloc[i].values,
-                df.iloc[i - 1].values,
+                dataset.iloc[i].values,
+                dataset.iloc[i - 1].values,
                 list(weights["maximum_quadratic_utility"].values()),
             )
             return_max_sharpe = calculate_return_from_weights(
-                df.iloc[i].values,
-                df.iloc[i - 1].values,
+                dataset.iloc[i].values,
+                dataset.iloc[i - 1].values,
                 list(weights["maximum_sharpe"].values()),
             )
 
@@ -86,17 +90,10 @@ class Baseline:
                 f"minimum_variance_{bounds[0]}_{bounds[1]}": return_min_var,
                 f"maximum_quadratic_utility_{bounds[0]}_{bounds[1]}": return_max_quadratic_util,
                 f"maximum_sharpe_{bounds[0]}_{bounds[1]}": return_max_sharpe, }
-            self.returns = pd.concat([self.returns, pd.DataFrame(next_return, index=[0])], ignore_index=True)
+            rewards = pd.concat([rewards, pd.DataFrame(next_return, index=[0])], ignore_index=True)
 
-        return self.returns
-
-    def save(self, file_path) -> None:
-        if self.program.args.project_verbose > 0: self.program.log.info(f"Saving baseline return to: {file_path}")
-        self.returns.to_csv(file_path, index=True)
-
-    def load(self, file_path: str) -> None:
-        if self.program.args.project_verbose > 0: self.program.log.info(f"Loading baseline returns from: {file_path}")
-        self.returns = pd.read_csv(file_path, index_col=0, parse_dates=True)
+        self.df = rewards
+        return self.df
 
 
 def t1():
@@ -108,7 +105,7 @@ def t1():
     load_dotenv(dotenv_path=program.args.folder_root.joinpath(".env").as_posix())
 
     dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER,
-                                  dataset_split_coef=program.args.dataset_split_coef)
+                                  split_coef=program.args.dataset_split_coef)
     dataset.load_dataset(program.args.dataset_path)
 
     d_tics = dataset.dataset[["tic", "close", "date"]].sort_values(by=["tic", "date"])
@@ -128,23 +125,22 @@ def t1():
 
 def main():
     program = Program()
-    program.args.project_verbose = 1
-    program.args.dataset_path = program.args.folder_dataset.joinpath("stockfadailydataset.csv").as_posix()
 
-    #
-    dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER,
-                                  dataset_split_coef=program.args.dataset_split_coef)
+    # NOTE: for pypfopt baseline dataset_path must be defined
+    dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER, split_coef=program.args.dataset_split_coef)
     dataset.load_dataset(program.args.dataset_path)
-
     d_tics = dataset.dataset[["tic", "close", "date"]].sort_values(by=["tic", "date"])
     d = {"date": d_tics["date"].unique()}
     d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
     df = pd.DataFrame(d)
+    baseline = Baseline(program=program)
+    baseline.pypfopt_returns(dataset=df, bounds=(0, 1))
+    baseline.save_json(file_path=program.args.folder_baseline.joinpath("baseline_pypfopt.json").as_posix())
 
-    #
-    baseline = Baseline(program)
-    baseline.get_returns(df=df, bounds=(0, 1))
-    baseline.save(program.args.baseline_path)
+    # NOTE: for these baselines dataset_path needn't be defined
+    # TODO: add baseline S@P500
+    # TODO: add baseline DJI30
+    # TODO: add baseline Warren Buffet
 
 
 if __name__ == "__main__":
