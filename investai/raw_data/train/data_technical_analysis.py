@@ -36,7 +36,7 @@ class DataTechnicalAnalysis(DataBase):
         # TODO: Is it correct?
         lookback = 252
         for i in range(lookback, len(df.index.unique())):
-            data_lookback = df.loc[i - lookback : i, :]
+            data_lookback = df.loc[i - lookback: i, :]
             price_lookback = data_lookback.pivot_table(index="date", columns="tic", values="close")
             return_lookback = price_lookback.pct_change().dropna()
             return_list.append(return_lookback)

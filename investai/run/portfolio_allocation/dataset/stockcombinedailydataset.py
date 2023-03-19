@@ -88,7 +88,7 @@ class StockFaDailyDataset:
 
         iterable = tqdm(self.tickers) if self.program.args.project_verbose > 0 else self.tickers
         for tic in iterable:
-            if type(iterable) is tqdm:
+            if isinstance(iterable, tqdm):
                 iterable.set_description(f"Processing {tic}")
             raw_data: Ticker = self.load_raw_data(tic)  # Load tickers raw_data
             feature_data = self.add_fa_features(raw_data)  # Add features

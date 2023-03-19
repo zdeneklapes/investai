@@ -2,6 +2,8 @@
 # ######################################################################################################################
 # Imports
 # ######################################################################################################################
+from shared.utils import now_time
+from shared.projectstructure import ProjectStructure
 import concurrent.futures
 import copy
 import dataclasses
@@ -31,9 +33,7 @@ sys.path.append("../../")
 sys.path.append("../../../")
 
 ##
-from shared.projectstructure import ProjectStructure
 from shared.ticker import Ticker  # Previously CompanyInfo # noqa
-from shared.utils import now_time
 
 # ######################################################################################################################
 # Global Variables
@@ -275,7 +275,7 @@ if __name__ == "__main__":
         bunches = [(i, i + _step) for i in range(_start, _stop, _step)]
         current_time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
         print(current_time, bunches)
-        tickers_bunches = [tickers[b[0] : b[1]] for b in bunches]
+        tickers_bunches = [tickers[b[0]: b[1]] for b in bunches]
         # print(tickers_bunches)
         # continue
 

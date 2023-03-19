@@ -27,7 +27,7 @@ class Ratio(DataPreprocessing):
             elif self.data.iloc[i, 1] != self.data.iloc[i - 3, 1]:
                 OPM.iloc[i] = np.nan
             else:
-                OPM.iloc[i] = np.sum(self.data["op_inc_q"].iloc[i - 3 : i]) / np.sum(self.data["rev_q"].iloc[i - 3 : i])
+                OPM.iloc[i] = np.sum(self.data["op_inc_q"].iloc[i - 3: i]) / np.sum(self.data["rev_q"].iloc[i - 3: i])
 
         # Net Profit Margin
         NPM = pd.Series(np.empty(self.data.shape[0], dtype=object), name="NPM")
@@ -37,8 +37,8 @@ class Ratio(DataPreprocessing):
             elif self.data.iloc[i, 1] != self.data.iloc[i - 3, 1]:
                 NPM.iloc[i] = np.nan
             else:
-                NPM.iloc[i] = np.sum(self.data["net_inc_q"].iloc[i - 3 : i]) / np.sum(
-                    self.data["rev_q"].iloc[i - 3 : i]
+                NPM.iloc[i] = np.sum(self.data["net_inc_q"].iloc[i - 3: i]) / np.sum(
+                    self.data["rev_q"].iloc[i - 3: i]
                 )
 
         # Return On Assets
@@ -49,7 +49,7 @@ class Ratio(DataPreprocessing):
             elif self.data.iloc[i, 1] != self.data.iloc[i - 3, 1]:
                 ROA.iloc[i] = np.nan
             else:
-                ROA.iloc[i] = np.sum(self.data["net_inc_q"].iloc[i - 3 : i]) / self.data["tot_assets"].iloc[i]
+                ROA.iloc[i] = np.sum(self.data["net_inc_q"].iloc[i - 3: i]) / self.data["tot_assets"].iloc[i]
 
         # Return on Equity
         ROE = pd.Series(np.empty(self.data.shape[0], dtype=object), name="ROE")
@@ -59,7 +59,7 @@ class Ratio(DataPreprocessing):
             elif self.data.iloc[i, 1] != self.data.iloc[i - 3, 1]:
                 ROE.iloc[i] = np.nan
             else:
-                ROE.iloc[i] = np.sum(self.data["net_inc_q"].iloc[i - 3 : i]) / self.data["sh_equity"].iloc[i]
+                ROE.iloc[i] = np.sum(self.data["net_inc_q"].iloc[i - 3: i]) / self.data["sh_equity"].iloc[i]
 
             # For calculating valuation ratios in the next subpart, calculate per share items in advance
         # Earnings Per Share
@@ -92,7 +92,7 @@ class Ratio(DataPreprocessing):
             elif self.data.iloc[i, 1] != self.data.iloc[i - 3, 1]:
                 inv_turnover.iloc[i] = np.nan
             else:
-                inv_turnover.iloc[i] = np.sum(self.data["cogs_q"].iloc[i - 3 : i]) / self.data["inventories"].iloc[i]
+                inv_turnover.iloc[i] = np.sum(self.data["cogs_q"].iloc[i - 3: i]) / self.data["inventories"].iloc[i]
 
         # Receivables turnover ratio
         acc_rec_turnover = pd.Series(np.empty(self.data.shape[0], dtype=object), name="acc_rec_turnover")
@@ -102,7 +102,7 @@ class Ratio(DataPreprocessing):
             elif self.data.iloc[i, 1] != self.data.iloc[i - 3, 1]:
                 acc_rec_turnover.iloc[i] = np.nan
             else:
-                acc_rec_turnover.iloc[i] = np.sum(self.data["rev_q"].iloc[i - 3 : i]) / self.data["receivables"].iloc[i]
+                acc_rec_turnover.iloc[i] = np.sum(self.data["rev_q"].iloc[i - 3: i]) / self.data["receivables"].iloc[i]
 
         # Payable turnover ratio
         acc_pay_turnover = pd.Series(np.empty(self.data.shape[0], dtype=object), name="acc_pay_turnover")
@@ -112,7 +112,7 @@ class Ratio(DataPreprocessing):
             elif self.data.iloc[i, 1] != self.data.iloc[i - 3, 1]:
                 acc_pay_turnover.iloc[i] = np.nan
             else:
-                acc_pay_turnover.iloc[i] = np.sum(self.data["cogs_q"].iloc[i - 3 : i]) / self.data["payables"].iloc[i]
+                acc_pay_turnover.iloc[i] = np.sum(self.data["cogs_q"].iloc[i - 3: i]) / self.data["payables"].iloc[i]
 
         # Leverage financial ratios
         # Debt ratio

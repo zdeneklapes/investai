@@ -4,6 +4,10 @@
 # Imports
 # ######################################################################################################################
 #
+from shared.utils import now_time
+from rl.experiments._1_same_bigger_data_fundamental.StockTradingEnv import StockTradingEnv
+from project_configs.project_dir import ProjectDir
+from project_configs.experiment_dir import ExperimentDir
 import dataclasses
 import sys
 from pathlib import Path
@@ -28,12 +32,8 @@ sys.path.append("../")
 sys.path.append("../../")
 sys.path.append("../../../")
 
-from project_configs.experiment_dir import ExperimentDir
-from project_configs.project_dir import ProjectDir
-from rl.experiments._1_same_bigger_data_fundamental.StockTradingEnv import StockTradingEnv
 
 #
-from shared.utils import now_time
 
 
 # ######################################################################################################################

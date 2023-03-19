@@ -4,6 +4,12 @@
 # Imports
 # ######################################################################################################################
 #
+from rl.experiments.common.utils import get_dataset
+from rl.experiments.common.classes import Program
+from rl.experiments.common.agents import CustomDRLAgent
+from rl.envs.StockTradingEnv import StockTradingEnv
+from project_configs.project_dir import ProjectDir
+from project_configs.experiment_dir import ExperimentDir
 import sys
 from pathlib import Path
 from typing import Any, Dict
@@ -21,14 +27,8 @@ sys.path.append("../")
 sys.path.append("../../")
 sys.path.append("../../../")
 
-from project_configs.experiment_dir import ExperimentDir
 
 #
-from project_configs.project_dir import ProjectDir
-from rl.envs.StockTradingEnv import StockTradingEnv
-from rl.experiments.common.agents import CustomDRLAgent
-from rl.experiments.common.classes import Program
-from rl.experiments.common.utils import get_dataset
 
 # ######################################################################################################################
 # Configurations

@@ -4,6 +4,16 @@
 # Imports
 # ######################################################################################################################
 #
+from stable_baselines3.common.logger import configure
+from rl.experiments.common.classes import Program
+from rl.experiments.common.agents import CustomDRLAgent
+from rl.envs.StockTradingEnv import StockTradingEnv
+from project_configs.project_dir import ProjectDir
+from project_configs.experiment_dir import ExperimentDir
+from finrl.config import A2C_PARAMS
+import pandas as pd
+from typing import Any, Dict
+from pathlib import Path
 import sys
 
 #
@@ -14,22 +24,12 @@ sys.path.append("../../")
 sys.path.append("../../../")
 
 #
-from pathlib import Path
-from typing import Any, Dict
 
 #
-import pandas as pd
 
 #
-from finrl.config import A2C_PARAMS
-from project_configs.experiment_dir import ExperimentDir
 
 #
-from project_configs.project_dir import ProjectDir
-from rl.envs.StockTradingEnv import StockTradingEnv
-from rl.experiments.common.agents import CustomDRLAgent
-from rl.experiments.common.classes import Program
-from stable_baselines3.common.logger import configure
 
 # ######################################################################################################################
 # Configurations
