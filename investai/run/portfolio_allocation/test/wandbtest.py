@@ -87,9 +87,8 @@ class WandbTest:
         baseline.load_csv(self.program.args.baseline_path.as_posix())
         baseline.df['date'] = baseline.df['date'].astype(np.datetime64)
         #
-        df_map = {}
-        df_map['memory_without_action'] = memory_env.df[memory_env.df.columns.difference(['action'])]
-        df_chart = pd.merge(df_map['memory_without_action'], baseline.df, on='date')
+        memory_without_action = memory_env.df[memory_env.df.columns.difference(['action'])]
+        df_chart = pd.merge(memory_without_action, baseline.df, on='date')
         df_cumprod = (df_chart.drop(columns=['date']) + 1).cumprod()
         df_cumprod.rename(columns={'reward': 'model'}, inplace=True)
 
@@ -98,7 +97,7 @@ class WandbTest:
         wandb.log({"test/portfolios_return_table": portfolios_return_table})
 
         # Seaborne chart
-        df_cumprod.index = df_map['df_chart']['date']
+        df_cumprod.index = df_chart['date']
         fig: plt.figure = fig_rewards(df_cumprod)
         wandb.log({"test/portfolios_return_table_chart": wandb.Image(fig)})
 

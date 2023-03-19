@@ -53,12 +53,13 @@ class Baseline(Memory):
         :param bounds: Tuple: (min, max) bounds for weights
         :return: pd.DataFrame: self.df with returns
         """
-        start_date: np.datetime64 = np.datetime_data(dataset["date"].unique()[0]) - np.timedelta64(1, 'D')
+        start_date: np.datetime64 = dataset["date"].unique()[0] - np.timedelta64(1, 'D')
+        start_return = [0]
         rewards = pd.DataFrame({
-            "date": [start_date],
-            f"minimum_variance_{bounds[0]}_{bounds[1]}": [1],
-            f"maximum_quadratic_utility_{bounds[0]}_{bounds[1]}": [1],
-            f"maximum_sharpe_{bounds[0]}_{bounds[1]}": [1],
+            "date": [np.datetime_as_string(start_date, unit='D')],
+            f"minimum_variance_{bounds[0]}_{bounds[1]}": start_return,
+            f"maximum_quadratic_utility_{bounds[0]}_{bounds[1]}": start_return,
+            f"maximum_sharpe_{bounds[0]}_{bounds[1]}": start_return,
         })
         dates = dataset["date"].unique()
         del dataset["date"]
@@ -141,12 +142,11 @@ def main():
     df = pd.DataFrame(d)
     baseline = Baseline(program=program)
     baseline.pypfopt_returns(dataset=df, bounds=(0, 1))
-    baseline.save_csv(file_path=program.args.folder_baseline.joinpath("baseline_pypfopt.csv").as_posix())
-
     # NOTE: for these baselines dataset_path needn't be defined
     # TODO: add baseline S@P500
     # TODO: add baseline DJI30
     # TODO: add baseline Warren Buffet
+    baseline.save_csv(file_path=program.args.baseline_path.as_posix())
 
 
 if __name__ == "__main__":

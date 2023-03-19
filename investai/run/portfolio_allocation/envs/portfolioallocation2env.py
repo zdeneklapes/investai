@@ -57,7 +57,7 @@ class PortfolioAllocation2Env(gym.Env):
         """
         self._time = self._start_time
         self.memory = Memory(program=self.program,
-                             df=pd.DataFrame(self._memory_record(reward=1,
+                             df=pd.DataFrame(self._memory_record(reward=0,  # start reward, so +1 = 1
                                                                  action=np.array([0] * self.action_space.shape[0]),
                                                                  date=self._current_date)))
 
@@ -98,7 +98,7 @@ class PortfolioAllocation2Env(gym.Env):
         #
         info = pd.DataFrame(self._memory_record(reward=reward,
                                                 action=normalized_actions,
-                                                date=self._current_data_in_time['date'].unique().iloc[-1]))
+                                                date=self._current_date))
         self.memory.concat(info)
 
         # Observation, Reward, Terminated, Info
