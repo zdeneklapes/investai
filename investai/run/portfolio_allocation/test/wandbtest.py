@@ -4,6 +4,7 @@ import wandb
 from stable_baselines3.common.vec_env import DummyVecEnv
 from tqdm import trange
 import pandas as pd
+from matplotlib.axes import Axes
 import matplotlib.pyplot as plt  # noqa
 import seaborn as sns  # noqa
 import numpy as np  # noqa
@@ -12,7 +13,7 @@ from extra.math.finance.shared.baseline import Baseline
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
 from run.shared.algorithmsb3 import ALGORITHM_SB3_TYPE
 from run.shared.callback.wandb_util import wandb_summary
-from run.shared.environmentinitializer import ENVIRONMENT_TYPE, EnvironmentInitializer
+from run.shared.environmentinitializer import EnvironmentInitializer
 from run.shared.memory import Memory
 from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
@@ -54,64 +55,105 @@ class WandbTest:
 
         # Finish
         if self.program.is_wandb_enabled():
-            self.create_summary(environment_portfolio_allocation)
-            self.create_baseline_chart(environment_portfolio_allocation)
+            self.create_summary(environment_portfolio_allocation.memory,
+                                environment_portfolio_allocation.dataset)
+            self.create_baseline_chart(environment_portfolio_allocation.memory)
 
     def create_log(self, memory: Memory):
-        log_dict = {"memory/test_reward": memory.df.iloc[-1]["reward"]}
+        log_dict = {"test/reward": memory.df.iloc[-1]["reward"]}
         wandb.log(log_dict)
 
-    def create_summary(self, environment: ENVIRONMENT_TYPE):
+    def create_summary(self, memory: Memory, dataset: pd.DataFrame):
         info = {
             # Rewards
-            "test/total_reward": (environment.memory.df["reward"] + 1).cumprod().iloc[-1],
+            "test/total_reward": (memory.df["reward"] + 1).cumprod().iloc[-1],
             # TODO: reward annualized
             # Dates
-            "test/dataset_start_date": environment.dataset["date"].unique()[0],
-            "test/dataset_end_date": environment.dataset["date"].unique()[-1],
-            "test/start_date": environment.dataset["date"].unique()[0],
-            "test/end_date": environment.memory.df["date"].iloc[-1],
+            "test/dataset_start_date": dataset["date"].unique()[0],
+            "test/dataset_end_date": dataset["date"].unique()[-1],
+            "test/start_date": dataset["date"].unique()[0],
+            "test/end_date": memory.df["date"].iloc[-1],
             # Ratios
-            "test/sharpe_ratio": calculate_sharpe_ratio(environment.memory.df["reward"]),
+            "test/sharpe_ratio": calculate_sharpe_ratio(memory.df["reward"]),
             # TODO: Calmar ratio
         }
         wandb_summary(info)
 
     def create_baseline_chart(self, memory: Memory):
+        memory.df['date'] = memory.df['date'].astype(np.datetime64)
+
+        #
         baseline = Baseline(self.program)
-        baseline.load(self.program.args.baseline_path.as_posix())
-        df_chart = pd.merge(memory.df[memory.df.columns.difference(['action'])], baseline.df, on='date')
-        df_chart[df_chart.columns.difference(['date'])] = (df_chart[df_chart.columns.difference(['date'])] + 1).apply(
-            lambda x: x.cumprod())
+        baseline.load_csv(self.program.args.baseline_path.as_posix())
+        baseline.df['date'] = baseline.df['date'].astype(np.datetime64)
+        #
+        ret_val = {}
+        ret_val['memory_without_action'] = memory.df[memory.df.columns.difference(['action'])]
+        ret_val['df_chart'] = pd.merge(ret_val['memory_without_action'], baseline.df, on='date')
+        ret_val['df_cumprod'] = (
+            (ret_val['df_chart'][ret_val['df_chart'].columns.difference(['date'])] + 1).apply(lambda x: x.cumprod())
+        )
+        ret_val['df_cumprod']['date'] = ret_val['df_chart']['date']
+        ret_val['df_cumprod'].rename(columns={'reward': 'model'}, inplace=True)
+        ret_val['df_cumprod'].index = ret_val['df_cumprod']['date']
+        ret_val['df_cumprod'].drop(columns=['date'], inplace=True)
+
+        #
+        portfolios_return_table = wandb.Table(ret_val['df_cumprod'], columns=ret_val['df_cumprod'].columns)
+        wandb.log({"test/portfolios_return_table": portfolios_return_table})
+
+        #
+        fig = plot_rewards(ret_val['df_cumprod'])
+        wandb.log({"test/portfolios_return_table_chart": wandb.Image(fig)})
 
 
-def get_best_model(self):
-    pass
+def plot_rewards(df: pd.DataFrame) -> plt.figure:
+    #
+    fig: plt.figure
+    ax: Axes
+    fig, ax = plt.subplots()
+    #
+    fig = sns.lineplot(data=df)
+    fig.set_title("Portfolio allocation rewards")
+    fig.set_xlabel("Date")
+    fig.set_ylabel("Cumulative reward")
+    x_dates = df.index.strftime('%Y-%m-%d').sort_values().unique()
+    ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
+    plt.tight_layout()
+    return fig
 
 
 def t1():
     program = Program()
+    ret_val = {}
 
-    program.args.baseline_path = program.args.folder_baseline.joinpath("baseline.csv")
-    program.args.memory_path = program.args.folder_out.joinpath("test_memory.json")
+    program.args.baseline_path = program.args.folder_baseline.joinpath("baseline_pypfopt.csv")
+    program.args.memory_path = program.args.folder_memory.joinpath("test_memory.json")
     program.args.project_verbose = True
 
     #
     baseline = Baseline(program)
-    baseline.load(program.args.baseline_path.as_posix())
+    baseline.load_csv(program.args.baseline_path.as_posix())
+    baseline.df['date'] = baseline.df['date'].astype(np.datetime64)
     memory = Memory(program=program)
-    memory.load(program.args.folder_out.joinpath("test_memory.json").as_posix())
+    memory.load_json(program.args.memory_path.as_posix())
+    memory.df['date'] = memory.df['date'].astype(np.datetime64)
 
     #
-    # df_chart = pd.merge(memory.df[memory.df.columns.difference(['action'])], baseline.returns, on='date')
-    # df_chart[df_chart.columns.difference(['date'])] = (df_chart[df_chart.columns.difference(['date'])] + 1).apply(
-    #     lambda x: x.cumprod())
-    return {
-        "program": program,
-        "baseline": baseline,
-        "memory": memory,
-        # "df_chart": df_chart
-    }
+
+    ret_val['p'] = program
+    ret_val['b'] = baseline
+    ret_val['m'] = memory
+    ret_val['memory_without_action'] = memory.df[memory.df.columns.difference(['action'])]
+    ret_val['df_chart'] = pd.merge(ret_val['memory_without_action'], baseline.df, on='date')
+    ret_val['df_cumprod'] = (
+        (ret_val['df_chart'][ret_val['df_chart'].columns.difference(['date'])] + 1).apply(lambda x: x.cumprod())
+    )
+    ret_val['df_cumprod']['date'] = ret_val['df_chart']['date']
+    ret_val['df_cumprod'].rename(columns={'reward': 'model'}, inplace=True)
+    ret_val['df_cumprod'].index = ret_val['df_cumprod']['date']
+    ret_val['df_cumprod'].drop(columns=['date'], inplace=True)
+    return ret_val
 
 
 def main():

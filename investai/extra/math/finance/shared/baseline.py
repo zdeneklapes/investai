@@ -135,7 +135,7 @@ def main():
     df = pd.DataFrame(d)
     baseline = Baseline(program=program)
     baseline.pypfopt_returns(dataset=df, bounds=(0, 1))
-    baseline.save_json(file_path=program.args.folder_baseline.joinpath("baseline_pypfopt.json").as_posix())
+    baseline.save_csv(file_path=program.args.folder_baseline.joinpath("baseline_pypfopt.csv").as_posix())
 
     # NOTE: for these baselines dataset_path needn't be defined
     # TODO: add baseline S@P500
