@@ -19,14 +19,14 @@ class Memory:
         """
         self.df = pd.concat([self.df, memory], axis=0, ignore_index=True)
 
-    def save(self, save_path: Path):
+    def save(self, file_path: str):
         """Save memory to csv file
-        :param save_path: Path to save the memory
+        :param file_path: Path to save the memory
         """
-        self.df.to_json(save_path.as_posix(), index=True)
+        self.df.to_json(file_path, index=True)
 
-    def load(self, save_path: Path):
+    def load(self, file_path: Path):
         """Save memory to csv file
-        :param save_path: Path to save the memory
+        :param file_path: Path to save the memory
         """
-        self.df.from_json(save_path.as_posix(), index=True)
+        self.df.from_json(file_path, index=True)

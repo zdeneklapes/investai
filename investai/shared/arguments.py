@@ -20,6 +20,7 @@ class _LoadArgumentsFromFile(argparse.Action):
             parser.parse_args(f.read().split(), namespace)
 
 
+# fmt: off
 def parse_arguments() -> Tuple[vars, Namespace]:
     """
     Parse arguments from command line or file
@@ -40,14 +41,12 @@ def parse_arguments() -> Tuple[vars, Namespace]:
             args.folder_model.mkdir(parents=True, exist_ok=True)
             args.folder_tensorboard.mkdir(parents=True, exist_ok=True)
 
-        # fmt: off
         if args.folder_ticker is None: args.folder_ticker = args.folder_root.joinpath("data/ticker")
         if args.folder_out is None: args.folder_out: Path = args.folder_root.joinpath("out")
         if args.folder_dataset is None: args.folder_dataset: Path = args.folder_out.joinpath("dataset")
         if args.folder_baseline is None: args.folder_baseline: Path = args.folder_out.joinpath("baseline")
         if args.folder_model is None: args.folder_model: Path = args.folder_out.joinpath("model")
         if args.folder_tensorboard is None: args.folder_tensorboard: Path = args.folder_model.joinpath("tensorboard")
-        # fmt: on
 
         create_dirs(args)
         return args
@@ -59,25 +58,20 @@ def parse_arguments() -> Tuple[vars, Namespace]:
 
     # Project arguments
     parser.add_argument(
-        "--train", help="Will train models based on hyper parameters" ** BOOL_AS_STR_ARGUMENTS_for_parser_add_argument
+        "--train", help="Will train models based on hyper parameters", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument
     )
     parser.add_argument("--test", help="Will test trained models", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
     parser.add_argument("--dataset-path", "-dp", help="Will test trained models", nargs="?", type=Path, default=None)
-    parser.add_argument(
-        "--dataset-split-coef",
-        help="Define what percentage of the dataset is used for training",
-        type=float,
-        default=0.6,
-    )
+    parser.add_argument("--dataset-split-coef", help="Define what percentage of the dataset is used for training",
+                        type=float, default=0.6)
     parser.add_argument("--baseline-path", "-pb", help="Baseline path", nargs="?", type=Path, default=None)
-    parser.add_argument(
-        "--portfolio-allocation-env", help="Portfolio allocation environment", nargs="?", type=int, default=1
-    )
+    parser.add_argument("--memory-path", "-pb", help="Baseline path", nargs="?", type=Path, default=None)
+    parser.add_argument("--portfolio-allocation-env", help="Portfolio allocation environment", nargs="?", type=int,
+                        default=1)
     parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
     parser.add_argument("--debug", help="Debug mode", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
-    parser.add_argument(
-        "--project-verbose", help="Verbosity level 0: not output 1: info 2: debug, default: 0", type=int, default=0
-    )
+    parser.add_argument("--project-verbose", help="Verbosity level 0: not output 1: info 2: debug, default: 0",
+                        type=int, default=0)
 
     # Project structure arguments
     parser.add_argument(
@@ -261,9 +255,17 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     return vars(args), args
 
 
+# fmt: on
+
+
 def main():
-    args_dict, args = parse_arguments()
-    pprint(args_dict)
+    # args_dict, args = parse_arguments()
+    # pprint(args_dict)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('env', type=str, choices=['A', "B"])
+    parser.add_argument('seed', type=int)
+    parser.add_argument('--n-timesteps', type=int, default=100000)
+    pprint(parser.parse_args("A seed".split(" ")))
 
 
 if __name__ == "__main__":

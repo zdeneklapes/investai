@@ -75,6 +75,7 @@ repos:
                 types: [ file ]
                 args: [ '--maxkb=1000' ]
             -   id: check-ast
+            -   id: check-case-conflict
             -   id: check-byte-order-marker
             -   id: check-builtin-literals
             -   id: check-docstring-first
@@ -110,16 +111,16 @@ repos:
     ##########################################################################################
     # Python
     ##########################################################################################
-#    -   repo: https://github.com/pycqa/isort
-#        rev: 5.12.0
-#        hooks:
-#            -   id: isort
-#                name: isort
-    -   repo: https://github.com/psf/black
-        rev: 23.1.0
-        hooks:
-            -   id: black
-                name: black
+    #    -   repo: https://github.com/pycqa/isort
+    #        rev: 5.12.0
+    #        hooks:
+    #            -   id: isort
+    #                name: isort
+    #    -   repo: https://github.com/psf/black
+    #        rev: 23.1.0
+    #        hooks:
+    #            -   id: black
+    #                name: black
     -   repo: https://github.com/myint/autoflake
         rev: 'v2.0.0'
         hooks:
@@ -191,9 +192,19 @@ repos:
                 exclude: (enplain.bst|project_info.tex|fitthesis.cls|\.py|\.ipynb|\.bib)$
 
     ##########################################################################################
+    # Git
+    ##########################################################################################
+    -   repo: https://github.com/compilerla/conventional-pre-commit
+        rev: v2.1.1
+        hooks:
+            -   id: conventional-pre-commit
+                stages: [ commit-msg ]
+                args: [ ]
+
+    ##########################################################################################
     # Dockerfile
     ##########################################################################################
-    -   repo: https://github.com/pryorda/dockerfilelint-precommit-hooks
-        rev: v0.1.0
-        hooks:
-            -   id: dockerfilelint
+#    -   repo: https://github.com/pryorda/dockerfilelint-precommit-hooks
+#        rev: v0.1.0
+#        hooks:
+#            -   id: dockerfilelint

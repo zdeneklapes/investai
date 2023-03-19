@@ -6,6 +6,7 @@ import wandb
 from run.shared.callback.wandb_util import wandb_summary
 from run.shared.memory import Memory
 from shared.utils import calculate_sharpe_ratio
+from shared.program import Program
 from wandb.integration.sb3 import WandbCallback
 
 
@@ -17,7 +18,9 @@ class WandbCallbackExtendMemory(WandbCallback):
         model_save_freq: int = 0,
         gradient_save_freq: int = 0,
         log: Optional[Literal["gradients", "parameters", "all"]] = "all",
+        program: Program = None,
     ):
+        self.program: Program = program
         return super().__init__(verbose, model_save_path, model_save_freq, gradient_save_freq, log)
 
     def _on_step(self) -> bool:
@@ -27,8 +30,9 @@ class WandbCallbackExtendMemory(WandbCallback):
         return super()._on_step()
 
     def _on_training_end(self) -> None:
-        dataset: pd.DataFrame = self.locals["env"].envs[0].unwrapped.dataset
-        memory: Memory = self.locals["env"].envs[0].unwrapped.memory
+        environment_portfolio_allocation = self.locals["env"].envs[0].unwrapped
+        dataset: pd.DataFrame = environment_portfolio_allocation.dataset
+        memory: Memory = environment_portfolio_allocation.memory
         info = {
             # Rewards
             "train/total_reward": (memory.df["reward"] + 1).cumprod().iloc[-1],
@@ -43,4 +47,6 @@ class WandbCallbackExtendMemory(WandbCallback):
             # TODO: Calmar ratio
         }
         wandb_summary(info)
+        environment_portfolio_allocation.memory.save(
+            self.program.args.folder_out.joinpath("train_memory.json").as_posix())
         super()._on_training_end()

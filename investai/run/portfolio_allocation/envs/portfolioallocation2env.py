@@ -81,7 +81,7 @@ class PortfolioAllocation2Env(gym.Env):
         )
 
         #
-        info = pd.DataFrame({"reward": reward, "action": action, "date": self._current_data["date"].unique()[0]})
+        info = pd.DataFrame({"reward": reward, "action": [action], "date": self._current_data["date"].unique()[0]})
         self.memory.concat(info)
 
         # Observation, Reward, Terminated, Info

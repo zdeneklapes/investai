@@ -93,6 +93,7 @@ class WandbTrain:
                     if self.program.args.wandb_model_save
                     else 0,
                     gradient_save_freq=self.program.args.wandb_gradient_save_freq,
+                    program=self.program,
                 )
             )
 
