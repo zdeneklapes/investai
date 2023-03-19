@@ -19,14 +19,14 @@ from shared.program import Program
 from shared.utils import reload_module  # noqa
 from tqdm import tqdm
 from tvDatafeed import Interval, TvDatafeed
+from run.shared.memory import Memory
 
 
-class StockFaDailyDataset:
-    def __init__(self, program: Program, tickers: List[str], split_coef: float):
+class StockFaDailyDataset(Memory):
+    def __init__(self, program: Program, tickers: List[str], split_coef: float, df: pd.DataFrame = pd.DataFrame()):
         TICKERS = deepcopy(tickers)
         TICKERS.remove("DOW")  # TODO: Fixme: "DOW" is not in DJI30 or what?
         #
-        self.program: Program = program
         self.tickers = TICKERS
         self.unique_columns = ["date", "tic"]
         self.base_columns = ["open", "high", "low", "close", "volume", "changePercent"]
@@ -52,8 +52,8 @@ class StockFaDailyDataset:
         ]
 
         # Final dataset for training and testing
-        self.df = None
         self.dataset_split_coef = split_coef
+        super().__init__(program, df)
 
     @property
     def train_dataset(self) -> pd.DataFrame:
@@ -172,15 +172,6 @@ class StockFaDailyDataset:
 
         return df
 
-    def save_dataset(self, file_path) -> None:
-        """Save dataset
-        :param file_path:
-        """
-
-        if self.program.args.project_verbose > 0:
-            self.program.log.info(f"Saving dataset to: {file_path}")
-        self.df.to_csv(file_path, index=True)
-
     def load_raw_data(self, tic) -> Ticker:
         """Check if folders with ticker exists and load all raw_data from them into Ticker class"""
         data = {"ticker": tic}
@@ -193,12 +184,6 @@ class StockFaDailyDataset:
             else:
                 raise FileExistsError(f"File not exists: {tic_file}")
         return Ticker(**data)
-
-    def load_dataset(self, file_path: str) -> None:
-        """Load dataset"""
-        if self.program.args.project_verbose > 0:
-            self.program.log.info(f"Loading dataset from: {file_path}")
-        self.df = pd.read_csv(file_path, index_col=0)
 
 
 def t1() -> Dict:
@@ -217,13 +202,10 @@ def t1() -> Dict:
 
 
 def main():
-    from dotenv import load_dotenv
-
     program = Program()
-    load_dotenv(dotenv_path=program.args.folder_root.as_posix())
     dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
-    dataset.save_dataset(program.args.dataset_path)
+    dataset.save_csv(program.args.dataset_path)  # _dataset(program.args.dataset_path)
 
 
 if __name__ == "__main__":

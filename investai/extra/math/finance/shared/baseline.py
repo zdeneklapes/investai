@@ -112,7 +112,7 @@ def t1():
 
     dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER,
                                   split_coef=program.args.dataset_split_coef)
-    dataset.load_dataset(program.args.dataset_path)
+    dataset.load_csv(program.args.dataset_path)
 
     d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
     d = {"date": d_tics["date"].unique()}
@@ -134,7 +134,7 @@ def main():
 
     # NOTE: for pypfopt baseline dataset_path must be defined
     dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER, split_coef=program.args.dataset_split_coef)
-    dataset.load_dataset(program.args.dataset_path)
+    dataset.load_csv(program.args.dataset_path)
     d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
     d = {"date": d_tics["date"].unique()}
     d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})

@@ -28,31 +28,31 @@ class Memory:
         self.df[column] = pd.to_datetime(self.df[column], format=format)
 
     def save_json(self, file_path: str):
-        """Save memory to csv file
-        :param file_path: Path to save the memory
+        """Save df to csv file
+        :param file_path: Path to save the df
         """
-        if self.program.args.project_verbose > 0: self.program.log.info(f"Saving memory to: {file_path}")
+        if self.program.args.project_verbose > 0: self.program.log.info(f"Saving df to: {file_path}")
         self.df.to_json(file_path, index=True)
 
     def load_json(self, file_path: Path):
-        """Save memory to csv file
-        :param file_path: Path to save the memory
+        """Save df to csv file
+        :param file_path: Path to save the df
         """
-        if self.program.args.project_verbose > 0: self.program.log.info(f"Loading memory from: {file_path}")
+        if self.program.args.project_verbose > 0: self.program.log.info(f"Loading df from: {file_path}")
         self.df = pd.read_json(file_path)
         if "date" in self.df.columns: self.to_datetime()
 
     def save_csv(self, file_path: str):
-        """Save memory to csv file
-        :param file_path: Path to save the memory
+        """Save df to csv file
+        :param file_path: Path to save the df
         """
-        if self.program.args.project_verbose > 0: self.program.log.info(f"Saving memory to: {file_path}")
+        if self.program.args.project_verbose > 0: self.program.log.info(f"Saving df to: {file_path}")
         self.df.to_csv(file_path, index=True)
 
     def load_csv(self, file_path: Path):
-        """Save memory to csv file
-        :param file_path: Path to save the memory
+        """Save df to csv file
+        :param file_path: Path to save the df
         """
-        if self.program.args.project_verbose > 0: self.program.log.info(f"Loading memory from: {file_path}")
+        if self.program.args.project_verbose > 0: self.program.log.info(f"Loading df from: {file_path}")
         self.df = pd.read_csv(file_path, index_col=0)
         if "date" in self.df.columns: self.to_datetime()

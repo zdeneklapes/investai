@@ -163,7 +163,7 @@ def main():
     for algorithm in program.args.algorithms:
         if program.args.train:
             dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
-            dataset.load_dataset(program.args.dataset_path)
+            dataset.load_csv(program.args.dataset_path)
             wandb_train = WandbTrain(program=program, dataset=dataset, algorithm=algorithm)
             if not program.args.wandb_sweep:
                 wandb_train.train()

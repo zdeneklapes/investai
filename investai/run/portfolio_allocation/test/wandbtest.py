@@ -155,7 +155,7 @@ def t1():
 def main():
     program = Program()
     dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
-    dataset.load_dataset(program.args.dataset_path)
+    dataset.load_csv(program.args.dataset_path)
 
     # TODO: get best model from wandb
     # get_best_model()
