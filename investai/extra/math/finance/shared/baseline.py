@@ -91,14 +91,12 @@ class Baseline:
         return self.returns
 
     def save(self, file_path) -> None:
-        if self.program.args.project_verbose > 0:
-            self.program.log.info(f"Saving return to: {file_path}")
+        if self.program.args.project_verbose > 0: self.program.log.info(f"Saving baseline return to: {file_path}")
         self.returns.to_csv(file_path, index=True)
 
     def load(self, file_path: str) -> None:
-        if self.program.args.project_verbose > 0:
-            self.program.log.info(f"Loading returns from: {file_path}")
-        self.returns = pd.read_csv(file_path, index_col=0)
+        if self.program.args.project_verbose > 0: self.program.log.info(f"Loading baseline returns from: {file_path}")
+        self.returns = pd.read_csv(file_path, index_col=0, parse_dates=True)
 
 
 def t1():

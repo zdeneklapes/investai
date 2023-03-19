@@ -29,4 +29,4 @@ class Memory:
         """Save memory to csv file
         :param file_path: Path to save the memory
         """
-        self.df.from_json(file_path, index=True)
+        self.df = pd.read_json(file_path)

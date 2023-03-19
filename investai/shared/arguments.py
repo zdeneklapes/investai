@@ -65,7 +65,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--dataset-split-coef", help="Define what percentage of the dataset is used for training",
                         type=float, default=0.6)
     parser.add_argument("--baseline-path", "-pb", help="Baseline path", nargs="?", type=Path, default=None)
-    parser.add_argument("--memory-path", "-pb", help="Baseline path", nargs="?", type=Path, default=None)
+    parser.add_argument("--memory-path", "-mb", help="Baseline path", nargs="?", type=Path, default=None)
     parser.add_argument("--portfolio-allocation-env", help="Portfolio allocation environment", nargs="?", type=int,
                         default=1)
     parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)

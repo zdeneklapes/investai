@@ -91,18 +91,20 @@ def t1():
 
     program.args.baseline_path = program.args.folder_baseline.joinpath("baseline.csv")
     program.args.memory_path = program.args.folder_out.joinpath("test_memory.json")
+    program.args.project_verbose = True
 
     baseline = Baseline(program)
     baseline.load(program.args.baseline_path.as_posix())
     memory = Memory(df=pd.DataFrame())
     memory.load(program.args.folder_out.joinpath("test_memory.json").as_posix())
-    df_chart = pd.merge(memory.df[memory.df.columns.difference(['action'])], baseline.returns, on='date')
-    df_chart[df_chart.columns.difference(['date'])] = (df_chart[df_chart.columns.difference(['date'])] + 1).apply(
-        lambda x: x.cumprod())
+    # df_chart = pd.merge(memory.df[memory.df.columns.difference(['action'])], baseline.returns, on='date')
+    # df_chart[df_chart.columns.difference(['date'])] = (df_chart[df_chart.columns.difference(['date'])] + 1).apply(
+    #     lambda x: x.cumprod())
     return {
-        "baseline": baseline.returns,
-        "memory": memory.df,
-        "df_chart": df_chart
+        "program": program,
+        "baseline": baseline,
+        "memory": memory,
+        # "df_chart": df_chart
     }
 
 
