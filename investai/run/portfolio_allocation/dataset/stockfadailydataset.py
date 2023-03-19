@@ -52,7 +52,7 @@ class StockFaDailyDataset:
         ]
 
         # Final dataset for training and testing
-        self.dataset = None
+        self.df = None
         self.dataset_split_coef = split_coef
 
     @property
@@ -60,16 +60,17 @@ class StockFaDailyDataset:
         """Split dataset into train and test"""
         if self.program.args.project_verbose > 0:
             self.program.log.info(
-                f"Train dataset from {self.dataset['date'].iloc[0]} to {DE.get_split_date(self.dataset, self.dataset_split_coef)}"  # noqa
+                f"Train dataset from {self.df['date'].iloc[0]} to {DE.get_split_date(self.df, self.dataset_split_coef)}"
+                # noqa
             )
-        df: pd.DataFrame = self.dataset[self.dataset["date"] < DE.get_split_date(self.dataset, self.dataset_split_coef)]
+        df: pd.DataFrame = self.df[self.df["date"] < DE.get_split_date(self.df, self.dataset_split_coef)]
         return df
 
     @property
     def test_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
-        df: pd.DataFrame = self.dataset[
-            self.dataset["date"] >= DE.get_split_date(self.dataset, self.dataset_split_coef)
+        df: pd.DataFrame = self.df[
+            self.df["date"] >= DE.get_split_date(self.df, self.dataset_split_coef)
         ]
         df.index = df["date"].factorize()[0]
         return df
@@ -80,8 +81,8 @@ class StockFaDailyDataset:
 
     def preprocess(self) -> pd.DataFrame:
         """Return dataset"""
-        self.dataset = self.get_stock_dataset()
-        return self.dataset
+        self.df = self.get_stock_dataset()
+        return self.df
 
     def get_stock_dataset(self) -> pd.DataFrame:
         df = pd.DataFrame()
@@ -178,7 +179,7 @@ class StockFaDailyDataset:
 
         if self.program.args.project_verbose > 0:
             self.program.log.info(f"Saving dataset to: {file_path}")
-        self.dataset.to_csv(file_path, index=True)
+        self.df.to_csv(file_path, index=True)
 
     def load_raw_data(self, tic) -> Ticker:
         """Check if folders with ticker exists and load all raw_data from them into Ticker class"""
@@ -197,7 +198,7 @@ class StockFaDailyDataset:
         """Load dataset"""
         if self.program.args.project_verbose > 0:
             self.program.log.info(f"Loading dataset from: {file_path}")
-        self.dataset = pd.read_csv(file_path, index_col=0)
+        self.df = pd.read_csv(file_path, index_col=0)
 
 
 def t1() -> Dict:

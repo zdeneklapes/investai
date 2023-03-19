@@ -53,7 +53,13 @@ class Baseline(Memory):
         :param bounds: Tuple: (min, max) bounds for weights
         :return: pd.DataFrame: self.df with returns
         """
-        rewards = pd.DataFrame()
+        start_date: np.datetime64 = np.datetime_data(dataset["date"].unique()[0]) - np.timedelta64(1, 'D')
+        rewards = pd.DataFrame({
+            "date": [start_date],
+            f"minimum_variance_{bounds[0]}_{bounds[1]}": [1],
+            f"maximum_quadratic_utility_{bounds[0]}_{bounds[1]}": [1],
+            f"maximum_sharpe_{bounds[0]}_{bounds[1]}": [1],
+        })
         dates = dataset["date"].unique()
         del dataset["date"]
 
@@ -108,7 +114,7 @@ def t1():
                                   split_coef=program.args.dataset_split_coef)
     dataset.load_dataset(program.args.dataset_path)
 
-    d_tics = dataset.dataset[["tic", "close", "date"]].sort_values(by=["tic", "date"])
+    d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
     d = {"date": d_tics["date"].unique()}
     d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
     df = pd.DataFrame(d)
@@ -129,7 +135,7 @@ def main():
     # NOTE: for pypfopt baseline dataset_path must be defined
     dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER, split_coef=program.args.dataset_split_coef)
     dataset.load_dataset(program.args.dataset_path)
-    d_tics = dataset.dataset[["tic", "close", "date"]].sort_values(by=["tic", "date"])
+    d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
     d = {"date": d_tics["date"].unique()}
     d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
     df = pd.DataFrame(d)

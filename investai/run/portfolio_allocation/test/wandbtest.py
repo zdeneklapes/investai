@@ -8,6 +8,7 @@ from matplotlib.axes import Axes
 import matplotlib.pyplot as plt  # noqa
 import seaborn as sns  # noqa
 import numpy as np  # noqa
+from pprint import pprint  # noqa
 
 from extra.math.finance.shared.baseline import Baseline
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
@@ -34,30 +35,29 @@ class WandbTest:
         environment: DummyVecEnv = EnvironmentInitializer(self.program, self.dataset).portfolio_allocation(
             self.dataset.test_dataset
         )
-        environment_portfolio_allocation = environment.envs[0].env
+        env_unwrapped = environment.envs[0].env
         obs = environment.reset()
 
         # "-2" because we don't want to go till terminal state, because the environment will be reset
         iterable = (
-            trange(len(environment_portfolio_allocation.dataset.index.unique()) - 2, desc="Test")
+            trange(len(env_unwrapped.dataset.index.unique()) - 2, desc="Test")
             if self.program.args.project_verbose
-            else range(len(environment_portfolio_allocation.dataset.index.unique()) - 2)
+            else range(len(env_unwrapped.dataset.index.unique()) - 2)
         )
 
         for _ in iterable:
             action, _ = model.predict(obs, deterministic=deterministic)
             environment.step(action)
             if self.program.is_wandb_enabled():
-                self.create_log(environment_portfolio_allocation.memory)
+                self.create_log(env_unwrapped.memory)
 
-        environment_portfolio_allocation.memory.save_json(
+        env_unwrapped.memory.save_json(
             self.program.args.folder_out.joinpath("test_memory.json").as_posix())
 
         # Finish
         if self.program.is_wandb_enabled():
-            self.create_summary(environment_portfolio_allocation.memory,
-                                environment_portfolio_allocation.dataset)
-            self.create_baseline_chart(environment_portfolio_allocation.memory)
+            self.create_summary(env_unwrapped.memory, env_unwrapped.dataset)
+            self.create_baseline_chart(env_unwrapped.memory)
 
     def create_log(self, memory: Memory):
         log_dict = {"test/reward": memory.df.iloc[-1]["reward"]}
@@ -79,44 +79,40 @@ class WandbTest:
         }
         wandb_summary(info)
 
-    def create_baseline_chart(self, memory: Memory):
-        memory.df['date'] = memory.df['date'].astype(np.datetime64)
+    def create_baseline_chart(self, memory_env: Memory):
+        memory_env.df['date'] = memory_env.df['date'].astype(np.datetime64)
 
         #
         baseline = Baseline(self.program)
         baseline.load_csv(self.program.args.baseline_path.as_posix())
         baseline.df['date'] = baseline.df['date'].astype(np.datetime64)
         #
-        ret_val = {}
-        ret_val['memory_without_action'] = memory.df[memory.df.columns.difference(['action'])]
-        ret_val['df_chart'] = pd.merge(ret_val['memory_without_action'], baseline.df, on='date')
-        ret_val['df_cumprod'] = (
-            (ret_val['df_chart'][ret_val['df_chart'].columns.difference(['date'])] + 1).apply(lambda x: x.cumprod())
-        )
-        ret_val['df_cumprod']['date'] = ret_val['df_chart']['date']
-        ret_val['df_cumprod'].rename(columns={'reward': 'model'}, inplace=True)
-        ret_val['df_cumprod'].index = ret_val['df_cumprod']['date']
-        ret_val['df_cumprod'].drop(columns=['date'], inplace=True)
+        df_map = {}
+        df_map['memory_without_action'] = memory_env.df[memory_env.df.columns.difference(['action'])]
+        df_chart = pd.merge(df_map['memory_without_action'], baseline.df, on='date')
+        df_cumprod = (df_chart.drop(columns=['date']) + 1).cumprod()
+        df_cumprod.rename(columns={'reward': 'model'}, inplace=True)
 
-        #
-        portfolios_return_table = wandb.Table(ret_val['df_cumprod'], columns=ret_val['df_cumprod'].columns)
+        # W&B table
+        portfolios_return_table = wandb.Table(data=df_cumprod, columns=df_cumprod.columns.values)
         wandb.log({"test/portfolios_return_table": portfolios_return_table})
 
-        #
-        fig = plot_rewards(ret_val['df_cumprod'])
+        # Seaborne chart
+        df_cumprod.index = df_map['df_chart']['date']
+        fig: plt.figure = fig_rewards(df_cumprod)
         wandb.log({"test/portfolios_return_table_chart": wandb.Image(fig)})
 
 
-def plot_rewards(df: pd.DataFrame) -> plt.figure:
+def fig_rewards(df: pd.DataFrame) -> plt.figure:
     #
     fig: plt.figure
     ax: Axes
     fig, ax = plt.subplots()
     #
-    fig = sns.lineplot(data=df)
-    fig.set_title("Portfolio allocation rewards")
-    fig.set_xlabel("Date")
-    fig.set_ylabel("Cumulative reward")
+    ax = sns.lineplot(data=df)
+    ax.set_title("Portfolio allocation rewards")
+    ax.set_xlabel("Date")
+    ax.set_ylabel("Cumulative reward")
     x_dates = df.index.strftime('%Y-%m-%d').sort_values().unique()
     ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
     plt.tight_layout()

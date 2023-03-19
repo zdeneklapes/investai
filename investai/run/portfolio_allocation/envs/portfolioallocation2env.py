@@ -14,6 +14,7 @@ from gymnasium.utils import seeding
 from run.shared.memory import Memory
 from scipy.special import softmax
 from shared.utils import calculate_return_from_weights
+from shared.program import Program
 
 
 # import gymnasium as gym
@@ -25,16 +26,15 @@ class PortfolioAllocation2Env(gym.Env):
 
     metadata = {"render.modes": ["human"]}
 
-    def __init__(self, program, dataset: pd.DataFrame, tickers: List[str], columns_to_drop_in_observation: List[str],
+    def __init__(self, program: Program, dataset: pd.DataFrame, tickers: List[str],
+                 columns_to_drop_in_observation: List[str],
                  start_index: int = 0):
         # Immutable
-        self.program: Final = program
-        self.dataset: Final = dataset
-        self._start_time: Final = start_index
-        self._tickers: Final = tickers  # Used for: Action and Observation space
-        self._columns_to_drop_in_observation: Final = columns_to_drop_in_observation  # Used for Observation space
-
-        self.__init_environment()
+        self.program: Final[Program] = program
+        self.dataset: Final[pd.DataFrame] = dataset
+        self._start_time: Final[int] = start_index
+        self._tickers: Final[List[str]] = tickers  # Used for: Action and Observation space
+        self._columns_to_drop_in_observation: Final[List[str]] = columns_to_drop_in_observation  # In Observation space
 
         # Inherited
         self.action_space = spaces.Box(low=0, high=1, shape=(len(self._tickers) + 1,))  # tickers + 1 cash
@@ -44,23 +44,37 @@ class PortfolioAllocation2Env(gym.Env):
             shape=(len(self._tickers), len(self.dataset.columns.drop(self._columns_to_drop_in_observation))),
         )
 
-    def __init_environment(self):
+        self.__reinit()
+
+    def _memory_record(self, reward: float, action: np.ndarray, date: np.datetime64) -> Dict[str, Any]:
+        ret_dict = {"reward": reward, "action": [action], "date": date}
+        return ret_dict
+
+    def __reinit(self):
         """Initialize environment
         self._data_index: Index of the current raw_data
         self._portfolio_value: Portfolio value
         """
         self._time = self._start_time
-        self.memory = Memory(program=self.program)
+        self.memory = Memory(program=self.program,
+                             df=pd.DataFrame(self._memory_record(reward=1,
+                                                                 action=np.array([0] * self.action_space.shape[0]),
+                                                                 date=self._current_date)))
 
     @property
-    def _current_data(self) -> pd.DataFrame:
+    def _current_date(self) -> np.datetime64:
+        """self._data_index must be set correctly"""
+        return self.dataset['date'].unique()[self._time]
+
+    @property
+    def _current_data_in_time(self) -> pd.DataFrame:
         """self._data_index must be set correctly"""
         return self.dataset.loc[self._time, :]
 
     @property
-    def _current_state(self) -> object:
+    def _current_observation(self) -> object:
         """self._data_index must be set correctly"""
-        return self._current_data.drop(columns=self._columns_to_drop_in_observation)
+        return self._current_data_in_time.drop(columns=self._columns_to_drop_in_observation)
 
     @property
     def _terminal(self) -> bool:
@@ -68,25 +82,27 @@ class PortfolioAllocation2Env(gym.Env):
         # TODO: portfolio_value <= 0
         return self._time >= len(self.dataset.index.unique()) - 1
 
-    def step(self, action):
+    def step(self, action: np.ndarray):
         # TODO: Why is softmax used here?
         self._time += 1  # Go to next raw_data (State & Observation Space)
-        normalized_actions = softmax(action)  # action are the tickers weight in the portfolio
+        normalized_actions: np.ndarray = softmax(action)  # action are the tickers weight in the portfolio
 
         # action are the tickers weight in the portfolio (without cash)
         asset_allocation_actions = normalized_actions[1:]  # Remove cash
         reward = calculate_return_from_weights(
             self.dataset.loc[self._time, :]["close"].values,
             self.dataset.loc[self._time - 1, :]["close"].values,
-            np.array(asset_allocation_actions),
+            asset_allocation_actions,
         )
 
         #
-        info = pd.DataFrame({"reward": reward, "action": [action], "date": self._current_data["date"].unique()[0]})
+        info = pd.DataFrame(self._memory_record(reward=reward,
+                                                action=normalized_actions,
+                                                date=self._current_data_in_time['date'].unique().iloc[-1]))
         self.memory.concat(info)
 
         # Observation, Reward, Terminated, Info
-        return self._current_state, reward, self._terminal, info.to_dict()
+        return self._current_observation, reward, self._terminal, info.to_dict()
 
     def reset(
         self,
@@ -94,11 +110,12 @@ class PortfolioAllocation2Env(gym.Env):
         seed: Optional[int] = None,
         options: Optional[Dict[str, Any]] = None,
     ):
-        self.__init_environment()
-        return self._current_state  # First observation
+        self.__reinit()
+        if self.program.args.train_verbose > 1: self.program.log.info("Reset environment")
+        return self._current_observation  # First observation
 
     def render(self, mode="human"):
-        return self._current_state
+        return self._current_observation
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)

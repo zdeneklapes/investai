@@ -25,8 +25,10 @@ class WandbCallbackExtendMemory(WandbCallback):
 
     def _on_step(self) -> bool:
         for index, env in enumerate(self.locals["env"].envs):
-            log_dict = {"train/reward": env.unwrapped.memory.df.iloc[-1]["reward"]}
-            wandb.log(log_dict)
+            env.unwrapped.memory.df: pd.DataFrame
+            if not env.unwrapped.memory.df.empty:  # Because of reset() env
+                log_dict = {"train/reward": env.unwrapped.memory.df.iloc[-1]["reward"]}
+                wandb.log(log_dict)
         return super()._on_step()
 
     def _on_training_end(self) -> None:

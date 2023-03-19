@@ -115,6 +115,9 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         action="store_true")
     parser.add_argument("--capture-video", help="Capture videos of the agent performances (check out `videos` folder)",
                         action="store_true", )
+    parser.add_argument("--train-verbose",
+                        help="the verbosity level: 0 none, 1 training information, 2 tensorflow debug",
+                        type=int, default=0)
 
     # Environment arguments
     parser.add_argument("--initial-cash", help="Initial amount of money", type=int, default=100_000)
@@ -132,6 +135,9 @@ def parse_arguments() -> Tuple[vars, Namespace]:
                         type=float, default=0.5, )
 
     # Algorithm specific arguments
+    parser.add_argument("--verbose",
+                        help="Stable Baselines verbose mode: 0 none, 1 training information, 2 tensorflow debug",
+                        type=int, default=0)
     parser.add_argument("--policy", help="the policy model to use", type=str,
                         choices=["MlpPolicy", "MlpLstmPolicy", "MlpLnLstmPolicy", "CnnPolicy", "CnnLstmPolicy",
                                  "CnnLnLstmPolicy", ], default="MlpPolicy", )
@@ -158,8 +164,6 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     #     type=str,
     #     default="",
     # )
-    parser.add_argument("--verbose", help="the verbosity level: 0 none, 1 training information, 2 tensorflow debug",
-                        type=int, default=0)
     parser.add_argument("--seed", help="Random generator seed", type=int, default=0)
     parser.add_argument("--device", help="Device (cpu, cuda, auto)", type=str, default="auto")
     parser.add_argument("---init-setup-model", help="Whether or not to setup the model with default hyperparameters",
