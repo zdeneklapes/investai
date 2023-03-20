@@ -134,14 +134,14 @@ def calculate_return_from_weights(t_now: np.array, t_prev: np.array, weights: np
     :param weights: (pd.Series) current portfolio weights
     :return: (pd.Series) portfolio rewards
     """
-    current_balance_pct = (t_now / t_prev * weights).sum()
-    return current_balance_pct - 1
+    current_balance_pct = (((t_now / t_prev) - 1) * weights).sum()
+    return current_balance_pct
 
 
 def calculate_sharpe_ratio(returns: np.ndarray):
     # TODO: check correctness
     if returns.std() != 0:
-        sharpe = (252**0.5) * returns.mean() / returns.std()
+        sharpe = (252 ** 0.5) * returns.mean() / returns.std()
         return sharpe
     else:
         return 0
