@@ -21,7 +21,7 @@ from tqdm import tqdm
 from tvDatafeed import Interval, TvDatafeed
 
 
-class StockFaDailyDataset:
+class StockCombinedDailyDataset:
     def __init__(self, program: Program, tickers: List[str], dataset_split_coef: float):
         TICKERS = deepcopy(tickers)
         TICKERS.remove("DOW")  # TODO: Fixme: "DOW" is not in DJI30 or what?
@@ -60,7 +60,7 @@ class StockFaDailyDataset:
         """Split dataset into train and test"""
         if self.program.args.project_verbose > 0:
             self.program.log.info(
-                f"Train dataset from {self.dataset['date'].iloc[0]} to {DE.get_split_date(self.dataset, self.dataset_split_coef)}"  # noqa
+                f"Train dataset from {self.dataset['date'].iloc[0]} to {DE.get_split_date(self.dataset, self.dataset_split_coef)}" # noqa # autopep8: off
             )
         df: pd.DataFrame = self.dataset[self.dataset["date"] < DE.get_split_date(self.dataset, self.dataset_split_coef)]
         return df
@@ -70,7 +70,7 @@ class StockFaDailyDataset:
         """Split dataset into train and test"""
         df: pd.DataFrame = self.dataset[
             self.dataset["date"] >= DE.get_split_date(self.dataset, self.dataset_split_coef)
-        ]
+            ]
         df.index = df["date"].factorize()[0]
         return df
 
@@ -200,27 +200,25 @@ class StockFaDailyDataset:
         self.dataset = pd.read_csv(file_path, index_col=0)
 
 
-def t1() -> Dict:
-    """
-    :return: dict
-    """
-    from dotenv import load_dotenv
+class TestStockCombinedDailyDataset:
+    def __init__(self):
+        self.program = Program()
+        self.program.args.project_verbose = 1
+        self.program.args.debug = True
 
-    program = Program()
-    program.args.project_verbose = 1
-    program.args.debug = True
-    load_dotenv(dotenv_path=program.args.folder_root.as_posix())
-
-    dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef)
-    return {"dataset": dataset, "d": dataset.get_stock_dataset()}
+    def t1(self) -> Dict:
+        """
+        :return: dict
+        """
+        dataset = StockCombinedDailyDataset(self.program, tickers=DOW_30_TICKER,
+                                            dataset_split_coef=self.program.args.dataset_split_coef)
+        return {"dataset": dataset, "d": dataset.get_stock_dataset()}
 
 
 def main():
-    from dotenv import load_dotenv
-
     program = Program()
-    load_dotenv(dotenv_path=program.args.folder_root.as_posix())
-    dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef)
+    dataset = StockCombinedDailyDataset(program, tickers=DOW_30_TICKER,
+                                        dataset_split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
     dataset.save_dataset(program.args.dataset_path)
 

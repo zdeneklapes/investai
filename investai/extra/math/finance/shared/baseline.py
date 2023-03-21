@@ -4,7 +4,10 @@ from typing import Dict, Tuple
 
 import numpy as np  # noqa
 import pandas as pd
-from IPython.display import display  # noqa
+import matplotlib.pyplot as plt  # noqa
+from matplotlib.axes import Axes  # noqa
+import seaborn as sns  # noqa
+
 from pypfopt import EfficientFrontier
 from pypfopt.expected_returns import mean_historical_return
 from pypfopt.risk_models import CovarianceShrinkage
@@ -103,31 +106,51 @@ class Baseline(Memory):
         return self.df
 
 
-def t1():
-    from dotenv import load_dotenv
+class TestBaseline:
+    def __init__(self):
+        self.program = Program()
+        self.program.args.project_verbose = 1
+        self.program.args.dataset_path = self.program.args.folder_dataset.joinpath("stockfadailydataset.csv").as_posix()
+        self.program.args.baseline_path = self.program.args.folder_baseline.joinpath("baseline.csv").as_posix()
+        self.baseline = Baseline(self.program)
 
-    program = Program()
-    program.args.project_verbose = 1
-    program.args.dataset_path = program.args.folder_dataset.joinpath("stockfadailydataset.csv").as_posix()
-    load_dotenv(dotenv_path=program.args.folder_root.joinpath(".env").as_posix())
+    def t1(self):
+        #
+        dataset = StockFaDailyDataset(program=self.program, tickers=DOW_30_TICKER,
+                                      split_coef=self.program.args.dataset_split_coef)
+        dataset.load_csv(self.program.args.dataset_path)
+        d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
+        d = {"date": d_tics["date"].unique()}
+        d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
+        df = pd.DataFrame(d)
 
-    dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER,
-                                  split_coef=program.args.dataset_split_coef)
-    dataset.load_csv(program.args.dataset_path)
+        #
+        # baseline.get_returns()
+        return {
+            "dataset": dataset,
+            "d_tics": d_tics,
+            "df": df,
+        }
 
-    d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
-    d = {"date": d_tics["date"].unique()}
-    d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
-    df = pd.DataFrame(d)
-    baseline = Baseline(program)
-    # baseline.get_returns()
+    def t2(self):
+        baseline = Baseline(program=Program())
+        baseline.load_csv(self.program.args.baseline_path)
 
-    return {
-        "dataset": dataset,
-        "d_tics": d_tics,
-        "df": df,
-        "baseline": baseline,
-    }
+        # Plot
+        baseline.df["date"] = pd.to_datetime(baseline.df["date"])
+        rewards_df = baseline.df.loc[:, baseline.df.columns.drop(["date"])]
+        rewards_df = (rewards_df + 1).cumprod()
+        rewards_df.index = baseline.df["date"]
+
+        sns.lineplot(data=rewards_df)
+        plt.show()
+
+    def t3(self):
+        self.baseline.load_csv(self.program.args.baseline_path)
+
+
+def t():
+    return TestBaseline().t1()
 
 
 def main():

@@ -139,8 +139,8 @@ def train(program):
         print(f"Learned algorithm will be saved to: {learned_algorithm_path.as_posix()}")
 
     # Establish the training environment using StockTradingEnv() class
-    env_kwargs = get_env_kwargs(program.dataset)
-    env_gym = StockTradingEnv(df=program.dataset, **env_kwargs)
+    env_kwargs = get_env_kwargs(program.df)
+    env_gym = StockTradingEnv(df=program.df, **env_kwargs)
 
     # Agent
     env_train, _ = env_gym.get_sb_env()
