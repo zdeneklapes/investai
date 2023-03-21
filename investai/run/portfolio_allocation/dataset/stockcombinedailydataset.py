@@ -59,9 +59,11 @@ class StockCombinedDailyDataset:
     def train_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
         if self.program.args.project_verbose > 0:
+            # @formatter:off
             self.program.log.info(
                 f"Train dataset from {self.dataset['date'].iloc[0]} to {DE.get_split_date(self.dataset, self.dataset_split_coef)}" # noqa # autopep8: off
             )
+            # @formatter: on
         df: pd.DataFrame = self.dataset[self.dataset["date"] < DE.get_split_date(self.dataset, self.dataset_split_coef)]
         return df
 
