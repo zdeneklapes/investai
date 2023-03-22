@@ -100,44 +100,9 @@ class WandbTest:
 
         # Seaborne chart
         df_cumprod.index = df_chart['date']
-        fig: plt.figure = fig_rewards(df_cumprod)
+        fig: plt.figure = sns.lineplot(data=df_cumprod)
         wandb.log({"test/portfolios_return_table_chart": wandb.Image(fig)})
-
-
-def fig_rewards(df: pd.DataFrame) -> plt.figure:
-    """Source: https://stackoverflow.com/a/63219756/14471542"""
-    #
-    return sns.lineplot(data=df)
-    # fig: plt.figure
-    # ax: Axes
-    # fig, ax = plt.subplots()
-    # #
-    # ax = sns.lineplot(data=df)
-    # ax.set_title("Portfolio allocation rewards")
-    # ax.set_xlabel("Date")
-    # ax.set_ylabel("Cumulative reward")
-    #
-    # # specify the position of the major ticks at the beginning of the week
-    # ax.xaxis.set_major_locator(md.YearLocator())
-    # # specify the format of the labels as 'year-month-day'
-    # ax.xaxis.set_major_formatter(md.DateFormatter('%Y-%m-%d'))
-    # # (optional) rotate by 90° the labels in order to improve their spacing
-    # plt.setp(ax.xaxis.get_majorticklabels())
-    # # specify the position of the minor ticks at each day
-    # ax.xaxis.set_minor_locator(md.MonthLocator(bymonthday=1))
-    #
-    # #
-    # x_dates = df.index.strftime('%Y-%m-%d').sort_values().unique().tolist()
-    # ax.set_xticklabels(labels=x_dates, rotation=45, ha='right')
-    #
-    # # set ticks length
-    # ax.tick_params(axis='x', which='major', length=10,
-    #                direction='out', width=2, colors='black', grid_color='b', grid_alpha=0.5)
-    # ax.tick_params(axis='x', which='minor', length=5,
-    #                direction='out', width=2, colors='black', grid_color='b', grid_alpha=0.5)
-    #
-    # plt.tight_layout()
-    # return fig
+        fig.cla()
 
 
 class TestWandbTest:
@@ -178,7 +143,7 @@ class TestWandbTest:
 def main():
     program = Program()
     dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
-    dataset.load_csv(program.args.dataset_path)
+    dataset.load_csv(program.args.dataset_paths[0].as_posix())
 
     # TODO: get best model from wandb
     # get_best_model()

@@ -110,7 +110,8 @@ class TestBaseline:
     def __init__(self):
         self.program = Program()
         self.program.args.project_verbose = 1
-        self.program.args.dataset_path = self.program.args.folder_dataset.joinpath("stockfadailydataset.csv").as_posix()
+        self.program.args.dataset_paths = self.program.args.folder_dataset.joinpath(
+            "stockfadailydataset.csv").as_posix()
         self.program.args.baseline_path = self.program.args.folder_baseline.joinpath("baseline.csv").as_posix()
         self.baseline = Baseline(self.program)
 
@@ -118,7 +119,7 @@ class TestBaseline:
         #
         dataset = StockFaDailyDataset(program=self.program, tickers=DOW_30_TICKER,
                                       split_coef=self.program.args.dataset_split_coef)
-        dataset.load_csv(self.program.args.dataset_path)
+        dataset.load_csv(self.program.args.dataset_paths[0].as_posix())
         d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
         d = {"date": d_tics["date"].unique()}
         d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
@@ -158,7 +159,7 @@ def main():
 
     # NOTE: for pypfopt baseline dataset_path must be defined
     dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER, split_coef=program.args.dataset_split_coef)
-    dataset.load_csv(program.args.dataset_path)
+    dataset.load_csv(program.args.dataset_paths[0].as_posix())
     d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
     d = {"date": d_tics["date"].unique()}
     d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})

@@ -205,7 +205,7 @@ def main():
     program = Program()
     dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
-    dataset.save_csv(program.args.dataset_path)  # _dataset(program.args.dataset_path)
+    dataset.save_csv(program.args.dataset_paths)  # _dataset(program.args.dataset_paths)
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@
 # TODO: Put into dataset change of price form one index to another index: e.g. 10->15=0.5, 10->5=-0.5
 from copy import deepcopy  # noqa
 from pprint import pprint  # noqa
+from pathlib import Path
 
 import wandb
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
@@ -138,7 +139,8 @@ class WandbTrain:
 
         # Wandb: Log artifacts
         if self.program.is_wandb_enabled():
-            self.log_artifact("dataset", "dataset", self.program.args.dataset_path)
+            for dataset_path in self.program.args.dataset_paths:
+                self.log_artifact("dataset", "dataset", dataset_path.as_posix())
             self.log_artifact("model", "model", self.model_path.as_posix())
 
         if self.program.args.test:
@@ -159,22 +161,25 @@ class WandbTrain:
 
 def main():
     program = Program()
+    pprint(program.args.dataset_paths)
 
-    for algorithm in program.args.algorithms:
-        if program.args.train:
-            dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
-            dataset.load_csv(program.args.dataset_path)
-            wandb_train = WandbTrain(program=program, dataset=dataset, algorithm=algorithm)
-            if not program.args.wandb_sweep:
-                wandb_train.train()
-            else:
-                sweep_id = wandb.sweep(sweep=sweep_configuration, project=program.args.wandb_project)
-                wandb.agent(
-                    sweep_id,
-                    function=wandb_train.train,
-                    project=program.args.wandb_project,
-                    count=program.args.wandb_sweep_count,
-                )
+    dataset_path: Path
+    for dataset_path in program.args.dataset_paths:
+        for algorithm in program.args.algorithms:
+            if program.args.train:
+                dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
+                dataset.load_csv(file_path=dataset_path.as_posix())
+                wandb_train = WandbTrain(program=program, dataset=dataset, algorithm=algorithm)
+                if not program.args.wandb_sweep:
+                    wandb_train.train()
+                else:
+                    sweep_id = wandb.sweep(sweep=sweep_configuration, project=program.args.wandb_project)
+                    wandb.agent(
+                        sweep_id,
+                        function=wandb_train.train,
+                        project=program.args.wandb_project,
+                        count=program.args.wandb_sweep_count,
+                    )
 
 
 if __name__ == "__main__":

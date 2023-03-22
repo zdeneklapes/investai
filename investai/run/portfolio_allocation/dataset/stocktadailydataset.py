@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Stock fundamental analysis dataset
+Stock Technical analysis dataset
 """
 import inspect
 from functools import partial
@@ -57,8 +57,14 @@ class StockTaDailyDataset(Memory):
     def _get_TA_functions(self) -> Dict[str, callable]:
         """Return list of technical analysis functions"""
         TA_items = dict(TA.__dict__)
-        del TA_items['VORTEX']  # FIXME: This function produce error
-        return {name: func for name, func in TA_items.items() if callable(func)}
+
+        # These are uncorrelated indicators
+        wanted_ta_indicators = set(['SMA', 'TRIX', 'ER', 'MACD', 'PPO', 'EV_MACD', 'VBM', 'ADX', 'UO',
+                                    'MI', 'BOP', 'CHAIKIN', 'BASP', 'BASPN', 'QSTICK', 'SQZMI', 'FVE', 'VFI',
+                                    'WILLIAMS_FRACTAL'])
+
+        TA_wanted_indicators = {name: func for name, func in TA_items.items() if name in wanted_ta_indicators}
+        return TA_wanted_indicators
 
     @property
     def train_dataset(self) -> pd.DataFrame:
@@ -102,18 +108,19 @@ class StockTaDailyDataset(Memory):
             price_data = raw_data.data_detailed[self.base_columns]
             ta_feature_data = self.get_uncorrelated_ta_features(price_data)  # Add features
 
-            # Final dataset
-            tic_with_features = pd.concat([ta_feature_data, df], axis=1)
-            tic_with_features['tic'] = tic
-            df = pd.concat([tic_with_features, df], axis=0)
-            break
+            # Ticker with features
+            tic_with_features = pd.concat([price_data, ta_feature_data], axis=1)
+            tic_with_features.insert(0, "tic", tic)
 
-        # df.insert(0, "date", df.index)
-        # df = df.sort_values(by=["tic"])
-        # df = DE.clean_dataset_from_missing_tickers_by_date(df)
-        # df = df.sort_values(by=self.unique_columns)
-        # df.index = df["date"].factorize()[0]
-        # DE.check_dataset_correctness_assert(df)
+            # Merge ticker with dataset
+            df = pd.concat([tic_with_features, df], axis=0)
+
+        df.insert(0, "date", df.index)
+        df = df.sort_values(by=["tic"])
+        df = DE.clean_dataset_from_missing_tickers_by_date(df)
+        df = df.sort_values(by=self.unique_columns)
+        df.index = df["date"].factorize()[0]
+        DE.check_dataset_correctness_assert(df)
         return df
 
     def add_fa_features(self, ticker_raw_data: Ticker) -> pd.DataFrame:
@@ -160,7 +167,8 @@ class StockTaDailyDataset(Memory):
     def get_uncorrelated_ta_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Get uncorrelated technical analysis features"""
         df = self.get_ta_features(df)
-        df = self.drop_correlated_features(df)
+        # df = self.drop_correlated_features(df)
+        df.fillna(0, inplace=True)
         return df
 
     def drop_correlated_features(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -189,7 +197,7 @@ class StockTaDailyDataset(Memory):
                     if self.program.args.project_verbose > 0
                     else self.TA_functions.items())
         for name, func in iterable:
-            if isinstance(iterable, tqdm): iterable.set_description(f"Computing TA {name}")
+            if isinstance(iterable, tqdm): iterable.set_description(f"Calculating indicator: {name}")
             if callable(func):  # TODO: remove this if statement
                 none_optional_params = {name: param
                                         for name, param in inspect.signature(func).parameters.items()
@@ -205,11 +213,12 @@ class StockTaDailyDataset(Memory):
                 if isinstance(ta_indicator, pd.Series):
                     df_ta[name] = ta_indicator
                 elif isinstance(ta_indicator, pd.DataFrame):
-                    for col in ta_indicator.columns:
-                        df_ta[f"{name}_{col}"] = ta_indicator[col]
+                    if "SIGNAL" in ta_indicator.columns:
+                        df_ta[f"{name}_SIGNAL"] = ta_indicator["SIGNAL"]
+                    else:
+                        for col in ta_indicator.columns:
+                            df_ta[f"{name}_{col}"] = ta_indicator[col]
 
-        # df_ta = df_ta.fillna(0)  # Nan will be replaced with 0
-        # TODO: drop nan
         return df_ta
 
     # TODO: Create function for downloading raw_data using yfinance and another one for TradingView
@@ -237,29 +246,35 @@ class StockTaDailyDataset(Memory):
         return Ticker(**data)
 
 
-def t1() -> Dict:
-    """
-    Debugging and manual testing in ipython
-    :return: dict
-    """
-    program = Program()
-    program.args.project_verbose = 1
-    dataset = StockTaDailyDataset(program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef)
+class TestStockTaDailyDataset:
+    def __init__(self):
+        self.program: Program = Program()
+        self.program.args.project_verbose = 1
 
-    r = {}
-    r['program'] = program
-    r["dataset"] = dataset
-    r["d"] = dataset.get_stock_dataset()
-    r["c"] = dataset.get_correlation_matrix(r["d"])
-    # r["dnc"] = dataset.drop_correlated_features(r["d"])
-    return r
+    def t1(self) -> Dict:
+        """
+        Debugging and manual testing in ipython
+        :return: dict
+        """
+        dataset = StockTaDailyDataset(self.program, tickers=DOW_30_TICKER,
+                                      dataset_split_coef=self.program.args.dataset_split_coef)
+
+        r = {}
+        r['program'] = self.program
+        r["dataset"] = dataset
+        r["d"] = dataset.get_stock_dataset()
+        return r
+
+
+def t():
+    return TestStockTaDailyDataset().t1()
 
 
 def main():
     program = Program()
     dataset = StockTaDailyDataset(program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
-    dataset.save_csv(program.args.dataset_path)
+    dataset.save_csv(program.args.dataset_paths)
 
 
 if __name__ == "__main__":

@@ -61,7 +61,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--train", help="Will train models based on hyper parameters",
                         **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
     parser.add_argument("--test", help="Will test trained models", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
-    parser.add_argument("--dataset-path", "-dp", help="Will test trained models", nargs="?", type=Path, default=None)
+    parser.add_argument("--dataset-paths", "-dp", help="Will test trained models", nargs="+", type=Path, default=[])
     parser.add_argument("--dataset-split-coef", help="Define what percentage of the dataset is used for training",
                         type=float, default=0.6)
     parser.add_argument("--baseline-path", "-pb", help="Baseline path", nargs="?", type=Path, default=None)
