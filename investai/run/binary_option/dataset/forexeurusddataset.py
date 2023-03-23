@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from typing import Literal
 
+from tvDatafeed import Interval, TvDatafeed
 import numpy as np
 import pandas as pd
 from finta import TA
-from run.binary_option.main import DATASET_PATH
-from tvDatafeed import Interval, TvDatafeed
 
 
 class ForexDataset:
@@ -27,7 +26,7 @@ class ForexDataset:
         df = self.add_candlestick_features(df)
 
         # save dataset
-        df.to_csv(DATASET_PATH, index=False)
+        # df.to_csv(DATASET_PATH, index=False) # FIXME: save dataset, inherit from Memory
         self.dataset = df
         return df
 

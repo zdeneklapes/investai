@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from copy import deepcopy  # noqa
-from typing import Dict, Tuple
+from typing import Dict, Tuple, NoReturn
 
 import numpy as np  # noqa
 import pandas as pd
@@ -17,6 +17,7 @@ from shared.program import Program
 from shared.utils import calculate_return_from_weights, reload_module  # noqa
 from run.shared.memory import Memory
 from tqdm import trange
+import yfinance as yf
 
 
 # TODO: add baseline S@P500
@@ -26,11 +27,19 @@ class Baseline(Memory):
     def __init__(self, program: Program, df: pd.DataFrame = pd.DataFrame()):
         super().__init__(program, df)
 
-    def warren_buffet_returns(self) -> pd.DataFrame:
+    def warren_buffet_returns(self) -> NoReturn:
         """Source:"""
 
-    def indexes_returns(self, program: Program, dataset: pd.DataFrame) -> pd.DataFrame:
+    def indexes_returns(self) -> NoReturn:
         """Source:"""
+        indexes = ["^DJI", "^GSPC", "^IXIC", "^RUT", "^VIX"]  # DJI, S&P500, NASDAQ, Russell 2000, VIX
+        df_indexes_1 = yf.download(indexes, period="max", interval="1d", ignore_tz=True)
+        df_indexes_2 = df_indexes_1.dropna()
+        df_indexes_3 = df_indexes_2["Close"]
+        df_indexes_4 = df_indexes_3.pct_change(periods=1).dropna()
+        df_indexes_4.insert(0, "date", df_indexes_4.index)
+        self.merge(df_indexes_4)
+        print(self.df)
 
     def _create_weights(self, mean, s, bounds: Tuple) -> Dict:
         ef = EfficientFrontier(mean, s, weight_bounds=bounds)
@@ -48,7 +57,7 @@ class Baseline(Memory):
             "maximum_sharpe": cleaned_weights_max_sharpe,
         }
 
-    def pypfopt_returns(self, dataset: pd.DataFrame, bounds: Tuple = (0, 1)) -> pd.DataFrame:
+    def pypfopt_returns(self, dataset: pd.DataFrame, bounds: Tuple = (0, 1)) -> NoReturn:
         """
         source: https://github.com/AI4Finance-Foundation/FinRL-Tutorials
         Create returns using pyportfolioopt library and results are stored in self.df and returned
@@ -102,8 +111,14 @@ class Baseline(Memory):
                 f"maximum_sharpe_{bounds[0]}_{bounds[1]}": return_max_sharpe, }
             rewards = pd.concat([rewards, pd.DataFrame(next_return, index=[0])], ignore_index=True)
 
-        self.df = rewards
-        return self.df
+        self.df = self.merge(rewards)
+
+    def merge(self, rewards: pd.DataFrame) -> NoReturn:
+        if self.df.empty:
+            self.df = rewards
+        else:
+            self.df = pd.merge(self.df, rewards, how="outer", on="date")
+        self.df.dropna(inplace=True)
 
 
 class TestBaseline:
@@ -149,9 +164,29 @@ class TestBaseline:
     def t3(self):
         self.baseline.load_csv(self.program.args.baseline_path)
 
+    def t4(self):
+        program = Program()
+        program.args.project_verbose = 1
+        program.args.dataset_paths = [program.args.folder_dataset.joinpath("stockfadailydataset.csv")]
+
+        # NOTE: for pypfopt baseline dataset_path must be defined
+        dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER,
+                                      split_coef=program.args.dataset_split_coef)
+        dataset.load_csv(program.args.dataset_paths[0].as_posix())
+        dataset.df = dataset.df[dataset.df["date"] >= "2020-01-01"]
+        dataset.df.index = dataset.df["date"].factorize()[0]
+        d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
+        d = {"date": d_tics["date"].unique()}
+        d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
+        df = pd.DataFrame(d)
+        baseline = Baseline(program=program)
+        baseline.pypfopt_returns(dataset=df, bounds=(0, 1))
+        baseline.indexes_returns()
+        return baseline
+
 
 def t():
-    return TestBaseline().t1()
+    return TestBaseline().t4()
 
 
 def main():
@@ -160,12 +195,22 @@ def main():
     # NOTE: for pypfopt baseline dataset_path must be defined
     dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER, split_coef=program.args.dataset_split_coef)
     dataset.load_csv(program.args.dataset_paths[0].as_posix())
+
+    # TODO: Remove these:
+    dataset.df = dataset.df[dataset.df["date"] >= "2020-01-01"]
+    dataset.df.index = dataset.df["date"].factorize()[0]
+
+    # Prepare dataset for pypfopt computing
     d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
     d = {"date": d_tics["date"].unique()}
     d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
     df = pd.DataFrame(d)
+
+    # Compute baselines
     baseline = Baseline(program=program)
     baseline.pypfopt_returns(dataset=df, bounds=(0, 1))
+    baseline.indexes_returns()
+
     # NOTE: for these baselines dataset_path needn't be defined
     # TODO: add baseline S@P500
     # TODO: add baseline DJI30
