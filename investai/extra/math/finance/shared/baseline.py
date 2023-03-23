@@ -49,7 +49,7 @@ class Baseline(Memory):
         ef.max_quadratic_utility()
         cleaned_weights_max_quadratic_utility = ef.clean_weights()
         ef = EfficientFrontier(mean, s, weight_bounds=bounds)
-        ef.max_sharpe()
+        ef.max_sharpe(risk_free_rate=-10.0)  # FIXME: -10.0 is a hack, should be ?, but it works
         cleaned_weights_max_sharpe = ef.clean_weights()
         return {
             "minimum_variance": cleaned_weights_min_var,
@@ -78,11 +78,16 @@ class Baseline(Memory):
 
         iterable = (trange(4, dates.size - 1) if self.program.args.project_verbose else range(4, dates.size - 1))
         for i in iterable:
-            mean_annual_return = mean_historical_return(dataset.iloc[:i])
-            s_covariance_matrix = CovarianceShrinkage(dataset.iloc[:i]).ledoit_wolf()
+            frequency = 252 if dataset.iloc[:i].shape[0] > 252 else dataset.iloc[:i].shape[0]
+            mean_return = mean_historical_return(dataset.iloc[:i], frequency=frequency, compounding=True)
+            s_covariance_matrix = CovarianceShrinkage(dataset.iloc[:i], frequency=frequency).ledoit_wolf()
+            print(frequency)
+            print(mean_return)
+            print(s_covariance_matrix)
+            print(dataset.iloc[:i])
 
             #
-            weights = self._create_weights(mean_annual_return, s_covariance_matrix, bounds)
+            weights = self._create_weights(mean_return, s_covariance_matrix, bounds)
 
             assert list(dataset.iloc[i].index) == list(weights["minimum_variance"].keys())
 
@@ -173,15 +178,24 @@ class TestBaseline:
         dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER,
                                       split_coef=program.args.dataset_split_coef)
         dataset.load_csv(program.args.dataset_paths[0].as_posix())
-        dataset.df = dataset.df[dataset.df["date"] >= "2020-01-01"]
+
+        # NOTE: Tested thing:
+        # dataset.df = dataset.df[dataset.df["date"] >= "2020-02-01"]
+        dataset.df = dataset.df[(dataset.df["date"] >= "2020-03-10") & (dataset.df["date"] <= "2020-03-18")]
         dataset.df.index = dataset.df["date"].factorize()[0]
+
+        #
         d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
         d = {"date": d_tics["date"].unique()}
         d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
         df = pd.DataFrame(d)
+
+        #
         baseline = Baseline(program=program)
         baseline.pypfopt_returns(dataset=df, bounds=(0, 1))
-        baseline.indexes_returns()
+        # baseline.indexes_returns()
+
+        #
         return baseline
 
 
@@ -197,9 +211,8 @@ def main():
     dataset.load_csv(program.args.dataset_paths[0].as_posix())
 
     # TODO: Remove these:
-    # dataset.df = dataset.df[dataset.df["date"] >= "2020-01-01"] # BUG: Produce error from cvxpy
-    dataset.df = dataset.df[dataset.df["date"] >= "2022-01-01"]  # This is OK, wtf??
-    dataset.df.index = dataset.df["date"].factorize()[0]
+    # dataset.df = dataset.df[dataset.df["date"] >= "2020-01-01"]
+    # dataset.df.index = dataset.df["date"].factorize()[0]
 
     # Prepare dataset for pypfopt computing
     d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
@@ -221,3 +234,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # t()
