@@ -197,7 +197,8 @@ def main():
     dataset.load_csv(program.args.dataset_paths[0].as_posix())
 
     # TODO: Remove these:
-    dataset.df = dataset.df[dataset.df["date"] >= "2020-01-01"]
+    # dataset.df = dataset.df[dataset.df["date"] >= "2020-01-01"] # BUG: Produce error from cvxpy
+    dataset.df = dataset.df[dataset.df["date"] >= "2022-01-01"]  # This is OK, wtf??
     dataset.df.index = dataset.df["date"].factorize()[0]
 
     # Prepare dataset for pypfopt computing
