@@ -32,7 +32,7 @@ class Baseline(Memory):
 
     def indexes_returns(self) -> NoReturn:
         """Source:"""
-        indexes = ["^DJI", "^GSPC", "^IXIC", "^RUT", "^VIX"]  # DJI, S&P500, NASDAQ, Russell 2000, VIX
+        indexes = ["^DJI", "^GSPC", "^IXIC", "^RUT"]  # DJI, S&P500, NASDAQ, Russell 2000
         df_indexes_1 = yf.download(indexes, period="max", interval="1d", ignore_tz=True)
         df_indexes_2 = df_indexes_1.dropna()
         df_indexes_3 = df_indexes_2["Close"]
