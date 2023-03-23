@@ -38,8 +38,7 @@ class Baseline(Memory):
         df_indexes_3 = df_indexes_2["Close"]
         df_indexes_4 = df_indexes_3.pct_change(periods=1).dropna()
         df_indexes_4.insert(0, "date", df_indexes_4.index)
-        self.merge(df_indexes_4)
-        print(self.df)
+        self.merge_with_df(df_indexes_4)
 
     def _create_weights(self, mean, s, bounds: Tuple) -> Dict:
         ef = EfficientFrontier(mean, s, weight_bounds=bounds)
@@ -81,10 +80,6 @@ class Baseline(Memory):
             frequency = 252 if dataset.iloc[:i].shape[0] > 252 else dataset.iloc[:i].shape[0]
             mean_return = mean_historical_return(dataset.iloc[:i], frequency=frequency, compounding=True)
             s_covariance_matrix = CovarianceShrinkage(dataset.iloc[:i], frequency=frequency).ledoit_wolf()
-            print(frequency)
-            print(mean_return)
-            print(s_covariance_matrix)
-            print(dataset.iloc[:i])
 
             #
             weights = self._create_weights(mean_return, s_covariance_matrix, bounds)
@@ -116,13 +111,18 @@ class Baseline(Memory):
                 f"maximum_sharpe_{bounds[0]}_{bounds[1]}": return_max_sharpe, }
             rewards = pd.concat([rewards, pd.DataFrame(next_return, index=[0])], ignore_index=True)
 
-        self.df = self.merge(rewards)
+        self.merge_with_df(rewards)
 
-    def merge(self, rewards: pd.DataFrame) -> NoReturn:
+    def merge_with_df(self, rewards: pd.DataFrame, date_format: str = "%Y-%m-%d") -> NoReturn:
+        rewards['date'] = pd.to_datetime(rewards["date"], format=date_format)
         if self.df.empty:
             self.df = rewards
         else:
-            self.df = pd.merge(self.df, rewards, how="outer", on="date")
+            try:
+                self.df['date'] = pd.to_datetime(self.df["date"], format=date_format)
+            except ValueError as e:
+                raise ValueError(f"self.df['date'] can't be converted to datetime64[ns], format {date_format}") from e
+            self.df = pd.merge(self.df, rewards, on="date", how="left")
         self.df.dropna(inplace=True)
 
 
@@ -193,7 +193,8 @@ class TestBaseline:
         #
         baseline = Baseline(program=program)
         baseline.pypfopt_returns(dataset=df, bounds=(0, 1))
-        # baseline.indexes_returns()
+        baseline.indexes_returns()
+        baseline.df.reset_index(inplace=True, drop=True)
 
         #
         return baseline
@@ -210,10 +211,6 @@ def main():
     dataset = StockFaDailyDataset(program=program, tickers=DOW_30_TICKER, split_coef=program.args.dataset_split_coef)
     dataset.load_csv(program.args.dataset_paths[0].as_posix())
 
-    # TODO: Remove these:
-    # dataset.df = dataset.df[dataset.df["date"] >= "2020-01-01"]
-    # dataset.df.index = dataset.df["date"].factorize()[0]
-
     # Prepare dataset for pypfopt computing
     d_tics = dataset.df[["tic", "close", "date"]].sort_values(by=["tic", "date"])
     d = {"date": d_tics["date"].unique()}
@@ -224,11 +221,8 @@ def main():
     baseline = Baseline(program=program)
     baseline.pypfopt_returns(dataset=df, bounds=(0, 1))
     baseline.indexes_returns()
-
-    # NOTE: for these baselines dataset_path needn't be defined
-    # TODO: add baseline S@P500
-    # TODO: add baseline DJI30
-    # TODO: add baseline Warren Buffet
+    baseline.df.reset_index(inplace=True, drop=True)
+    # TODO: add baseline Warren Buffet; NOTE: dataset_path needn't be defined
     baseline.save_csv(file_path=program.args.baseline_path.as_posix())
 
 

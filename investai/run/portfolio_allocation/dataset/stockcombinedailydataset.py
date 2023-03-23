@@ -24,6 +24,7 @@ class StockCombinedDailyDataset(Memory):
         cols_to_use = dfs[1].columns.difference(dfs[0].columns).insert(0, ['date', 'tic'])
         df = pd.merge(dfs[0], dfs[1][cols_to_use], on=['date', 'tic'], how='outer')
         df = df.loc[:, ~df.columns.duplicated()].copy()
+        df.index = df.date.factorize()[0]
         self.df = df
         return self.df
 
