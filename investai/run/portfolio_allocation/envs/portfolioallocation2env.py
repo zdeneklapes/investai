@@ -111,7 +111,8 @@ class PortfolioAllocation2Env(gym.Env):
         options: Optional[Dict[str, Any]] = None,
     ):
         self.__reinit()
-        if self.program.args.train_verbose > 0: self.program.log.info("Reset environment")
+        if self.program.args.train_verbose > 0:
+            self.program.log.info(f"Reset environment in time: {self._time}:{self._current_date}")
         return self._current_observation  # First observation
 
     def render(self, mode="human"):
