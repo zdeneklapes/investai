@@ -71,9 +71,9 @@ class WandbTest:
             "test/total_reward": (memory.df["reward"] + 1).cumprod().iloc[-1],
             # TODO: reward annualized
             # Dates
-            "test/dataset_start_date": dataset["date"].unique()[0],
-            "test/dataset_end_date": dataset["date"].unique()[-1],
-            "test/start_date": dataset["date"].unique()[0],
+            "test/dataset_start_date": str(dataset["date"].unique()[0]),
+            "test/dataset_end_date": str(dataset["date"].unique()[-1]),
+            "test/start_date": str(dataset["date"].unique()[0]),
             "test/end_date": memory.df["date"].iloc[-1],
             # Ratios
             "test/sharpe_ratio": calculate_sharpe_ratio(memory.df["reward"]),

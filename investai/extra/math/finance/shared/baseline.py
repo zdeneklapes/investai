@@ -41,15 +41,20 @@ class Baseline(Memory):
         self.merge_with_df(df_indexes_4)
 
     def _create_weights(self, mean, s, bounds: Tuple) -> Dict:
+        round_float_correction = 1e-3
+        #
         ef = EfficientFrontier(mean, s, weight_bounds=bounds)
         ef.min_volatility()
         cleaned_weights_min_var = ef.clean_weights()
+        assert sum(cleaned_weights_min_var.values()) <= 1 + round_float_correction
         ef = EfficientFrontier(mean, s, weight_bounds=bounds)
         ef.max_quadratic_utility()
         cleaned_weights_max_quadratic_utility = ef.clean_weights()
+        assert sum(cleaned_weights_max_quadratic_utility.values()) <= 1 + round_float_correction
         ef = EfficientFrontier(mean, s, weight_bounds=bounds)
         ef.max_sharpe(risk_free_rate=-10.0)  # FIXME: -10.0 is a hack, should be ?, but it works
         cleaned_weights_max_sharpe = ef.clean_weights()
+        assert sum(cleaned_weights_max_sharpe.values()) <= 1 + round_float_correction
         return {
             "minimum_variance": cleaned_weights_min_var,
             "maximum_quadratic_utility": cleaned_weights_max_quadratic_utility,
