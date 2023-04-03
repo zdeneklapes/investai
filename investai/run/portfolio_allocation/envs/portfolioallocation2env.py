@@ -89,11 +89,9 @@ class PortfolioAllocation2Env(gym.Env):
 
         # action are the tickers weight in the portfolio (without cash)
         asset_allocation_actions = normalized_actions[1:]  # Remove cash
-        reward = calculate_return_from_weights(
-            self.dataset.loc[self._time, :]["close"].values,
-            self.dataset.loc[self._time - 1, :]["close"].values,
-            asset_allocation_actions,
-        )
+        reward = calculate_return_from_weights(self.dataset.loc[self._time, :]["close"].values,
+                                               self.dataset.loc[self._time - 1, :]["close"].values,
+                                               asset_allocation_actions, )
 
         #
         info = pd.DataFrame(self._memory_record(reward=reward,
