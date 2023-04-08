@@ -7,6 +7,10 @@ import pandas as pd
 from finta import TA
 
 
+# TODO: Ad all support/resistance paterns to identify gaps and
+# retracements, but make is letsay 10 nearest and 10 farthest in each
+# timeframe, by pct according to current price
+
 class ForexDataset:
     def __init__(self):
         # TODO: load raw_data for all tickers
