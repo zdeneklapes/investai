@@ -62,7 +62,15 @@ WANDB_DIR=''
 LD_LIBRARY_PATH='${LD_LIBRARY_PATH}:${HOME}/venv3.10/lib/python3.10/site-packages/nvidia/cuda_runtime/lib/:${HOME}/venv3.10/lib/python3.10/site-packages/tensorrt/'
 ```
 
-### 3. Run
+### 3. Run in Local
+
+```shell
+# TODO
+```
+
+or
+
+### 3. Run in Docker
 
 ```shell
 # TODO

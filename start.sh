@@ -9,7 +9,7 @@ GREEN='\033[0;32m'
 AUTHOR='Zdenek Lapes'
 EMAIL='lapes.zdenek@gmail.com'
 
-PROJECT_NAME='pawnshop'
+LOGIN="xlapes02"
 
 ################################################################################
 # Functions
@@ -67,10 +67,13 @@ function usage() {
 }
 
 function project_pack() {
-    zip -r investai/ \
-        thesis \
-        -x "*out*" \
-        -x "*others*"
+    EXCLUDED_REGEX=".git\|venv\|.idea\|data\|pytest_cache\|.DS_Store\|.vim\|__pycache__\|out\|.ruff_cache\|.vscode\|TODO.md\|tags\|mdp_models\|run/trading\|run/numerai\|run/binary_option\|setup.\|.rsync"
+    DD=$(find . -maxdepth 3 | grep --invert-match "${EXCLUDED_REGEX}" | cut -d'/' -f2- | sed "1d")
+    echo "${DD}"
+#    zip -r "${LOGIN}.zip" "${DD}"
+#    mv "${LOGIN}.zip" "${HOME}/Desktop/"
+#    unzip -do "${HOME}/Desktop/${LOGIN}" "${HOME}/Desktop/${LOGIN}.zip"
+#    open "${HOME}/Desktop/${LOGIN}"
 }
 
 function create_env_samples() {
@@ -144,13 +147,13 @@ function requirement_for_workflow() {
 }
 
 function run_test() {
-#    source venv3.10/bin/activate &&
-        PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/wandb_train.py --dataset-path=out/datasets/stockfadailydataset.csv --wandb-project="investai_exp_1" --wandb-job-type="train" --wandb=1 --wandb-sweep=0 --wandb-sweep-count=2 --algorithms ppo --project-verbose=1 --total-timesteps=1000
+    #    source venv3.10/bin/activate &&
+    PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/wandb_train.py --dataset-path=out/datasets/stockfadailydataset.csv --wandb-project="investai_exp_1" --wandb-job-type="train" --wandb=1 --wandb-sweep=0 --wandb-sweep-count=2 --algorithms ppo --project-verbose=1 --total-timesteps=1000
 }
 
 function run_sweep() {
-#    source venv3.10/bin/activate &&
-        PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/wandb_train.py --dataset-path=out/datasets/stockfadailydataset.csv --wandb-project="investai_sweep_1" --wandb-job-type="train" --wandb=0 --wandb-sweep=1 --wandb-sweep-count=100 --algorithms ppo a2c sac td3 dqn ddpg --project-verbose=1 --total-timesteps=400000
+    #    source venv3.10/bin/activate &&
+    PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/wandb_train.py --dataset-path=out/datasets/stockfadailydataset.csv --wandb-project="investai_sweep_1" --wandb-job-type="train" --wandb=0 --wandb-sweep=1 --wandb-sweep-count=100 --algorithms ppo a2c sac td3 dqn ddpg --project-verbose=1 --total-timesteps=400000
 }
 
 ##### PARSE CLI-ARGS
