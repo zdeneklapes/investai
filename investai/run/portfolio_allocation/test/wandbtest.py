@@ -28,42 +28,56 @@ class WandbTest:
         self.program: Program = program
         self.dataset: StockFaDailyDataset = dataset
 
+    @property
+    def _baseline(self) -> Baseline:
+        baseline = Baseline(self.program)
+        baseline.load_csv(self.program.args.baseline_path.as_posix())
+        # baseline.df['date'] = pd.to_datetime(baseline.df['date'], format='%Y-%m-%d')
+        return baseline
+
     def _deinit_environment(self, env):
         self.program.log.info("Deinit environment")
         env.close()
 
     def test(self, model: ALGORITHM_SB3_TYPE, deterministic=True) -> None:
-        # Test
+        # Environment
         environment: DummyVecEnv = EnvironmentInitializer(self.program, self.dataset).portfolio_allocation(
             self.dataset.test_dataset
         )
         env_unwrapped = environment.envs[0].env
         obs = environment.reset()
 
-        # "-2" because we don't want to go till terminal state, because the environment will be reset
+        # Baseline
+        baseline = self._baseline
+
+        # Iteration: TODO: "-2" because we don't want to go till terminal state, because the environment will be reset
         iterable = (
             trange(len(env_unwrapped.dataset.index.unique()) - 2, desc="Test")
             if self.program.args.project_verbose
             else range(len(env_unwrapped.dataset.index.unique()) - 2)
         )
 
+        # Testing
         for _ in iterable:
             action, _ = model.predict(obs, deterministic=deterministic)
             environment.step(action)
             if self.program.is_wandb_enabled():
-                self.create_log(env_unwrapped.memory)
+                # Reward
+                wandb.log({"test/reward/model": env_unwrapped.memory.df.iloc[-1]["reward"]})
 
-        env_unwrapped.memory.save_json(
-            self.program.args.folder_out.joinpath("test_memory.json").as_posix())
+                # Baseline
+                select_binary = baseline.df['date'] == env_unwrapped.memory.df.iloc[-1]['date']
+                baseline_data = baseline.df[select_binary].to_dict()
+                del baseline_data['date']
+                baseline_log_data = {f"test/reward/{k}": list(v.values())[0] for k, v in baseline_data.items()}
+                wandb.log(baseline_log_data)
+
+        # env_unwrapped.memory.save_json(self.program.args.folder_out.joinpath("test_memory.json").as_posix())
 
         # Finish
         if self.program.is_wandb_enabled():
             self.create_summary(env_unwrapped.memory, env_unwrapped.dataset)
             self.create_baseline_chart(env_unwrapped.memory)
-
-    def create_log(self, memory: Memory):
-        log_dict = {"test/reward": memory.df.iloc[-1]["reward"]}
-        wandb.log(log_dict)
 
     def create_summary(self, memory: Memory, dataset: pd.DataFrame):
         info = {
@@ -85,9 +99,9 @@ class WandbTest:
         memory_env.df['date'] = pd.to_datetime(memory_env.df['date'], format='%Y-%m-%d')
 
         #
-        baseline = Baseline(self.program)
-        baseline.load_csv(self.program.args.baseline_path.as_posix())
-        baseline.df['date'] = pd.to_datetime(baseline.df['date'], format='%Y-%m-%d')
+        baseline = self._baseline
+        baseline.df['date'] = pd.to_datetime(baseline.df['date'], format="%Y-%m-%d")
+
         #
         memory_without_action = memory_env.df[memory_env.df.columns.difference(['action'])]
         df_chart = pd.merge(memory_without_action, baseline.df, on='date')

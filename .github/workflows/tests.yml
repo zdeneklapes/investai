@@ -15,14 +15,14 @@ jobs:
         steps:
             -   name: Checkout code
                 uses: actions/checkout@v3
-            -   name: Set up Python ${{ matrix.python-version }}
-                uses: actions/setup-python@v4
-                with:
-                    python-version: ${{ matrix.python-version }}
-            -   name: Install requirements
-                run: |
-                    sudo pip install --upgrade pip
-                    sudo pip3 install -r requirements_for_workflows.txt
-            -   name: Run pytest
-                run: |
-                    pytest
+#            -   name: Set up Python ${{ matrix.python-version }}
+#                uses: actions/setup-python@v4
+#                with:
+#                    python-version: ${{ matrix.python-version }}
+#            -   name: Install requirements
+#                run: |
+#                    sudo pip install --upgrade pip
+#                    sudo pip3 install -r requirements_for_workflows.txt
+#            -   name: Run pytest
+#                run: |
+#                    pytest

@@ -40,7 +40,7 @@ class Memory:
         """
         if self.program.args.project_verbose > 0: self.program.log.info(f"Loading df from: {file_path}")
         self.df = pd.read_json(file_path)
-        if "date" in self.df.columns: self.to_datetime()
+        # if "date" in self.df.columns: self.to_datetime()
 
     def save_csv(self, file_path: str):
         """Save df to csv file
@@ -55,4 +55,4 @@ class Memory:
         """
         if self.program.args.project_verbose > 0: self.program.log.info(f"Loading df from: {file_path}")
         self.df = pd.read_csv(file_path, index_col=0)
-        if "date" in self.df.columns: self.to_datetime()
+        # if "date" in self.df.columns: self.to_datetime()

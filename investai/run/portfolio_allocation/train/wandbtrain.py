@@ -20,8 +20,10 @@ from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 
 
 class WandbTrain:
-    def __init__(self, program: Program, dataset: StockFaDailyDataset, algorithm: str):
-        self.dataset: StockFaDailyDataset = dataset
+    def __init__(self, program: Program, dataset_path: Path, algorithm: str):
+        self.dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
+        self.dataset.load_csv(file_path=dataset_path.as_posix())
+        self.dataset_path = dataset_path
         self.program: Program = program
         self.algorithm: str = algorithm
         self.model_path = self.program.args.folder_model.joinpath(f"{self.algorithm}.zip")
@@ -139,8 +141,7 @@ class WandbTrain:
 
         # Wandb: Log artifacts
         if self.program.is_wandb_enabled():
-            for dataset_path in self.program.args.dataset_paths:
-                self.log_artifact("dataset", "dataset", dataset_path.as_posix())
+            self.log_artifact("dataset", "dataset", self.dataset_path.as_posix())
             self.log_artifact("model", "model", self.model_path.as_posix())
 
         if self.program.args.test:
@@ -161,15 +162,12 @@ class WandbTrain:
 
 def main():
     program = Program()
-    pprint(program.args.dataset_paths)
 
     dataset_path: Path
     for dataset_path in program.args.dataset_paths:
         for algorithm in program.args.algorithms:
             if program.args.train:
-                dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
-                dataset.load_csv(file_path=dataset_path.as_posix())
-                wandb_train = WandbTrain(program=program, dataset=dataset, algorithm=algorithm)
+                wandb_train = WandbTrain(program=program, dataset_path=dataset_path, algorithm=algorithm)
                 if not program.args.wandb_sweep:
                     wandb_train.train()
                 else:
