@@ -67,13 +67,30 @@ function usage() {
 }
 
 function project_pack() {
-    EXCLUDED_REGEX=".git\|venv\|.idea\|data\|pytest_cache\|.DS_Store\|.vim\|__pycache__\|out\|.ruff_cache\|.vscode\|TODO.md\|tags\|mdp_models\|run/trading\|run/numerai\|run/binary_option\|setup.\|.rsync"
-    DD=$(find . -maxdepth 3 | grep --invert-match "${EXCLUDED_REGEX}" | cut -d'/' -f2- | sed "1d")
-    echo "${DD}"
-#    zip -r "${LOGIN}.zip" "${DD}"
-#    mv "${LOGIN}.zip" "${HOME}/Desktop/"
-#    unzip -do "${HOME}/Desktop/${LOGIN}" "${HOME}/Desktop/${LOGIN}.zip"
-#    open "${HOME}/Desktop/${LOGIN}"
+    #    DD=$(find . -maxdepth 3 | grep --invert-match "${EXCLUDED_REGEX}" | cut -d'/' -f2- | sed "1d")
+    #    echo "${DD}"
+    zip -r "${LOGIN}.zip" investai \
+        Dockerfile \
+        requirements.txt \
+        start.sh \
+        README.md \
+        MATERIALS.md \
+        .pre-commit-config.yaml \
+        pyproject.toml \
+        \
+        -x **run/trading** \
+        **run/binary_option** \
+        **run/numerai** \
+        **__pycache__** \
+        **pytest_cache** \
+        **.DS_Store** \
+        **out** \
+        **.ruff_cache** \
+        **.vscode** \
+        **tags**
+    mv "${LOGIN}.zip" "${HOME}/Downloads/"
+    unzip -d "${HOME}/Downloads/${LOGIN}" "${HOME}/Downloads/${LOGIN}.zip"
+    open "${HOME}/Downloads/${LOGIN}"
 }
 
 function create_env_samples() {
