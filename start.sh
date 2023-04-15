@@ -20,7 +20,7 @@ function error_exit() {
     exit 1
 }
 
-function clean() {
+function project_clean() {
     ${RM} *.zip
 
     # Folders
@@ -66,8 +66,8 @@ function usage() {
     '-h' | '--help') usage ;;"
 }
 
-function pack() {
-    zip -r thesis.zip \
+function project_pack() {
+    zip -r investai/ \
         thesis \
         -x "*out*" \
         -x "*others*"
@@ -158,7 +158,8 @@ function run_sweep() {
 while [ "$#" -gt 0 ]; do
     case "$1" in
     # "-p.*" prefix all project commands
-    '-pc' | '--project-clean') clean ;;
+    '-pc' | '--project-clean') project_clean ;;
+    '-pp' | '--project-pack') project_pack ;;
     '-prfw' | '--project-requirements-for-workflow') requirement_for_workflow ;;
         # "-d.*" prefix all docker commands
     '-dr' | '--docker-run') docker_run ;;
@@ -171,19 +172,6 @@ while [ "$#" -gt 0 ]; do
         #
     '-rt' | '--run-test') run_test ;;
     '-rs' | '--run-sweep') run_sweep ;;
-    '-r3' | '--run-3') echo "TODO" ;;
-
-        #    '-cd' | '--clean-docker') clean_docker ;;
-        #    '-id' | '--install-docker') install_docker_compose ;;
-        #    '-idd' | '--install-docker-deploy') install_docker_deploy ;;
-        #    '-dsip' | '--install-docker-deploy') docker_show_ipaddress ;;
-        #        #
-        #    '--create-samples-env') create_env_samples ;;
-        #    '-sc' | '--sync-code') upload_code ;;
-        #        #
-        #    '-t' | '--tags') tags ;;
-        #    '-h' | '--help') usage ;;
-        #    '-p' | '--pack') pack ;;
     esac
     shift
 done
