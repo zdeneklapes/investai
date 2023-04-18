@@ -5,7 +5,7 @@ Stock Technical analysis dataset
 import inspect
 from functools import partial
 from copy import deepcopy
-from typing import Dict, List
+from typing import Dict, List, TypedDict
 from pprint import pprint  # noqa
 
 import numpy as np
@@ -59,7 +59,7 @@ class StockTaDailyDataset(Memory):
         TA_items = dict(TA.__dict__)
 
         # These are uncorrelated indicators
-        wanted_ta_indicators = set(['SMA', 'TRIX', 'ER', 'MACD', 'PPO', 'EV_MACD', 'VBM', 'ADX', 'UO',
+        wanted_ta_indicators = set(['SMA', 'ER', 'MACD', 'PPO', 'EV_MACD', 'VBM', 'ADX', 'UO',
                                     'MI', 'BOP', 'CHAIKIN', 'BASP', 'BASPN', 'QSTICK', 'SQZMI', 'FVE', 'VFI',
                                     'WILLIAMS_FRACTAL'])
 
@@ -121,6 +121,7 @@ class StockTaDailyDataset(Memory):
         df = df.sort_values(by=self.unique_columns)
         df.index = df["date"].factorize()[0]
         DE.check_dataset_correctness_assert(df)
+
         return df
 
     def add_fa_features(self, ticker_raw_data: Ticker) -> pd.DataFrame:
@@ -184,7 +185,7 @@ class StockTaDailyDataset(Memory):
     def get_correlation_matrix(self, df: pd.DataFrame) -> pd.DataFrame:
         """Get correlation matrix"""
         # TODO: Check this!
-        corr_matrix = df.corr().abs()
+        corr_matrix = df.corr()  # .abs()
         ones_map = np.ones(corr_matrix.shape)
         upper_ones_map = np.triu(ones_map, k=1).astype(np.bool)
         correlation_upper_matrix = corr_matrix.where(upper_ones_map)
@@ -193,9 +194,13 @@ class StockTaDailyDataset(Memory):
     def get_ta_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Get uncorrelated technical analysis features"""
         df_ta = pd.DataFrame()
-        iterable = (tqdm(self.TA_functions.items(), leave=False)
-                    if self.program.args.project_verbose > 0
-                    else self.TA_functions.items())
+        if self.program.args.project_figure:
+            iterable = tqdm(dict(TA.__dict__).items())
+            # iterable = tqdm(dict(VORTEX=TA.VORTEX).items())
+        else:
+            iterable = (tqdm(self.TA_functions.items(), leave=False) if self.program.args.project_verbose > 0
+                        else self.TA_functions.items())
+
         for name, func in iterable:
             if isinstance(iterable, tqdm): iterable.set_description(f"Calculating indicator: {name}")
             if callable(func):  # TODO: remove this if statement
@@ -207,7 +212,8 @@ class StockTaDailyDataset(Memory):
                         ta_indicator = func(df, period=30)
                     else:
                         ta_indicator = func(df)
-                except NotImplementedError:
+                except (NotImplementedError, TypeError):
+                    self.program.log.info(f"Skipping {name} indicator")
                     continue
 
                 if isinstance(ta_indicator, pd.Series):
@@ -218,7 +224,6 @@ class StockTaDailyDataset(Memory):
                     else:
                         for col in ta_indicator.columns:
                             df_ta[f"{name}_{col}"] = ta_indicator[col]
-
         return df_ta
 
     # TODO: Create function for downloading raw_data using yfinance and another one for TradingView
@@ -250,6 +255,7 @@ class TestStockTaDailyDataset:
     def __init__(self):
         self.program: Program = Program()
         self.program.args.project_verbose = 1
+        self.program.args.debug = 1
 
     def t1(self) -> Dict:
         """
@@ -270,6 +276,48 @@ def t():
     return TestStockTaDailyDataset().t1()
 
 
+def create_heatmap_of_all_indicators():
+    program: Program = Program()
+    program.args.project_verbose = 1
+    program.args.project_figure = 1
+
+    dataset = StockTaDailyDataset(program, tickers=DOW_30_TICKER,
+                                  dataset_split_coef=program.args.dataset_split_coef)
+    r_T = TypedDict("r", {"program": Program, "dataset": StockTaDailyDataset, "raw_data": Ticker, "d": pd.DataFrame,
+                          "corr_m": pd.DataFrame})
+    r: r_T = {}
+    r['program'] = program
+    r["dataset"] = dataset
+    r['raw_data'] = dataset.load_raw_data("AAPL")  # Load tickers raw_data
+    price_data = r['raw_data'].data_detailed[r['dataset'].base_columns]
+
+    # all
+    # r["d"] = r['dataset'].get_uncorrelated_ta_features(price_data)  # Add features
+    # r['corr_m'] = r['dataset'].get_correlation_matrix(r['d'])
+    # ax = sns.heatmap(r['corr_m'], cmap="coolwarm", xticklabels=False, yticklabels=False)  # type: Axes
+    # plt.savefig(program.args.folder_figure.joinpath("ta_correlation_matrix_all_indicators.png"))
+
+    # uncorrelated
+    program.args.project_figure = 0
+    r["d"] = r['dataset'].get_uncorrelated_ta_features(price_data)  # Add features
+    r['corr_m'] = r['dataset'].get_correlation_matrix(r['d'])
+    ax = sns.heatmap(r['corr_m'], cmap="coolwarm", )  # type: Axes
+    indicators = pd.Series(['SMA', 'ER', 'MACD_SIGNAL', 'PPO_SIGNAL', 'EV_MACD_SIGNAL', 'VBM',
+                            'ADX', 'UO', 'MI', 'BOP', 'CHAIKIN', 'BASP_B', 'BASP_S',
+                            'BASPN_B', 'BASPN_S', 'QSTICK', 'SQZMI', 'FVE', 'VFI',
+                            'WILLIAMS_FRACTAL_Bear', 'WILLIAMS_FRACTAL_Bull'],
+                           dtype='object')
+    ax.set_xticks(np.arange(indicators.__len__()), indicators)
+    ax.set_yticks(np.arange(indicators.__len__()), indicators)
+    plt.tight_layout()
+    plt.savefig(program.args.folder_figure.joinpath("ta_correlation_matrix_uncorrelated_indicators.png"))
+    return r
+
+
+def create_heatmap_of_uncorrelated_indicators():
+    pass
+
+
 def main():
     program = Program()
     dataset = StockTaDailyDataset(program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef)
@@ -279,4 +327,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-    # t1()
+    # t()
+    # create_heatmap_of_all_indicators()

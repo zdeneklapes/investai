@@ -32,10 +32,10 @@ def parse_arguments() -> Tuple[vars, Namespace]:
 
     def postprocess_folder_arguments(args: Namespace):
         def create_dirs(args):
-            args.folder_root.mkdir(parents=True, exist_ok=True)
             args.folder_ticker.mkdir(parents=True, exist_ok=True)
             args.folder_out.mkdir(parents=True, exist_ok=True)
             args.folder_dataset.mkdir(parents=True, exist_ok=True)
+            args.folder_figure.mkdir(parents=True, exist_ok=True)
             args.folder_baseline.mkdir(parents=True, exist_ok=True)
             args.folder_memory.mkdir(parents=True, exist_ok=True)
             args.folder_model.mkdir(parents=True, exist_ok=True)
@@ -44,6 +44,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
         if args.folder_ticker is None: args.folder_ticker = args.folder_root.joinpath("data/ticker")
         if args.folder_out is None: args.folder_out: Path = args.folder_root.joinpath("out")
         if args.folder_dataset is None: args.folder_dataset: Path = args.folder_out.joinpath("dataset")
+        if args.folder_figure is None: args.folder_figure: Path = args.folder_out.joinpath("figure")
         if args.folder_baseline is None: args.folder_baseline: Path = args.folder_out.joinpath("baseline")
         if args.folder_memory is None: args.folder_memory: Path = args.folder_out.joinpath("memory")
         if args.folder_model is None: args.folder_model: Path = args.folder_out.joinpath("model")
@@ -69,9 +70,11 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--portfolio-allocation-env", help="Portfolio allocation environment", nargs="?", type=int,
                         default=1)
     parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
-    parser.add_argument("--debug", help="Debug mode", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
+    parser.add_argument("--project-debug", help="Debug mode", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
     parser.add_argument("--project-verbose", help="Verbosity level 0: not output 1: info 2: debug, default: 0",
                         type=int, default=0)
+    parser.add_argument("--project-figure", help="If want to save figures on not",
+                        **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
 
     # Project structure arguments
     parser.add_argument("--folder-root", "-pr", help="Project root", nargs="?", type=Path,
@@ -79,6 +82,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--folder-ticker", help="Path to ticker data folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-out", help="Path to output data folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-dataset", help="Path to datasets folder", nargs="?", type=Path, default=None)
+    parser.add_argument("--folder-figure", help="Path to figures folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-baseline", help="Path to baselines folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-memory", help="Path to memory folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-model", help="Path to models folder", nargs="?", type=Path, default=None)
