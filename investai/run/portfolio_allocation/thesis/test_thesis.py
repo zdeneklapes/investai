@@ -12,7 +12,7 @@ from pprint import pprint  # noqa
 
 from extra.math.finance.shared.baseline import Baseline
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
-from run.shared.algorithmsb3 import ALGORITHM_SB3_TYPE
+from run.shared.algorithms import ALGORITHM_SB3_TYPE
 from run.shared.callback.wandb_util import wandb_summary
 from run.shared.environmentinitializer import EnvironmentInitializer
 from run.shared.memory import Memory

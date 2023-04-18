@@ -9,11 +9,11 @@ from pathlib import Path
 
 import wandb
 from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
-from run.portfolio_allocation.test.wandbtest import WandbTest
-from run.shared.algorithmsb3 import ALGORITHM_SB3
+from run.portfolio_allocation.test.test_thesis import WandbTest
+from run.shared.algorithms import ALGORITHM_SB3
 from run.shared.callback.wandbcallbackextendmemory import WandbCallbackExtendMemory
 from run.shared.environmentinitializer import EnvironmentInitializer
-from run.shared.hyperparameters.sweep_configuration import sweep_configuration
+from run.shared.hyperparameters.sb3_sweep_configuration import sweep_configuration
 from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback

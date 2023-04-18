@@ -187,7 +187,7 @@ class StockTaDailyDataset(Memory):
         # TODO: Check this!
         corr_matrix = df.corr()  # .abs()
         ones_map = np.ones(corr_matrix.shape)
-        upper_ones_map = np.triu(ones_map, k=1).astype(np.bool)
+        upper_ones_map = np.triu(ones_map, k=0).astype(np.bool)
         correlation_upper_matrix = corr_matrix.where(upper_ones_map)
         return correlation_upper_matrix
 
