@@ -1,4 +1,4 @@
-program: investai/run/portfolio_allocation/train/wandbtrain.py
+program: investai/run/portfolio_allocation/train/train.py
 method: random
 commad:
     --wandb-sweep

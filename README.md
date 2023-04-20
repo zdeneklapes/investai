@@ -65,10 +65,10 @@ LD_LIBRARY_PATH='${LD_LIBRARY_PATH}:${HOME}/venv3.10/lib/python3.10/site-package
 ### 3. Run in Local (from root directory)
 
 ```shell
-PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/wandbtrain.py --help
+PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/train.py --help
 
 # Examples:
-PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/wandbtrain.py --dataset-path out/dataset/stockfadailydataset.csv --wandb=1 --wandb-sweep=0 --wandb-sweep-count=10 --algorithms ppo --project-verbose=1 --train-verbose=1 --wandb-verbose=1 --total-timesteps=1000 --train=1 --test=1 --portfolio-allocation-env=1 --wandb-run-group="exp-run-1" --baseline-path=out/baseline/baseline.csv
+PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/train.py --dataset-path out/dataset/stockfadailydataset.csv --wandb=1 --wandb-sweep=0 --wandb-sweep-count=10 --algorithms ppo --project-verbose=1 --train-verbose=1 --wandb-verbose=1 --total-timesteps=1000 --train=1 --test=1 --portfolio-allocation-env=1 --wandb-run-group="exp-run-1" --baseline-path=out/baseline/baseline.csv
 ```
 
 ## NOTES
