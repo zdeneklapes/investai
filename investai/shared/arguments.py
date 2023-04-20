@@ -39,6 +39,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
             args.folder_baseline.mkdir(parents=True, exist_ok=True)
             args.folder_memory.mkdir(parents=True, exist_ok=True)
             args.folder_model.mkdir(parents=True, exist_ok=True)
+            args.folder_history.mkdir(parents=True, exist_ok=True)
             args.folder_tensorboard.mkdir(parents=True, exist_ok=True)
 
         if args.folder_ticker is None: args.folder_ticker = args.folder_root.joinpath("data/ticker")
@@ -48,6 +49,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
         if args.folder_baseline is None: args.folder_baseline: Path = args.folder_out.joinpath("baseline")
         if args.folder_memory is None: args.folder_memory: Path = args.folder_out.joinpath("memory")
         if args.folder_model is None: args.folder_model: Path = args.folder_out.joinpath("model")
+        if args.folder_history is None: args.folder_history: Path = args.folder_model.joinpath("history")
         if args.folder_tensorboard is None: args.folder_tensorboard: Path = args.folder_model.joinpath("tensorboard")
 
         create_dirs(args)
@@ -86,6 +88,7 @@ def parse_arguments() -> Tuple[vars, Namespace]:
     parser.add_argument("--folder-baseline", help="Path to baselines folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-memory", help="Path to memory folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-model", help="Path to models folder", nargs="?", type=Path, default=None)
+    parser.add_argument("--folder-history", help="Path to models folder", nargs="?", type=Path, default=None)
     parser.add_argument("--folder-tensorboard", help="Path to tensorboard folder", nargs="?", type=Path, default=None)
 
     # W&B arguments
