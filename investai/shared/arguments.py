@@ -257,7 +257,7 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
     )
 
     for arg in args_choice:
-        if arg == ArgumentOption.ALL.value:
+        if arg == ArgumentOption.ALL:
             for cb in args_choices_cb.values(): cb(parser)
             break
         else:
