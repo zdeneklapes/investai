@@ -12,12 +12,13 @@ from extra.math.finance.shared.baseline import Baseline  # noqa
 from run.shared.memory import Memory
 
 
-class Reload(Memory):
+class Report(Memory):
     def __init__(self, program: Program = None):
         self.program = program
         self.filepath = self.program.args.history_path.as_posix()
 
     def download_test_history(self):
+        if self.program.args.project_verbose > 0: self.program.log.info("START download_test_history")
         api = wandb.Api()
         runs = [
             api.runs(self.program.args.wandb_entity + "/" + self.program.args.wandb_project, filters={"group": group})
@@ -73,12 +74,14 @@ class Reload(Memory):
         #
         assert final_df.groupby(['id']).size().unique().size == 1, "All runs should have the same number of samples"
         final_df.to_csv(self.filepath, index=True)
-        if self.program.args.project_verbose > 0:
-            self.program.log.info(f"History downloaded and saved to {self.filepath}")
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"History downloaded and saved to {self.filepath}")
         self.df = final_df
+        if self.program.args.project_verbose > 0: self.program.log.info("End download_test_history")
         return self.df
 
     def initialize_stats(self):
+        if self.program.args.project_verbose > 0: self.program.log.info("START initialize_stats")
         df: pd.DataFrame = self.load_csv(self.filepath)
         self.returns_pivot_df = df.pivot(columns=['id'], values=['reward'])
         self.returns_pivot_df = pd.concat(
@@ -103,8 +106,10 @@ class Reload(Memory):
 
         self.returns_pivot_df.columns = self.returns_pivot_df.columns.droplevel(0)
         self.cumprod_returns_df.columns = self.cumprod_returns_df.columns.droplevel(0)
+        if self.program.args.project_verbose > 0: self.program.log.info("END initialize_stats")
 
     def get_summary(self):
+        if self.program.args.project_verbose > 0: self.program.log.info("START get_summary")
         # Cumprod
         cumprod_returns_df_without_baseline = self.cumprod_returns_df.drop(columns=self.baseline_columns)
         idx_min = cumprod_returns_df_without_baseline.iloc[-1].argmin()
@@ -126,9 +131,10 @@ class Reload(Memory):
         print("Max drawdown")
         print(empyrical.max_drawdown(self.returns_pivot_df[id_min]))
         print(empyrical.max_drawdown(self.returns_pivot_df[id_max]))
+        if self.program.args.project_verbose > 0: self.program.log.info("END get_summary")
 
     def plot_returns(self):
-        pass
+        if self.program.args.project_verbose > 0: self.program.log.info("START plot_returns")
         # rows = 4
         # plt.subplot(rows, 1, 1)
         # pf.plotting.plot_rolling_returns(returns_pivot_df[id_min], returns_pivot_df[('reward', 'zy8buea3_^DJI')])
@@ -144,9 +150,11 @@ class Reload(Memory):
         # plt.subplot(rows, 1, 4)
         # pf.plotting.plot_returns(returns_pivot_df[id_max])
         # plt.show()
+        if self.program.args.project_verbose > 0: self.program.log.info("END plot_returns")
 
     def plot_details(self):
-        pass
+        if self.program.args.project_verbose > 0: self.program.log.info("START plot_details")
+        if self.program.args.project_verbose > 0: self.program.log.info("END plot_details")
 
     # rows = 2
     # plt.subplot(rows, 1, 1)
@@ -174,10 +182,11 @@ class Reload(Memory):
 
 def t():
     program = Program()
-    print(program.args)
-    # wandbstats = Reload(program=program)
-    # foo = wandbstats.download_test_history()
-    # foo = wandbstats.initialize_stats()
+    if program.args.project_verbose > 0: program.log.info("Start report")
+    wandbstats = Report(program=program)
+    if program.args.report_download_history: wandbstats.download_test_history()
+    if program.args.report_figure: wandbstats.initialize_stats()
+    if program.args.project_verbose > 0: program.log.info("End report")
     return None
 
 

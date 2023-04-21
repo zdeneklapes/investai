@@ -83,7 +83,9 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
 
     def report_arguments(parser):
         parser.add_argument("--history-path", "-mb", help="History path", nargs="?", type=Path, default=None)
-        parser.add_argument("--project-figure", help="If want to save figures on not",
+        parser.add_argument("--report-download-history", help="If want to download history from wandb",
+                            **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
+        parser.add_argument("--report-figure", help="If want to save figures on not",
                             **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
 
     def dataset_arguments(parser):
