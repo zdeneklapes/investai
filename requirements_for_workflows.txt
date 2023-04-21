@@ -340,7 +340,7 @@ typing_extensions==4.5.0
 uri-template==1.2.0
 urllib3==1.26.14
 virtualenv==20.20.0
-wandb==0.13.11
+wandb==0.15.0
 wcwidth==0.2.6
 webcolors==1.12
 webencodings==0.5.1

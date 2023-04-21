@@ -56,13 +56,6 @@ def cProfile_decorator(sort_by: str):
     return decorator
 
 
-# This function reload the module
-def reload_module(module):
-    import importlib
-
-    importlib.reload(module)
-
-
 def config():
     warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
     warnings.filterwarnings("ignore", category=DeprecationWarning)
