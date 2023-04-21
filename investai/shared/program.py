@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 from argparse import Namespace
+from typing import List
 
 from loguru import logger
-from shared.arguments import parse_arguments
+from shared.arguments import parse_arguments, ArgumentOption
 from shared.utils import find_git_root
 from torch.utils.tensorboard import SummaryWriter
 
 
 class Program:
-    def __init__(self):
+    def __init__(self, args_choice: List[ArgumentOption] = [ArgumentOption.ALL]):
         from dotenv import load_dotenv
 
         load_dotenv(dotenv_path=find_git_root(__file__).joinpath(".env").as_posix())
-        self.args: Namespace = parse_arguments()[1]
+        self.args: Namespace = parse_arguments(args_choice)
         self.log: logger = logger
         self.__post_init__()
 

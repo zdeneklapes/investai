@@ -21,7 +21,7 @@ class EnvironmentInitializer:
 
     def portfolio_allocation(self, dataset: pd.DataFrame) -> DummyVecEnv:
         env = None
-        if self.program.args.portfolio_allocation_env == 0:
+        if self.program.args.env_id == "0":
             self.program.log.info(f"Init environment: {PortfolioAllocationEnv.__name__}")
             env = PortfolioAllocationEnv(
                 dataset=dataset,
@@ -29,7 +29,7 @@ class EnvironmentInitializer:
                 features=self.dataset.get_features(),
                 start_index=self.program.args.start_index,
             )
-        elif self.program.args.portfolio_allocation_env == 1:
+        elif self.program.args.env_id == "1":
             self.program.log.info(f"Init environment: {PortfolioAllocation2Env.__name__}")
             env = PortfolioAllocation2Env(self.program, dataset=dataset, tickers=self.dataset.tickers,
                                           columns_to_drop_in_observation=["date", "tic"],

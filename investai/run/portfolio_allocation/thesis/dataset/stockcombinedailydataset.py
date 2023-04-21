@@ -8,7 +8,7 @@ from IPython.display import display  # noqa
 from shared.program import Program
 
 # For Debugging
-from shared.utils import reload_module  # noqa
+from shared.reload import reload_module  # noqa
 from run.shared.memory import Memory
 
 

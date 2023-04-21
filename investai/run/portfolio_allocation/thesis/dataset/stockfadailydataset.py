@@ -16,7 +16,7 @@ from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
 
 # For Debugging
-from shared.utils import reload_module  # noqa
+from shared.reload import reload_module  # noqa
 from tqdm import tqdm
 from tvDatafeed import Interval, TvDatafeed
 from run.shared.memory import Memory

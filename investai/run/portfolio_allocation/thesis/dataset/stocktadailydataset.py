@@ -21,7 +21,7 @@ from shared.program import Program
 from finta import TA
 
 # For Debugging
-from shared.utils import reload_module  # noqa
+from shared.reload import reload_module  # noqa
 from tqdm import tqdm
 from tvDatafeed import Interval, TvDatafeed
 from run.shared.memory import Memory

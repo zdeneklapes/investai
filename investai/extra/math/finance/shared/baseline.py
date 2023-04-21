@@ -11,10 +11,11 @@ import seaborn as sns  # noqa
 from pypfopt import EfficientFrontier
 from pypfopt.expected_returns import mean_historical_return
 from pypfopt.risk_models import CovarianceShrinkage
-from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
+from run.portfolio_allocation.thesis.dataset.stockfadailydataset import StockFaDailyDataset
 from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
-from shared.utils import calculate_return_from_weights, reload_module  # noqa
+from shared.utils import calculate_return_from_weights
+from shared.reload import reload_module  # noqa
 from run.shared.memory import Memory
 from tqdm import trange
 import yfinance as yf
