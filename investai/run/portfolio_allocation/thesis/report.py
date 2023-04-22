@@ -5,13 +5,18 @@ from itertools import chain
 from tqdm import tqdm
 import pandas as pd
 import empyrical  # noqa
+import pyfolio as pf  # noqa
 import seaborn as sns  # noqa
 import matplotlib.pyplot as plt  # noqa
+from matplotlib.axes._axes import Axes  # noqa
+from matplotlib.axis import Axis  # noqa
 
 from shared.program import Program
 from shared.reload import reload_module  # noqa
 from extra.math.finance.shared.baseline import Baseline  # noqa
 from run.shared.memory import Memory
+
+MARKET_OPEN_DAYS = 252
 
 
 class Report(Memory):
@@ -138,18 +143,30 @@ class Report(Memory):
 
     def plot_returns(self):
         if self.program.args.project_verbose > 0: self.program.log.info("START plot_returns")
+        baselines_df = self.cumprod_returns_df[self.baseline_columns]
 
         # Min Cumulated returns
-        # TODO: fixme create worst model and all baselines
-        returns_min_df = self.returns_pivot_df[self.id_min]
-        _: plt.figure = sns.lineplot(data=returns_min_df)
+        returns_min_df = self.cumprod_returns_df[self.id_min]
+        compare_min_baselines_df = pd.concat([returns_min_df, baselines_df], axis=1)
+        _: Axes = sns.lineplot(data=compare_min_baselines_df)
         plt.savefig(self.program.args.folder_figure.joinpath("returns_min_baseline.png"))
+        plt.clf()  # Clear the current figure
 
+        # Min Stats
+        min_stats: pd.Series = pf.show_perf_stats(self.returns_pivot_df[self.id_min])
+        min_stats.to_csv(self.program.args.folder_figure.joinpath("stats_min_baseline.csv"))
+
+        # ##############################################
         # Max Cumulated returns
-        # TODO: fixme create best model and all baselines
-        returns_max_df = self.returns_pivot_df[self.id_max]
-        _: plt.figure = sns.lineplot(data=returns_max_df)
-        plt.savefig(self.program.args.folder_figure.joinpath("returns_max_baseline.png"))
+        returns_max_df = self.cumprod_returns_df[self.id_max]
+        compare_max_baselines_df = pd.concat([returns_max_df, baselines_df], axis=1)
+        _: Axes = sns.lineplot(data=compare_max_baselines_df)
+        plt.savefig(self.program.args.folder_figure.joinpath("plot_returns_max_baseline.png"))
+        plt.clf()  # Clear the current figure
+
+        # Max Stats
+        max_stats: pd.Series = pf.show_perf_stats(self.returns_pivot_df[self.id_max])
+        max_stats.to_csv(self.program.args.folder_figure.joinpath("stats_max_baseline.csv"))
 
         if self.program.args.project_verbose > 0: self.program.log.info("END plot_returns")
 
@@ -190,7 +207,21 @@ class Report(Memory):
         pass
 
 
-def t():
+class ReportTest:
+    def __init__(self):
+        self.program = Program()
+        self.program.args.history_path = self.program.args.folder_model.joinpath("history.csv")
+        self.program.args.baseline_path = self.program.args.folder_baseline.joinpath("baseline.csv")
+        self.wandbstats = Report(program=self.program)
+
+    def plot_returns_test(self):
+        self.wandbstats.initialize_stats()
+        return {"program": self.program,
+                "wandbstats": self.wandbstats,
+                "plot": self.wandbstats.plot_returns(), }
+
+
+def main():
     program = Program()
     if program.args.project_verbose > 0: program.log.info("Start report")
     wandbstats = Report(program=program)
@@ -198,10 +229,10 @@ def t():
     if program.args.report_figure:
         wandbstats.initialize_stats()
         wandbstats.plot_returns()
-        wandbstats.plot_details()
+        # wandbstats.plot_details()
     if program.args.project_verbose > 0: program.log.info("End report")
     return None
 
 
 if __name__ == "__main__":
-    t()
+    main()
