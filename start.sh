@@ -173,6 +173,10 @@ function run_sweep() {
     PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/wandb_train.py --dataset-path=out/datasets/stockfadailydataset.csv --wandb-project="investai_sweep_1" --wandb-job-type="train" --wandb=0 --wandb-sweep=1 --wandb-sweep-count=100 --algorithms ppo a2c sac td3 dqn ddpg --project-verbose=1 --total-timesteps=400000
 }
 
+function copy_figures_to_ibt_thesis() {
+    cp -r out/figure/ ../ibt/thesis/image/figure/
+}
+
 ##### PARSE CLI-ARGS
 [[ "$#" -eq 0 ]] && usage && exit 0
 while [ "$#" -gt 0 ]; do
@@ -181,6 +185,7 @@ while [ "$#" -gt 0 ]; do
     '-pc' | '--project-clean') project_clean ;;
     '-pp' | '--project-pack') project_pack ;;
     '-prfw' | '--project-requirements-for-workflow') requirement_for_workflow ;;
+    '-pf' | '--project-figures') copy_figures_to_ibt_thesis ;;
         # "-d.*" prefix all docker commands
     '-dr' | '--docker-run') docker_run ;;
     '--docker-start') docker_start ;;

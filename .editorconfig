@@ -1,7 +1,7 @@
 # https://editorconfig.org
 root = true
 
-[*.{py,json,tex,bib,markdown,md,yaml,yml}]
+[*.{py,json,tex,bib,markdown,md,yaml,yml,sh}]
 max_line_length = 120
 indent_style = space
 charset = utf-8

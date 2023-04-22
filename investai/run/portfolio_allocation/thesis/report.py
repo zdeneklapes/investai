@@ -26,7 +26,8 @@ class Report(Memory):
         self.filepath = self.program.args.history_path.as_posix()
 
     def download_test_history(self):
-        if self.program.args.project_verbose > 0: self.program.log.info("START download_test_history")
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"START {inspect.currentframe().f_code.co_name}")
         api = wandb.Api()
         runs = [
             api.runs(self.program.args.wandb_entity + "/" + self.program.args.wandb_project, filters={"group": group})
@@ -85,11 +86,12 @@ class Report(Memory):
         if self.program.args.project_verbose > 0: self.program.log.info(
             f"History downloaded and saved to {self.filepath}")
         self.df = final_df
-        if self.program.args.project_verbose > 0: self.program.log.info("End download_test_history")
+        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
         return self.df
 
     def initialize_stats(self):
-        if self.program.args.project_verbose > 0: self.program.log.info("START initialize_stats")
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"START {inspect.currentframe().f_code.co_name}")
         self.load_csv(self.filepath)
         self.returns_pivot_df = self.df.pivot(columns=['id'], values=['reward'])
         self.returns_pivot_df = pd.concat(
@@ -97,53 +99,50 @@ class Report(Memory):
              self.returns_pivot_df]).reset_index(
             drop=True)
         self.cumprod_returns_df = (self.returns_pivot_df + 1).cumprod()
-
-        # TODO: Change index/_step by date
         self.baseline = Baseline(self.program)
         self.baseline.load_csv(self.program.args.baseline_path.as_posix())
-
         self.returns_pivot_df.index = pd.to_datetime(self.baseline.df['date'].iloc[-self.returns_pivot_df.shape[0]:],
                                                      format="%Y-%m-%d")
         self.cumprod_returns_df.index = pd.to_datetime(
             self.baseline.df['date'].iloc[-self.cumprod_returns_df.shape[0]:],
             format="%Y-%m-%d"
         )
-
-        self.baseline_columns = self.returns_pivot_df.filter(regex="zy8buea3.*").columns.map(lambda x: x[1]).drop(
-            'zy8buea3')
-
+        self.baseline_columns = self.returns_pivot_df.filter(
+            regex="fi9bu9a5.*").columns.map(lambda x: x[1]).drop(['fi9bu9a5', 'fi9bu9a5_maximum_quadratic_utility_0_1'])
+        b_columns = self.baseline_columns.append(pd.Index(['fi9bu9a5_maximum_quadratic_utility_0_1']))
         self.returns_pivot_df.columns = self.returns_pivot_df.columns.droplevel(0)
         self.cumprod_returns_df.columns = self.cumprod_returns_df.columns.droplevel(0)
-        self.cumprod_returns_df_without_baseline = self.cumprod_returns_df.drop(columns=self.baseline_columns)
+        self.cumprod_returns_df_without_baseline = self.cumprod_returns_df.drop(columns=b_columns)
         self.idx_min = self.cumprod_returns_df_without_baseline.iloc[-1].argmin()
         self.idx_max = self.cumprod_returns_df_without_baseline.iloc[-1].argmax()
         self.id_min = self.cumprod_returns_df_without_baseline.iloc[-1].index[self.idx_min]
         self.id_max = self.cumprod_returns_df_without_baseline.iloc[-1].index[self.idx_max]
-
-        # TODO: Get config for idx_max
-        # TODO: Get config for idx_min
-        if self.program.args.project_verbose > 0: self.program.log.info("END initialize_stats")
+        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def stats(self):
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"START {inspect.currentframe().f_code.co_name}")
         # Min Stats
         min_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[self.id_min])
-        min_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df['zy8buea3_^DJI'])
-        min_stats.to_csv(self.program.args.folder_figure.joinpath("stats_min_baseline.csv"))
+        min_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df['fi9bu9a5_^DJI'])
+        min_stats.to_csv(self.program.args.folder_figure.joinpath("stats_min.csv"))
 
         # Max Stats
         max_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[self.id_max])
-        max_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_max], self.returns_pivot_df['zy8buea3_^DJI'])
-        max_stats.to_csv(self.program.args.folder_figure.joinpath("stats_max_baseline.csv"))
+        max_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_max], self.returns_pivot_df['fi9bu9a5_^DJI'])
+        max_stats.to_csv(self.program.args.folder_figure.joinpath("stats_max.csv"))
+        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def returns_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info("START plot_returns")
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"START {inspect.currentframe().f_code.co_name}")
         baselines_df = self.cumprod_returns_df[self.baseline_columns]
 
         # Min Cumulated returns
         returns_min_df = self.cumprod_returns_df[self.id_min]
         compare_min_baselines_df = pd.concat([returns_min_df, baselines_df], axis=1)
         _: Axes = sns.lineplot(data=compare_min_baselines_df)
-        plt.savefig(self.program.args.folder_figure.joinpath("returns_min_baseline.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("returns_min.png"))
         plt.clf()  # Clear the current figure
 
         # ##############################################
@@ -151,13 +150,13 @@ class Report(Memory):
         returns_max_df = self.cumprod_returns_df[self.id_max]
         compare_max_baselines_df = pd.concat([returns_max_df, baselines_df], axis=1)
         _: Axes = sns.lineplot(data=compare_max_baselines_df)
-        plt.savefig(self.program.args.folder_figure.joinpath("plot_returns_max_baseline.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("returns_max.png"))
         plt.clf()  # Clear the current figure
-
-        if self.program.args.project_verbose > 0: self.program.log.info("END plot_returns")
+        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def annual_returns_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info("START plot_annual_returns")
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"START {inspect.currentframe().f_code.co_name}")
         # Min Annual returns
         pf.plot_annual_returns(self.returns_pivot_df[self.id_min])
         plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_min_model.png"))
@@ -167,93 +166,105 @@ class Report(Memory):
         pf.plot_annual_returns(self.returns_pivot_df[self.id_max])
         plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_max_model.png"))
         plt.clf()
-
-        if self.program.args.project_verbose > 0: self.program.log.info("END plot_annual_returns")
-
-    def monthly_returns_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info("START plot_monthly_returns")
-        # Min Monthly returns
-        pf.plot_monthly_returns_heatmap(self.returns_pivot_df[self.id_min])
-        plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_min_model.png"))
-        plt.clf()
-
-        # Max Monthly returns
-        pf.plot_monthly_returns_heatmap(self.returns_pivot_df[self.id_max])
-        plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_max_model.png"))
-        plt.clf()
-
-        if self.program.args.project_verbose > 0: self.program.log.info("END plot_monthly_returns")
+        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def monthly_return_heatmap_figure(self):
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"START {inspect.currentframe().f_code.co_name}")
         # Min Monthly returns heatmap
         pf.plot_monthly_returns_heatmap(self.returns_pivot_df[self.id_min])
-        plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_min_baseline.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_min.png"))
         plt.clf()
         plt.cla()
 
         # Max Monthly returns heatmap
         pf.plot_monthly_returns_heatmap(self.returns_pivot_df[self.id_max])
-        plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_max_baseline.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_max.png"))
         plt.clf()
         plt.cla()
+        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def return_quantiles_figure(self):
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"START {inspect.currentframe().f_code.co_name}")
         # Min Return quantiles
         pf.plot_return_quantiles(self.returns_pivot_df[self.id_min])
-        plt.savefig(self.program.args.folder_figure.joinpath("return_quantiles_min_baseline.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("return_quantiles_min.png"))
         plt.clf()
         plt.cla()
 
         # Max Return quantiles
         pf.plot_return_quantiles(self.returns_pivot_df[self.id_max])
-        plt.savefig(self.program.args.folder_figure.joinpath("return_quantiles_max_baseline.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("return_quantiles_max.png"))
         plt.clf()
         plt.cla()
+        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def rolling_beta_figure(self):
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"START {inspect.currentframe().f_code.co_name}")
         # Min Rolling beta
-        pf.plot_rolling_beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df['zy8buea3_^DJI'])
-        plt.savefig(self.program.args.folder_figure.joinpath("rolling_beta_min_baseline.png"))
+        pf.plot_rolling_beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df['fi9bu9a5_^DJI'])
+        plt.savefig(self.program.args.folder_figure.joinpath("rolling_beta_min.png"))
         plt.clf()
         plt.cla()
 
         # Max Rolling beta
-        pf.plot_rolling_beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df['zy8buea3_^DJI'])
-        plt.savefig(self.program.args.folder_figure.joinpath("rolling_beta_max_baseline.png"))
+        pf.plot_rolling_beta(self.returns_pivot_df[self.id_max], self.returns_pivot_df['fi9bu9a5_^DJI'])
+        plt.savefig(self.program.args.folder_figure.joinpath("rolling_beta_max.png"))
         plt.clf()
         plt.cla()
+        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def rolling_sharpe_figure(self):
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"START {inspect.currentframe().f_code.co_name}")
         # Min Rolling sharpe
         pf.plot_rolling_sharpe(self.returns_pivot_df[self.id_min])
-        plt.savefig(self.program.args.folder_figure.joinpath("rolling_sharpe_min_baseline.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("rolling_sharpe_min.png"))
         plt.gcf()
         plt.cla()
 
         # Max Rolling sharpe
         pf.plot_rolling_sharpe(self.returns_pivot_df[self.id_max])
-        plt.savefig(self.program.args.folder_figure.joinpath("rolling_sharpe_max_baseline.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("rolling_sharpe_max.png"))
         plt.gcf()
         plt.cla()
+        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def drawdown_underwater_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"START {inspect.currentframe().f_code.co_name}")
 
         # Min Drawdown underwater
         pf.plot_drawdown_underwater(self.returns_pivot_df[self.id_min])
-        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_min_baseline.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_min.png"))
         plt.clf()
         plt.cla()
 
         # Max Drawdown underwater
         pf.plot_drawdown_underwater(self.returns_pivot_df[self.id_max])
-        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_max_baseline.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_max.png"))
         plt.clf()
         plt.cla()
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
-    def plot_drawdown(self):
-        pass
+    def drawdown_periods_figure(self):
+        if self.program.args.project_verbose > 0: self.program.log.info(
+            f"START {inspect.currentframe().f_code.co_name}")
+
+        # Min Drawdown periods
+        pf.plot_drawdown_periods(self.returns_pivot_df[self.id_min])
+        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_periods_min.png"))
+        plt.clf()
+        plt.cla()
+
+        # Max Drawdown periods
+        pf.plot_drawdown_periods(self.returns_pivot_df[self.id_max])
+        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_periods_max.png"))
+        plt.clf()
+        plt.cla()
+        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
 
 class ReportTest:
@@ -270,8 +281,6 @@ class ReportTest:
 
     def annual_returns_figure_test(self): self.func_ret = self.wandbstats.annual_returns_figure()
 
-    def monthly_returns_test(self): self.func_ret = self.wandbstats.monthly_returns_figure()
-
     def monthly_return_heatmap_test(self): self.func_ret = self.wandbstats.monthly_return_heatmap_figure()
 
     def return_quantiles_test(self): self.func_ret = self.wandbstats.return_quantiles_figure()
@@ -282,10 +291,12 @@ class ReportTest:
 
     def drawdown_underwater_test(self): self.func_ret = self.wandbstats.drawdown_underwater_figure()
 
+    def drawdown_periods_test(self): self.func_ret = self.wandbstats.drawdown_periods_figure()
+
 
 def t():
     report_test = ReportTest()
-    report_test.drawdown_underwater_test()
+    report_test.drawdown_periods_test()
     return report_test
 
 
@@ -297,11 +308,18 @@ def main():
     if program.args.report_figure:
         wandbstats.initialize_stats()
         wandbstats.stats()
-        wandbstats.figure_returns()
-        wandbstats.figure_details()
+        wandbstats.returns_figure()
+        # wandbstats.annual_returns_figure()
+        # wandbstats.monthly_return_heatmap_figure()
+        # wandbstats.return_quantiles_figure()
+        # wandbstats.rolling_beta_figure()
+        # wandbstats.rolling_sharpe_figure()
+        # wandbstats.drawdown_underwater_figure()
+        # wandbstats.drawdown_periods_figure()
     if program.args.project_verbose > 0: program.log.info("End report")
     return None
 
 
 if __name__ == "__main__":
     main()
+    # t()
