@@ -4,7 +4,9 @@ from itertools import chain
 
 from tqdm import tqdm
 import pandas as pd
-import empyrical
+import empyrical  # noqa
+import seaborn as sns  # noqa
+import matplotlib.pyplot as plt  # noqa
 
 from shared.program import Program
 from shared.reload import reload_module  # noqa
@@ -55,21 +57,21 @@ class Report(Memory):
             if not baseline_done:
                 baseline_done = True
                 for log_key in tqdm(log_keys):
-                    df = run.history(samples=all_samples, keys=[log_key])
-                    df.rename(columns={log_key: "reward"}, inplace=True)
-                    df['id'] = run.id + "_" + log_key.split("/")[-1]
-                    df['group'] = run._attrs['group']
-                    df['algo'] = "baseline"
-                    final_df = pd.concat([final_df, df])
+                    key_history_df = run.history(samples=all_samples, keys=[log_key])
+                    key_history_df.rename(columns={log_key: "reward"}, inplace=True)
+                    key_history_df['id'] = run.id + "_" + log_key.split("/")[-1]
+                    key_history_df['group'] = run._attrs['group']
+                    key_history_df['algo'] = "baseline"
+                    final_df = pd.concat([final_df, key_history_df])
 
             # Models
             model_key = "test/reward/model"
-            df = run.history(samples=all_samples, keys=[model_key])
-            df.rename(columns={model_key: "reward"}, inplace=True)
-            df['id'] = run.id
-            df['group'] = run._attrs['group']
-            df['algo'] = run._attrs['config']['algo']
-            final_df = pd.concat([final_df, df])
+            key_history_df = run.history(samples=all_samples, keys=[model_key])
+            key_history_df.rename(columns={model_key: "reward"}, inplace=True)
+            key_history_df['id'] = run.id
+            key_history_df['group'] = run._attrs['group']
+            key_history_df['algo'] = run._attrs['config']['algo']
+            final_df = pd.concat([final_df, key_history_df])
 
         #
         assert final_df.groupby(['id']).size().unique().size == 1, "All runs should have the same number of samples"
@@ -82,8 +84,8 @@ class Report(Memory):
 
     def initialize_stats(self):
         if self.program.args.project_verbose > 0: self.program.log.info("START initialize_stats")
-        df: pd.DataFrame = self.load_csv(self.filepath)
-        self.returns_pivot_df = df.pivot(columns=['id'], values=['reward'])
+        self.load_csv(self.filepath)
+        self.returns_pivot_df = self.df.pivot(columns=['id'], values=['reward'])
         self.returns_pivot_df = pd.concat(
             [pd.DataFrame(data=[[0] * self.returns_pivot_df.columns.__len__()], columns=self.returns_pivot_df.columns),
              self.returns_pivot_df]).reset_index(
@@ -106,78 +108,86 @@ class Report(Memory):
 
         self.returns_pivot_df.columns = self.returns_pivot_df.columns.droplevel(0)
         self.cumprod_returns_df.columns = self.cumprod_returns_df.columns.droplevel(0)
+        self.cumprod_returns_df_without_baseline = self.cumprod_returns_df.drop(columns=self.baseline_columns)
+        self.idx_min = self.cumprod_returns_df_without_baseline.iloc[-1].argmin()
+        self.idx_max = self.cumprod_returns_df_without_baseline.iloc[-1].argmax()
+        self.id_min = self.cumprod_returns_df_without_baseline.iloc[-1].index[self.idx_min]
+        self.id_max = self.cumprod_returns_df_without_baseline.iloc[-1].index[self.idx_max]
+
+        # TODO: Get config for idx_max
+        # TODO: Get config for idx_min
         if self.program.args.project_verbose > 0: self.program.log.info("END initialize_stats")
 
     def get_summary(self):
         if self.program.args.project_verbose > 0: self.program.log.info("START get_summary")
-        # Cumprod
-        cumprod_returns_df_without_baseline = self.cumprod_returns_df.drop(columns=self.baseline_columns)
-        idx_min = cumprod_returns_df_without_baseline.iloc[-1].argmin()
-        idx_max = cumprod_returns_df_without_baseline.iloc[-1].argmax()
-        id_min = cumprod_returns_df_without_baseline.iloc[-1].index[idx_min]
-        id_max = cumprod_returns_df_without_baseline.iloc[-1].index[idx_max]
-
         # Sharpe
         print("Sharpe")
-        print(empyrical.sharpe_ratio(self.returns_pivot_df[id_min]))
-        print(empyrical.sharpe_ratio(self.returns_pivot_df[id_max]))
+        print(empyrical.sharpe_ratio(self.returns_pivot_df[self.id_min]))
+        print(empyrical.sharpe_ratio(self.returns_pivot_df[self.id_max]))
 
         # Beta
         print("Beta")
-        print(empyrical.beta(self.returns_pivot_df[id_min], self.returns_pivot_df['zy8buea3_^DJI']))
-        print(empyrical.beta(self.returns_pivot_df[id_max], self.returns_pivot_df['zy8buea3_^DJI']))
+        print(empyrical.beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df['zy8buea3_^DJI']))
+        print(empyrical.beta(self.returns_pivot_df[self.id_max], self.returns_pivot_df['zy8buea3_^DJI']))
 
         # Max drawdown
         print("Max drawdown")
-        print(empyrical.max_drawdown(self.returns_pivot_df[id_min]))
-        print(empyrical.max_drawdown(self.returns_pivot_df[id_max]))
+        print(empyrical.max_drawdown(self.returns_pivot_df[self.id_min]))
+        print(empyrical.max_drawdown(self.returns_pivot_df[self.id_max]))
         if self.program.args.project_verbose > 0: self.program.log.info("END get_summary")
 
     def plot_returns(self):
         if self.program.args.project_verbose > 0: self.program.log.info("START plot_returns")
-        # rows = 4
-        # plt.subplot(rows, 1, 1)
-        # pf.plotting.plot_rolling_returns(returns_pivot_df[id_min], returns_pivot_df[('reward', 'zy8buea3_^DJI')])
-        # fig: plt.figure = sns.lineplot(data=df_cumprod)
-        # plt.tight_layout()
-        # plt.show()
-        # plt.subplot(rows, 1, 2)
-        # pf.plotting.plot_rolling_returns(returns_pivot_df[id_max], returns_pivot_df[('reward', 'zy8buea3_^DJI')])
-        # plt.show()
-        # plt.subplot(rows, 1, 3)
-        # pf.plotting.plot_returns(returns_pivot_df[id_min])
-        # plt.show()
-        # plt.subplot(rows, 1, 4)
-        # pf.plotting.plot_returns(returns_pivot_df[id_max])
-        # plt.show()
+
+        # Min Cumulated returns
+        # TODO: fixme create worst model and all baselines
+        returns_min_df = self.returns_pivot_df[self.id_min]
+        _: plt.figure = sns.lineplot(data=returns_min_df)
+        plt.savefig(self.program.args.folder_figure.joinpath("returns_min_baseline.png"))
+
+        # Max Cumulated returns
+        # TODO: fixme create best model and all baselines
+        returns_max_df = self.returns_pivot_df[self.id_max]
+        _: plt.figure = sns.lineplot(data=returns_max_df)
+        plt.savefig(self.program.args.folder_figure.joinpath("returns_max_baseline.png"))
+
         if self.program.args.project_verbose > 0: self.program.log.info("END plot_returns")
 
     def plot_details(self):
         if self.program.args.project_verbose > 0: self.program.log.info("START plot_details")
-        if self.program.args.project_verbose > 0: self.program.log.info("END plot_details")
 
-    # rows = 2
-    # plt.subplot(rows, 1, 1)
-    # pf.plot_annual_returns(returns_pivot_df[id_min])
-    # plt.subplot(rows, 1, 2)
-    # pf.plot_monthly_returns_dist(returns_pivot_df[id_min])
-    # plt.subplot(rows, 1, 3)
-    # pf.plot_monthly_returns_heatmap(returns_pivot_df[id_min])
-    # plt.subplot(rows, 1, 4)
-    # pf.plot_return_quantiles(returns_pivot_df[id_min])
-    # plt.subplot(rows, 1, 5)
-    # pf.plot_rolling_beta(returns_pivot_df[id_min], returns_pivot_df[('reward', 'zy8buea3_^DJI')])
-    # plt.subplot(rows, 1, 6)
-    # pf.plot_rolling_sharpe(returns_pivot_df[id_min])
-    # plt.subplot(rows, 1, 7)
+        # Annual returns
+        # pf.plot_annual_returns(returns_pivot_df[id_min])
+        # plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_min_baseline.png"))
+
+        # Monthly returns
+        # pf.plot_monthly_returns_dist(returns_pivot_df[id_min])
+        # plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_dist_min_baseline.png"))
+
+        # Monthly returns heatmap
+        # pf.plot_monthly_returns_heatmap(returns_pivot_df[id_min])
+        # plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_min_baseline.png"))
+
+        # Return quantiles
+        # pf.plot_return_quantiles(returns_pivot_df[id_min])
+        # plt.savefig(self.program.args.folder_figure.joinpath("return_quantiles_min_baseline.png"))
+
+        # Rolling beta
+        # pf.plot_rolling_beta(returns_pivot_df[id_min], returns_pivot_df['zy8buea3_^DJI'])
+        # plt.savefig(self.program.args.folder_figure.joinpath("rolling_beta_min_baseline.png"))
+
+        # Rolling sharpe
+        # pf.plot_rolling_sharpe(returns_pivot_df[id_min])
+        # plt.savefig(self.program.args.folder_figure.joinpath("rolling_sharpe_min_baseline.png"))
+
+        # Drawdown underwater
+        # pf.plot_drawdown_underwater(returns_pivot_df[id_min])
+        # plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_min_baseline.png"))
+
+        if self.program.args.project_verbose > 0: self.program.log.info("END plot_details")
 
     def plot_drawdown(self):
         pass
-
-
-# pf.plot_drawdown_periods(returns_pivot_df[id_min])
-# plt.subplot(rows, 1, 8)
-# pf.plot_drawdown_underwater(returns_pivot_df[id_min])
 
 
 def t():
@@ -185,7 +195,10 @@ def t():
     if program.args.project_verbose > 0: program.log.info("Start report")
     wandbstats = Report(program=program)
     if program.args.report_download_history: wandbstats.download_test_history()
-    if program.args.report_figure: wandbstats.initialize_stats()
+    if program.args.report_figure:
+        wandbstats.initialize_stats()
+        wandbstats.plot_returns()
+        wandbstats.plot_details()
     if program.args.project_verbose > 0: program.log.info("End report")
     return None
 
