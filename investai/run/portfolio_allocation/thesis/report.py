@@ -107,9 +107,12 @@ class Report(Memory):
             self.baseline.df['date'].iloc[-self.cumprod_returns_df.shape[0]:],
             format="%Y-%m-%d"
         )
+        self.id_baseline = "fi9bu9a5"
         self.baseline_columns = self.returns_pivot_df.filter(
-            regex="fi9bu9a5.*").columns.map(lambda x: x[1]).drop(['fi9bu9a5', 'fi9bu9a5_maximum_quadratic_utility_0_1'])
-        b_columns = self.baseline_columns.append(pd.Index(['fi9bu9a5_maximum_quadratic_utility_0_1']))
+            regex="fi9bu9a5.*").columns.map(lambda x: x[1]).drop(
+            [self.id_baseline, f"{self.id_baseline}_maximum_quadratic_utility_0_1"]
+        )
+        b_columns = self.baseline_columns.append(pd.Index([f"{self.id_baseline}_maximum_quadratic_utility_0_1"]))
         self.returns_pivot_df.columns = self.returns_pivot_df.columns.droplevel(0)
         self.cumprod_returns_df.columns = self.cumprod_returns_df.columns.droplevel(0)
         self.cumprod_returns_df_without_baseline = self.cumprod_returns_df.drop(columns=b_columns)
@@ -124,12 +127,14 @@ class Report(Memory):
             f"START {inspect.currentframe().f_code.co_name}")
         # Min Stats
         min_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[self.id_min])
-        min_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df['fi9bu9a5_^DJI'])
+        min_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_min],
+                                           self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
         min_stats.to_csv(self.program.args.folder_figure.joinpath("stats_min.csv"))
 
         # Max Stats
         max_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[self.id_max])
-        max_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_max], self.returns_pivot_df['fi9bu9a5_^DJI'])
+        max_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_max],
+                                           self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
         max_stats.to_csv(self.program.args.folder_figure.joinpath("stats_max.csv"))
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
@@ -145,7 +150,6 @@ class Report(Memory):
         plt.savefig(self.program.args.folder_figure.joinpath("returns_min.png"))
         plt.clf()  # Clear the current figure
 
-        # ##############################################
         # Max Cumulated returns
         returns_max_df = self.cumprod_returns_df[self.id_max]
         compare_max_baselines_df = pd.concat([returns_max_df, baselines_df], axis=1)
@@ -159,13 +163,19 @@ class Report(Memory):
             f"START {inspect.currentframe().f_code.co_name}")
         # Min Annual returns
         pf.plot_annual_returns(self.returns_pivot_df[self.id_min])
-        plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_min_model.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_min.png"))
         plt.clf()
 
         # Max Annual returns
         pf.plot_annual_returns(self.returns_pivot_df[self.id_max])
-        plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_max_model.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_max.png"))
         plt.clf()
+
+        # DJI Annual returns
+        pf.plot_annual_returns(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_dji.png"))
+        plt.clf()
+
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def monthly_return_heatmap_figure(self):
@@ -180,6 +190,12 @@ class Report(Memory):
         # Max Monthly returns heatmap
         pf.plot_monthly_returns_heatmap(self.returns_pivot_df[self.id_max])
         plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_max.png"))
+        plt.clf()
+        plt.cla()
+
+        # DJI Monthly returns heatmap
+        pf.plot_monthly_returns_heatmap(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_dji.png"))
         plt.clf()
         plt.cla()
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
@@ -198,22 +214,29 @@ class Report(Memory):
         plt.savefig(self.program.args.folder_figure.joinpath("return_quantiles_max.png"))
         plt.clf()
         plt.cla()
+
+        # DJI Return quantiles
+        pf.plot_return_quantiles(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        plt.savefig(self.program.args.folder_figure.joinpath("return_quantiles_max.png"))
+        plt.clf()
+        plt.cla()
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def rolling_beta_figure(self):
         if self.program.args.project_verbose > 0: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
         # Min Rolling beta
-        pf.plot_rolling_beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df['fi9bu9a5_^DJI'])
+        pf.plot_rolling_beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
         plt.savefig(self.program.args.folder_figure.joinpath("rolling_beta_min.png"))
         plt.clf()
         plt.cla()
 
         # Max Rolling beta
-        pf.plot_rolling_beta(self.returns_pivot_df[self.id_max], self.returns_pivot_df['fi9bu9a5_^DJI'])
+        pf.plot_rolling_beta(self.returns_pivot_df[self.id_max], self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
         plt.savefig(self.program.args.folder_figure.joinpath("rolling_beta_max.png"))
         plt.clf()
         plt.cla()
+
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def rolling_sharpe_figure(self):
@@ -227,6 +250,12 @@ class Report(Memory):
 
         # Max Rolling sharpe
         pf.plot_rolling_sharpe(self.returns_pivot_df[self.id_max])
+        plt.savefig(self.program.args.folder_figure.joinpath("rolling_sharpe_max.png"))
+        plt.gcf()
+        plt.cla()
+
+        # DJI Rolling sharpe
+        pf.plot_rolling_sharpe(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("rolling_sharpe_max.png"))
         plt.gcf()
         plt.cla()
@@ -247,6 +276,12 @@ class Report(Memory):
         plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_max.png"))
         plt.clf()
         plt.cla()
+
+        # DJI Drawdown underwater
+        pf.plot_drawdown_underwater(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_max.png"))
+        plt.clf()
+        plt.cla()
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def drawdown_periods_figure(self):
@@ -261,6 +296,12 @@ class Report(Memory):
 
         # Max Drawdown periods
         pf.plot_drawdown_periods(self.returns_pivot_df[self.id_max])
+        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_periods_max.png"))
+        plt.clf()
+        plt.cla()
+
+        # DJI Drawdown periods
+        pf.plot_drawdown_periods(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("drawdown_periods_max.png"))
         plt.clf()
         plt.cla()
@@ -309,12 +350,12 @@ def main():
         wandbstats.initialize_stats()
         wandbstats.stats()
         wandbstats.returns_figure()
-        # wandbstats.annual_returns_figure()
-        # wandbstats.monthly_return_heatmap_figure()
-        # wandbstats.return_quantiles_figure()
-        # wandbstats.rolling_beta_figure()
-        # wandbstats.rolling_sharpe_figure()
-        # wandbstats.drawdown_underwater_figure()
+        wandbstats.annual_returns_figure()
+        wandbstats.monthly_return_heatmap_figure()
+        wandbstats.return_quantiles_figure()
+        wandbstats.rolling_beta_figure()
+        wandbstats.rolling_sharpe_figure()
+        wandbstats.drawdown_underwater_figure()
         # wandbstats.drawdown_periods_figure()
     if program.args.project_verbose > 0: program.log.info("End report")
     return None
