@@ -233,6 +233,15 @@ def get_sweep_configuration_types(print_types=False) -> dict:
     return sweep_configuration_types
 
 
+def print_foo():
+    for k, v in sweep_configuration['parameters'].items():
+        if 'values' in v:
+            print(f"{v['values']}")
+        elif 'min' in v:
+            print(f"<{v['min']}, {v['max']}>")
+
+
 if __name__ == "__main__":
-    get_sweep_configuration_types(print_types=True)
+    # get_sweep_configuration_types(print_types=True)
+    print_foo()
     sys.exit(0)

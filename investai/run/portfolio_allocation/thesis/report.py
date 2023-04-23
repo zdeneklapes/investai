@@ -136,6 +136,12 @@ class Report(Memory):
         max_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_max],
                                            self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
         max_stats.to_csv(self.program.args.folder_figure.joinpath("stats_max.csv"))
+
+        # DJI Stats
+        max_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[self.id_baseline])
+        max_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_max],
+                                           self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+        max_stats.to_csv(self.program.args.folder_figure.joinpath("stats_dji.csv"))
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def returns_figure(self):
@@ -217,7 +223,7 @@ class Report(Memory):
 
         # DJI Return quantiles
         pf.plot_return_quantiles(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
-        plt.savefig(self.program.args.folder_figure.joinpath("return_quantiles_max.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("return_quantiles_dji.png"))
         plt.clf()
         plt.cla()
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
@@ -256,7 +262,7 @@ class Report(Memory):
 
         # DJI Rolling sharpe
         pf.plot_rolling_sharpe(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
-        plt.savefig(self.program.args.folder_figure.joinpath("rolling_sharpe_max.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("rolling_sharpe_dji.png"))
         plt.gcf()
         plt.cla()
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
@@ -279,7 +285,7 @@ class Report(Memory):
 
         # DJI Drawdown underwater
         pf.plot_drawdown_underwater(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
-        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_max.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_dji.png"))
         plt.clf()
         plt.cla()
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
@@ -302,7 +308,7 @@ class Report(Memory):
 
         # DJI Drawdown periods
         pf.plot_drawdown_periods(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
-        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_periods_max.png"))
+        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_periods_dji.png"))
         plt.clf()
         plt.cla()
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
