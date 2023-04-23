@@ -119,7 +119,7 @@ class WandbTrain:
     def log_artifact(self, name: str, _type: str, path: str):
         self.program.log.info(f"Log artifact {name=}, {_type=}, {path=}")
         # Log dataset
-        artifact = wandb.Artifact(name, type=_type)
+        artifact = wandb.Artifact(name, type=_type, metadata={"path": path})
         artifact.add_file(path)
         wandb.log_artifact(artifact)
 
