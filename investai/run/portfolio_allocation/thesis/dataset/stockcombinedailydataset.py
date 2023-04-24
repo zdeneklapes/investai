@@ -18,8 +18,8 @@ class StockCombinedDailyDataset(Memory):
 
     def preprocess(self):
         dfs = []
-        for dataset_path in self.program.args.dataset_paths:
-            dfs.append(pd.read_csv(dataset_path, index_col=0, parse_dates=True))
+        dfs.append(pd.read_csv(self.program.args.dataset_paths[0], index_col=0, parse_dates=True))
+        dfs.append(pd.read_csv(self.program.args.dataset_paths[1], index_col=0, parse_dates=True))
 
         cols_to_use = dfs[1].columns.difference(dfs[0].columns).insert(0, ['date', 'tic'])
         df = pd.merge(dfs[0], dfs[1][cols_to_use], on=['date', 'tic'], how='outer')
@@ -33,7 +33,7 @@ def main():
     program = Program()
     dataset = StockCombinedDailyDataset(program)
     dataset.preprocess()
-    dataset.save_csv(program.args.folder_dataset.joinpath('stockcombineddailydataset.csv').as_posix())
+    dataset.save_csv(program.args.dataset_paths[2])
 
 
 if __name__ == "__main__":

@@ -194,12 +194,12 @@ class StockTaDailyDataset(Memory):
     def get_ta_features(self, df: pd.DataFrame) -> pd.DataFrame:
         """Get uncorrelated technical analysis features"""
         df_ta = pd.DataFrame()
-        if self.program.args.project_figure:
-            iterable = tqdm(dict(TA.__dict__).items())
-            # iterable = tqdm(dict(VORTEX=TA.VORTEX).items())
-        else:
-            iterable = (tqdm(self.TA_functions.items(), leave=False) if self.program.args.project_verbose > 0
-                        else self.TA_functions.items())
+        # if self.program.args.project_figure:
+        #     iterable = tqdm(dict(TA.__dict__).items())
+        #     # iterable = tqdm(dict(VORTEX=TA.VORTEX).items())
+        # else:
+        iterable = (tqdm(self.TA_functions.items(), leave=False) if self.program.args.project_verbose > 0
+                    else self.TA_functions.items())
 
         for name, func in iterable:
             if isinstance(iterable, tqdm): iterable.set_description(f"Calculating indicator: {name}")
@@ -276,7 +276,7 @@ def t():
     return TestStockTaDailyDataset().t1()
 
 
-def create_heatmap_of_all_indicators():
+def create_heatmap_of_uncorrelated_indicators():
     program: Program = Program()
     program.args.project_verbose = 1
     program.args.project_figure = 1
@@ -314,15 +314,11 @@ def create_heatmap_of_all_indicators():
     return r
 
 
-def create_heatmap_of_uncorrelated_indicators():
-    pass
-
-
 def main():
     program = Program()
     dataset = StockTaDailyDataset(program, tickers=DOW_30_TICKER, dataset_split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
-    dataset.save_csv(program.args.dataset_paths)
+    dataset.save_csv(program.args.dataset_paths[0])
 
 
 if __name__ == "__main__":
