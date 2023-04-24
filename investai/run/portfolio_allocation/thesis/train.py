@@ -8,12 +8,12 @@ from pprint import pprint  # noqa
 from pathlib import Path
 
 import wandb
-from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
-from run.portfolio_allocation.test.test_thesis import WandbTest
-from run.shared.algorithms import ALGORITHM_SB3
+from run.portfolio_allocation.thesis.dataset.stockfadailydataset import StockFaDailyDataset
+from run.portfolio_allocation.thesis.test import Test
 from run.shared.callback.wandbcallbackextendmemory import WandbCallbackExtendMemory
 from run.shared.environmentinitializer import EnvironmentInitializer
-from run.shared.hyperparameters.sb3_sweep_configuration import sweep_configuration
+from run.shared.sb3.algorithms import ALGORITHM_SB3
+from run.shared.sb3.sweep_configuration import sweep_configuration
 from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
@@ -145,7 +145,7 @@ class WandbTrain:
             self.log_artifact("model", "model", self.model_path.as_posix())
 
         if self.program.args.test:
-            WandbTest(program=self.program, dataset=self.dataset).test(model=model)
+            Test(program=self.program, dataset=self.dataset).test(model=model)
 
         # Deinit
         self._deinit_environment(environment)

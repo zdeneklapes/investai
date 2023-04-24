@@ -11,19 +11,20 @@ import numpy as np  # noqa
 from pprint import pprint  # noqa
 
 from extra.math.finance.shared.baseline import Baseline
-from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
-from run.shared.algorithms import ALGORITHM_SB3_TYPE
+from run.portfolio_allocation.thesis.dataset.stockfadailydataset import StockFaDailyDataset
+from run.shared.sb3.algorithms import ALGORITHM_SB3_TYPE
 from run.shared.callback.wandb_util import wandb_summary
 from run.shared.environmentinitializer import EnvironmentInitializer
 from run.shared.memory import Memory
 from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
-from shared.utils import calculate_sharpe_ratio, reload_module  # noqa
+from shared.utils import calculate_sharpe_ratio
+from shared.reload import reload_module  # noqa
 
 matplotlib.use('agg')  # because otherwise is not allowed to run in a not main thread
 
 
-class WandbTest:
+class Test:
     def __init__(self, program: Program, dataset: StockFaDailyDataset):
         self.program: Program = program
         self.dataset: StockFaDailyDataset = dataset

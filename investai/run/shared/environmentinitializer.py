@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Union
 
 import pandas as pd
-from run.portfolio_allocation.dataset.stockfadailydataset import StockFaDailyDataset
+from run.portfolio_allocation.thesis.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.envs.portfolioallocation2env import PortfolioAllocation2Env
 from run.portfolio_allocation.envs.portfolioallocationenv import PortfolioAllocationEnv
 from shared.program import Program

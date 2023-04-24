@@ -72,29 +72,3 @@ RUN ssh-keygen -t ed25519 -f ~/.ssh/id_ed25519
 # Setup default command and/or parameters.
 EXPOSE 22
 CMD ["/usr/bin/sudo", "/usr/sbin/sshd", "-D", "-o", "ListenAddress=0.0.0.0"]
-
-#
-#
-##    pip install --upgrade pip && \
-##    pip install --no-cache-dir -r /app/requirements.txt && \
-##    apt-get update --no-install-recommends &&  \
-##    apt-get -y install cron vim --no-install-recommends && \
-##    rm -rf /var/lib/apt/lists/* && \
-##    service cron start
-#
-##COPY . .
-##COPY requirements.txt start.sh ./
-##RUN mkdir /run/sshd \
-##    # sshd
-##    && ( \
-##    echo 'LogLevel DEBUG2'; \
-##    echo 'PermitRootLogin yes'; \
-##    echo 'PasswordAuthentication yes'; \
-##    echo 'Subsystem sftp /usr/lib/openssh/sftp-server'; \
-##  ) > /etc/ssh/sshd_config_test_clion
-#
-#RUN useradd -m user \
-#    && yes password | passwd user \
-#    && usermod -s /bin/bash user \
-#    # root
-#    && yes root | passwd root
