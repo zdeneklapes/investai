@@ -68,4 +68,26 @@ aggressive = 3
 
 # Pytest
 [tool.pytest.ini_options]
-# TODO: Bring settings from pytest.ini to here
+python_files = "test_*.py"
+norecursedirs = [
+    ".*",
+    ".git",
+    ".idea",
+    ".circleci",
+    ".ruff_cache",
+    ".vim",
+    ".vscode",
+    ".pytest_cache",
+    ".tox",
+    "venv",
+    "venv3.10",
+    ".cache",
+    "models",
+    "mdp_models",
+    "env",
+    "data",
+    "env"
+]
+pythonpath = "investai"
+filterwarnings = "ignore:.*DateTimeField.*received a naive datetime.*:RuntimeWarning"
+addopts = ""
