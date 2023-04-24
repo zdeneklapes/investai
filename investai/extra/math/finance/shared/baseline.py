@@ -70,7 +70,7 @@ class Baseline(Memory):
         :param bounds: Tuple: (min, max) bounds for weights
         :return: pd.DataFrame: self.df with returns
         """
-        start_date: np.datetime64 = dataset["date"].unique()[0] - np.timedelta64(1, 'D')
+        start_date: np.datetime64 = np.datetime64(dataset["date"].unique()[0]) - np.timedelta64(1, 'D')
         start_return = [0]
         rewards = pd.DataFrame({
             "date": [np.datetime_as_string(start_date, unit='D')],
