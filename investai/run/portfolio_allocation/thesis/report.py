@@ -129,19 +129,51 @@ class Report(Memory):
         min_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[self.id_min])
         min_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_min],
                                            self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        min_stats.to_csv(self.program.args.folder_figure.joinpath("stats_min.csv"))
+        min_stats['Alpha'] = empyrical.alpha(self.returns_pivot_df[self.id_min],
+                                             self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
 
         # Max Stats
         max_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[self.id_max])
         max_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_max],
                                            self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        max_stats.to_csv(self.program.args.folder_figure.joinpath("stats_max.csv"))
+        max_stats['Alpha'] = empyrical.alpha(self.returns_pivot_df[self.id_max],
+                                             self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
 
         # DJI Stats
-        max_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[self.id_baseline])
-        max_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_max],
+        dji_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+        dji_stats['Beta'] = empyrical.beta(self.returns_pivot_df[f'{self.id_baseline}_^DJI'],
                                            self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        max_stats.to_csv(self.program.args.folder_figure.joinpath("stats_dji.csv"))
+        dji_stats['Alpha'] = empyrical.alpha(self.returns_pivot_df[f'{self.id_baseline}_^DJI'],
+                                             self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+
+        sp500_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[f'{self.id_baseline}_^GSPC'])
+        sp500_stats['Beta'] = empyrical.beta(self.returns_pivot_df[f"{self.id_baseline}_^GSPC"],
+                                             self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+        sp500_stats['Alpha'] = empyrical.alpha(self.returns_pivot_df[f"{self.id_baseline}_^GSPC"],
+                                               self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+
+        # AI4Finance Stats
+        ai4finance_stats: pd.Series = pd.Series({
+            "Annual return": 0.09,
+            "Cumulative returns": None,
+            "Annual volatility": 0.232,
+            "Sharpe ratio": 0.49,
+            "Calmar ratio": 0.24,
+            "Stability": 0.04,
+            "Max drawdown": -0.375,
+            "Omega ratio": 1.14,
+            "Sortino ratio": 0.67,
+            "Skew": None,
+            "Kurtosis": None,
+            "Tail ratio": 1.03,
+            "Daily value at risk": -0.028,
+            "Alpha": 0.03,
+            "Beta": 0.68,
+        })
+
+        stats = pd.concat([min_stats, max_stats, dji_stats, sp500_stats, ai4finance_stats], axis=1)
+        stats.columns = ['Min Total Reward', 'Max Total Reward', 'DJI', 'SP500', 'AI4Finance']
+        stats.round(3).to_csv(self.program.args.folder_figure.joinpath("stats.csv"))
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def returns_figure(self):
@@ -355,13 +387,13 @@ def main():
     if program.args.report_figure:
         wandbstats.initialize_stats()
         wandbstats.stats()
-        wandbstats.returns_figure()
-        wandbstats.annual_returns_figure()
-        wandbstats.monthly_return_heatmap_figure()
-        wandbstats.return_quantiles_figure()
-        wandbstats.rolling_beta_figure()
-        wandbstats.rolling_sharpe_figure()
-        wandbstats.drawdown_underwater_figure()
+        # wandbstats.returns_figure()
+        # wandbstats.annual_returns_figure()
+        # wandbstats.monthly_return_heatmap_figure()
+        # wandbstats.return_quantiles_figure()
+        # wandbstats.rolling_beta_figure()
+        # wandbstats.rolling_sharpe_figure()
+        # wandbstats.drawdown_underwater_figure()
         # wandbstats.drawdown_periods_figure()
     if program.args.project_verbose > 0: program.log.info("End report")
     return None
