@@ -42,12 +42,6 @@ pip install --upgrade --no-cache-dir git+https://github.com/StreamAlpha/tvdatafe
 In the root directory create `.env` file with the following content:
 
 ```shell
-# Data Providers
-EOD_HISTORICAL_DATA_API=''
-NASDAQ_HISTORICAL_DATA_API=''
-ALPHA_VANTAGE_API=''
-FINANCIAL_MODELING_PREP_API=''
-
 # W&B
 WANDB_API_KEY=''
 WANDB_ENTITY=''

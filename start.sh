@@ -178,8 +178,9 @@ function copy_figures_to_ibt_thesis() {
 }
 
 function install() {
-    python3 -m venv venv3.10
-    source venv3.10/bin/activate
+    VENV_NAME="venv"
+    python3 -m venv ${VENV_NAME}
+    source ${VENV_NAME}/bin/activate
     pip3 install -r requirements_for_workflows.txt
     pip3 install git+https://github.com/StreamAlpha/tvdatafeed.git@a7034f04509b67224618917c29272796e4fff858I
     pip3 install pyfolio
@@ -194,6 +195,7 @@ while [ "$#" -gt 0 ]; do
     '-pp' | '--project-pack') project_pack ;;
     '-prfw' | '--project-requirements-for-workflow') requirement_for_workflow ;;
     '-pf' | '--project-figures') copy_figures_to_ibt_thesis ;;
+    '-pi' | '--project-install') install ;;
         # "-d.*" prefix all docker commands
     '-dr' | '--docker-run') docker_run ;;
     '--docker-start') docker_start ;;
