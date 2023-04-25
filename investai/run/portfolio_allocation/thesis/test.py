@@ -110,8 +110,8 @@ class Test:
         df_cumprod.rename(columns={'reward': 'model'}, inplace=True)
 
         # W&B table
-        portfolios_return_table = wandb.Table(data=df_cumprod, columns=df_cumprod.columns.values)
-        wandb.log({"test/portfolios_return_table": portfolios_return_table})
+        # portfolios_return_table = wandb.Table(data=df_cumprod, columns=df_cumprod.columns.values)
+        # wandb.log({"test/portfolios_return_table": portfolios_return_table})
 
         # Seaborne chart
         df_cumprod.index = df_chart['date']
