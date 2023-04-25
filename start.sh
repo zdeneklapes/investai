@@ -177,6 +177,14 @@ function copy_figures_to_ibt_thesis() {
     cp -r out/figure/ ../ibt/thesis/image/figure/
 }
 
+function install() {
+    python3 -m venv venv3.10
+    source venv3.10/bin/activate
+    pip3 install -r requirements_for_workflows.txt
+    pip3 install git+https://github.com/StreamAlpha/tvdatafeed.git@a7034f04509b67224618917c29272796e4fff858I
+    pip3 install pyfolio
+}
+
 ##### PARSE CLI-ARGS
 [[ "$#" -eq 0 ]] && usage && exit 0
 while [ "$#" -gt 0 ]; do

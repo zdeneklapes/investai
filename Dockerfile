@@ -22,33 +22,50 @@ RUN apt-get -qq update \
     && apt-get -qq clean    \
     && rm -rf /var/lib/apt/lists/*
 
+RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz \
+    tar -xzf ta-lib-0.4.0-src.tar.gz \
+    cd ta-lib \
+    ./configure \
+    make \
+    make install \
+
 # My packages
 RUN apt-get update \
-    && apt-get install -y ssh \
-                          build-essential \
-                          vim \
-                          neovim \
-                          python \
-                          fish \
-                          gcc \
-                          g++ \
-                          gdb \
-                          clang \
-                          make \
-                          cmake \
-                          ninja-build \
-                          cmake \
-                          autoconf \
-                          automake \
-                          locales-all \
-                          dos2unix \
-                          rsync \
-                          tar \
-                          doxygen \
-                          valgrind \
-                          tree \
+    && apt-get install -y \
+        ssh \
+        build-essential \
+        vim \
+        neovim \
+        python \
+        fish \
+        gcc \
+        g++ \
+        gdb \
+        clang \
+        make \
+        cmake \
+        ninja-build \
+        cmake \
+        autoconf \
+        automake \
+        locales-all \
+        dos2unix \
+        rsync \
+        tar \
+        doxygen \
+        valgrind \
+        tree \
+        python-dev \
+        python3-dev \
+        libevent-dev \
+        swig \
+        software-properties-common \
+        wget \
     && apt-get clean \
     && ln -s /usr/bin/make /usr/bin/gmake
+
+RUN add-apt-repository ppa:deadsnakes/ppa && apt install python3.10
+
 
 # Configure SSHD.
 # SSH login fix. Otherwise user is kicked off after login

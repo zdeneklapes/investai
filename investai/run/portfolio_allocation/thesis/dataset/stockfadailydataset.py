@@ -20,6 +20,7 @@ from shared.reload import reload_module  # noqa
 from tqdm import tqdm
 from tvDatafeed import Interval, TvDatafeed
 from run.shared.memory import Memory
+from shared.utils import log_artifact
 
 
 class StockFaDailyDataset(Memory):
@@ -205,7 +206,12 @@ def main():
     program = Program()
     dataset = StockFaDailyDataset(program, tickers=DOW_30_TICKER, split_coef=program.args.dataset_split_coef)
     dataset.preprocess()
-    dataset.save_csv(program.args.dataset_paths[0])  # _dataset(program.args.dataset_paths)
+    file_path = program.args.dataset_paths[0]
+    dataset.save_csv(file_path)
+
+    # Save to wandb
+    if program.args.wandb:
+        log_artifact(program.args, program.args.baseline_path.as_posix(), "dataset", "dataset", {"path": file_path})
 
 
 if __name__ == "__main__":

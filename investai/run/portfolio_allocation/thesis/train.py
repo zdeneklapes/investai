@@ -117,7 +117,7 @@ class WandbTrain:
         return model
 
     def log_artifact(self, name: str, _type: str, path: str):
-        self.program.log.info(f"Log artifact {name=}, {_type=}, {path=}")
+        if self.program.args.project_version > 0: self.program.log.info(f"Log artifact {name=}, {_type=}, {path=}")
         # Log dataset
         artifact = wandb.Artifact(name, type=_type, metadata={"path": path})
         artifact.add_file(path)
@@ -141,7 +141,6 @@ class WandbTrain:
 
         # Wandb: Log artifacts
         if self.program.is_wandb_enabled():
-            self.log_artifact("dataset", "dataset", self.dataset_path.as_posix())
             self.log_artifact("model", "model", self.model_path.as_posix())
 
         if self.program.args.test:

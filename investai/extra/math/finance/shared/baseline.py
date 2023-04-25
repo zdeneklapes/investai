@@ -19,6 +19,7 @@ from shared.reload import reload_module  # noqa
 from run.shared.memory import Memory
 from tqdm import trange
 import yfinance as yf
+from shared.utils import log_artifact
 
 
 # TODO: add baseline S@P500
@@ -230,6 +231,10 @@ def main():
     baseline.df.reset_index(inplace=True, drop=True)
     # TODO: add baseline Warren Buffet; NOTE: dataset_path needn't be defined
     baseline.save_csv(file_path=program.args.baseline_path.as_posix())
+
+    # Save to wandb
+    if program.args.wandb: log_artifact(program.args, program.args.baseline_path.as_posix(), "baseline", "baseline",
+                                        {"path": program.args.baseline_path.as_posix()})
 
 
 if __name__ == "__main__":

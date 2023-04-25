@@ -351,7 +351,6 @@ widgetsnbextension==4.0.5
 wifi==0.3.8
 wrapt==1.15.0
 wrds==3.1.6
-xarray==2023.2.0
 xmltodict==0.13.0
 yarl==1.8.2
 yfinance==0.2.12

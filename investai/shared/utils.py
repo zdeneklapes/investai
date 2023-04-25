@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 import cProfile
+from argparse import Namespace
+import wandb
 import pstats
 import warnings
 from pathlib import Path
@@ -138,3 +140,19 @@ def calculate_sharpe_ratio(returns: np.ndarray):
         return sharpe
     else:
         return 0
+
+
+def log_artifact(args: Namespace, artifact_path: str, name: str, type: str, metadata: dict = None):
+    wandb.init(
+        # Environment variables
+        entity=args.wandb_entity,
+        project=args.wandb_project,
+        group=args.wandb_run_group,
+        job_type=args.wandb_job_type,
+        mode=args.wandb_mode,
+        tags=args.wandb_tags,
+        dir=args.wandb_dir.as_posix(),
+    )
+    artifact = wandb.Artifact(name, type=type, metadata=metadata)
+    artifact.add_file(artifact_path)
+    wandb.log_artifact(artifact)
