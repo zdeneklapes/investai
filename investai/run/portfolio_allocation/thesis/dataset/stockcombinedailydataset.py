@@ -35,11 +35,12 @@ def main():
     dataset = StockCombinedDailyDataset(program)
     dataset.preprocess()
     file_path = program.args.dataset_paths[2]
-    dataset.save_csv(file_path)
+    dataset.save_csv(file_path.as_posix())
 
     # Save to wandb
     if program.args.wandb:
-        log_artifact(program.args, program.args.baseline_path.as_posix(), "dataset", "dataset", {"path": file_path})
+        log_artifact(program.args, file_path.as_posix(), file_path.name.split('.')[0], "dataset",
+                     {"path": file_path.as_posix()})
 
 
 if __name__ == "__main__":

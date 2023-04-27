@@ -323,8 +323,9 @@ def main():
     dataset.save_csv(file_path)
 
     # Save to wandb
-    if program.args.wandb: log_artifact(program.args, program.args.baseline_path.as_posix(), "dataset", "dataset",
-                                        {"path": file_path})
+    if program.args.wandb:
+        log_artifact(program.args, program.args.baseline_path.as_posix(), file_path.name.split('.')[0], "dataset",
+                     {"path": file_path.as_posix()})
 
 
 if __name__ == "__main__":

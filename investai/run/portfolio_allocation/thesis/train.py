@@ -159,9 +159,9 @@ class WandbTrain:
             self.train_run()
 
 
-def main():
-    program = Program()
-
+def main(
+    program: Program = Program()
+):
     dataset_path: Path
     for dataset_path in program.args.dataset_paths:
         for algorithm in program.args.algorithms:

@@ -39,18 +39,19 @@ pip install --upgrade --no-cache-dir git+https://github.com/StreamAlpha/tvdatafe
 
 ### 2. Create `.env` file
 
-In the root directory create `.env` file with the following content:
+In the root directory create `.env` file with the following content and fill in the values, especially `WANDB_API_KEY`:
 
 ```shell
 # W&B
 WANDB_API_KEY=''
-WANDB_ENTITY=''
-WANDB_PROJECT=''
-WANDB_TAGS=''
-WANDB_JOB_TYPE=''
-WANDB_RUN_GROUP=''
-WANDB_MODE=''
-WANDB_DIR=''
+WANDB_ENTITY='investai'
+WANDB_PROJECT='portfolio-allocation'
+WANDB_TAGS='["None"]'
+WANDB_JOB_TYPE='train'
+WANDB_RUN_GROUP='exp-1'
+WANDB_MODE='online'
+WANDB_DIR='${PWD}/out/model'
+
 
 # CUDA - for TensorRT to find CUDA libraries
 LD_LIBRARY_PATH='${LD_LIBRARY_PATH}:${HOME}/venv3.10/lib/python3.10/site-packages/nvidia/cuda_runtime/lib/:${HOME}/venv3.10/lib/python3.10/site-packages/tensorrt/'
