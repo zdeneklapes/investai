@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
-import wandb
-from itertools import chain
 import inspect
 
-from tqdm import tqdm
 import pandas as pd
 import empyrical  # noqa
 import pyfolio as pf  # noqa
@@ -13,6 +10,7 @@ from matplotlib.axes._axes import Axes  # noqa
 from matplotlib.axis import Axis  # noqa
 import numpy as np  # noqa
 
+from run.portfolio_allocation.thesis.wandbapi import WandbAPI
 from shared.program import Program
 from shared.reload import reload_module  # noqa
 from extra.math.finance.shared.baseline import Baseline  # noqa
@@ -25,83 +23,10 @@ MARKET_OPEN_DAYS = 252
 # TODO: Training and testing with the best data
 
 
-class Report(Memory):
-    def __init__(self, program: Program = None):
-        self.program = program
+class Report(Memory, WandbAPI):
+    def __init__(self, program: Program):
+        super().__init__(program)
         self.filepath = self.program.args.history_path.as_posix()
-
-    def download_test_history(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(
-            f"START {inspect.currentframe().f_code.co_name}")
-        api = wandb.Api()
-        runs = [
-            api.runs(self.program.args.wandb_entity + "/" + self.program.args.wandb_project, filters={"group": group})
-            for group in [
-                # "sweep-nasfit-2",
-                # "sweep-nasfit-3",
-                # "sweep-nasfit-4"
-                # "sweep-nasfit-5"
-                "sweep-nasfit-6"
-            ]
-        ]
-        log_keys = [
-            "test/reward/^DJI",
-            "test/reward/^GSPC",
-            "test/reward/^IXIC",
-            "test/reward/^RUT",
-            "test/reward/maximum_sharpe_0_1",
-            "test/reward/maximum_quadratic_utility_0_1",
-            "test/reward/minimum_variance_0_1",
-        ]
-
-        #
-        all_samples = 100_000
-        iterations = tqdm(enumerate(list(chain(*runs))))
-        final_df = pd.DataFrame()
-        baseline_done = False
-
-        self.baseline = Baseline(self.program)
-        self.baseline.load_csv(self.program.args.baseline_path.as_posix())
-        self.returns_pivot_df.index = pd.to_datetime(self.baseline.df['date'].iloc[-self.returns_pivot_df.shape[0]:],
-                                                     format="%Y-%m-%d")
-        self.cumprod_returns_df.index = pd.to_datetime(
-            self.baseline.df['date'].iloc[-self.cumprod_returns_df.shape[0]:],
-            format="%Y-%m-%d"
-        )
-
-        # all rewards
-        for idx, run in iterations:  # type: int,  wandb.apis.public.Run
-            if run.state == "running" or run.state == "failed":
-                continue
-
-            # Baselines
-            if not baseline_done:
-                baseline_done = True
-                for log_key in tqdm(log_keys):
-                    key_history_df = run.history(samples=all_samples, keys=[log_key])
-                    key_history_df.rename(columns={log_key: "reward"}, inplace=True)
-                    key_history_df['id'] = run.id + "_" + log_key.split("/")[-1]
-                    key_history_df['group'] = run._attrs['group']
-                    key_history_df['algo'] = "baseline"
-                    final_df = pd.concat([final_df, key_history_df])
-
-            # Models
-            model_key = "test/reward/model"
-            key_history_df = run.history(samples=all_samples, keys=[model_key])
-            key_history_df.rename(columns={model_key: "reward"}, inplace=True)
-            key_history_df['id'] = run.id
-            key_history_df['group'] = run._attrs['group']
-            key_history_df['algo'] = run._attrs['config']['algo']
-            final_df = pd.concat([final_df, key_history_df])
-
-        #
-        assert final_df.groupby(['id']).size().unique().size == 1, "All runs should have the same number of samples"
-        final_df.to_csv(self.filepath, index=True)
-        if self.program.args.project_verbose > 0: self.program.log.info(
-            f"History downloaded and saved to {self.filepath}")
-        self.df = final_df
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
-        return self.df
 
     def initialize_stats(self):
         if self.program.args.project_verbose > 0: self.program.log.info(
@@ -199,7 +124,7 @@ class Report(Memory):
                                                 self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
 
         # AI4Finance Stats
-        ai4finance_stats: pd.Series = pd.Series({
+        ai4finance_stats: pd.Series = pd.Series({  # noqa
             "Annual return": 0.09,
             "Cumulative returns": None,
             "Annual volatility": 0.232,
@@ -230,19 +155,19 @@ class Report(Memory):
         styler.highlight_max(axis=1, props='color:#00F000; font-weight: bold ;')
         styler.applymap_index(lambda v: "font-weight: bold;", axis="index")
         styler.applymap_index(lambda v: "font-weight: bold;", axis="columns")
-        styler.format({
-            ("Numeric", "Integers"): '\\${}',
-            ("Numeric", "Floats"): '{:.3f}',
-        })
-        print(styler.to_latex(
-            column_format='*{10}{|m{0.08\\linewidth}|}',
+        styler.format(precision=3)
+        latex = styler.to_latex(
+            column_format='*{10}{|m{0.075\\linewidth}|}',
             caption="Performance metrics of the models, indexes and strategies",
             hrules=True,
             position='ht!',
             position_float='centering',
             convert_css=True,
             label="tab:stats",
-        ))
+        )
+        latex = latex.replace(r"\\", r"\\[0.5cm]")
+        latex = latex.replace(r"^", r"\^")
+        print(latex)
 
         # Stats RL vs. AI4Finance
 
@@ -292,6 +217,11 @@ class Report(Memory):
         plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_dji.png"))
         plt.clf()
 
+        # IXIC Annual returns
+        pf.plot_annual_returns(self.returns_pivot_df[f"{self.id_baseline}_^IXIC"])
+        plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_ixic.png"))
+        plt.clf()
+
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def monthly_return_heatmap_figure(self):
@@ -312,6 +242,12 @@ class Report(Memory):
         # DJI Monthly returns heatmap
         pf.plot_monthly_returns_heatmap(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_dji.png"))
+        plt.clf()
+        plt.cla()
+
+        # IXIC Monthly returns heatmap
+        pf.plot_monthly_returns_heatmap(self.returns_pivot_df[f"{self.id_baseline}_^IXIC"])
+        plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_ixic.png"))
         plt.clf()
         plt.cla()
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
@@ -398,6 +334,12 @@ class Report(Memory):
         plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_dji.png"))
         plt.clf()
         plt.cla()
+
+        # GSPC
+        pf.plot_drawdown_underwater(self.returns_pivot_df[f"{self.id_baseline}_^IXIC"])
+        plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_ixic.png"))
+        plt.clf()
+        plt.cla()
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def drawdown_periods_figure(self):
@@ -458,20 +400,20 @@ def t():
 
 
 def main():
-    program = Program()
+    program: Program = Program()
     if program.args.project_verbose > 0: program.log.info("Start report")
-    wandbstats = Report(program=program)
-    if program.args.report_download_history: wandbstats.download_test_history()
+    report: Report = Report(program=program)
+    if program.args.report_download_history: report.download_test_history()
     if program.args.report_figure:
-        wandbstats.initialize_stats()
-        wandbstats.stats()
-        # wandbstats.returns_figure()
-        # wandbstats.annual_returns_figure()
-        # wandbstats.monthly_return_heatmap_figure()
-        # wandbstats.return_quantiles_figure()
-        # wandbstats.rolling_beta_figure()
-        # wandbstats.rolling_sharpe_figure()
-        # wandbstats.drawdown_underwater_figure()
+        report.initialize_stats()
+        report.stats()
+        report.returns_figure()
+        report.annual_returns_figure()
+        report.monthly_return_heatmap_figure()
+        report.return_quantiles_figure()
+        report.rolling_beta_figure()
+        report.rolling_sharpe_figure()
+        report.drawdown_underwater_figure()
         # wandbstats.drawdown_periods_figure() # TODO: Fix this
     if program.args.project_verbose > 0: program.log.info("End report")
     return None

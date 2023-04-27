@@ -48,9 +48,6 @@ class Test:
         env_unwrapped = environment.envs[0].env
         obs = environment.reset()
 
-        # Baseline
-        baseline = self._baseline
-
         # Iteration: TODO: "-2" because we don't want to go till terminal state, because the environment will be reset
         iterable = (
             trange(len(env_unwrapped.dataset.index.unique()) - 2, desc="Test")
@@ -63,22 +60,23 @@ class Test:
             action, _ = model.predict(obs, deterministic=deterministic)
             environment.step(action)
             if self.program.is_wandb_enabled():
-                # Reward
-                wandb.log({"test/reward/model": env_unwrapped.memory.df.iloc[-1]["reward"]})
+                log_dict = {"test/reward/model": env_unwrapped.memory.df.iloc[-1]["reward"],
+                            "date": env_unwrapped.memory.df.iloc[-1]["date"], }
+                wandb.log(log_dict)
 
                 # Baseline
-                select_binary = baseline.df['date'] == env_unwrapped.memory.df.iloc[-1]['date']
-                baseline_data = baseline.df[select_binary].to_dict()
-                del baseline_data['date']
-                baseline_log_data = {f"test/reward/{k}": list(v.values())[0] for k, v in baseline_data.items()}
-                wandb.log(baseline_log_data)
+                # select_binary = baseline.df['date'] == env_unwrapped.memory.df.iloc[-1]['date']
+                # baseline_data = baseline.df[select_binary].to_dict()
+                # del baseline_data['date']
+                # baseline_log_data = {f"test/reward/{k}": list(v.values())[0] for k, v in baseline_data.items()}
+                # wandb.log(baseline_log_data)
 
         # env_unwrapped.memory.save_json(self.program.args.folder_out.joinpath("test_memory.json").as_posix())
 
         # Finish
         if self.program.is_wandb_enabled():
             self.create_summary(env_unwrapped.memory, env_unwrapped.dataset)
-            self.create_baseline_chart(env_unwrapped.memory)
+            # self.create_baseline_chart(env_unwrapped.memory)
 
     def create_summary(self, memory: Memory, dataset: pd.DataFrame):
         info = {
