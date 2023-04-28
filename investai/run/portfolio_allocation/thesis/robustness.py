@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 from pathlib import Path
+from typing import Dict, Tuple
 
+import wandb
 
 from shared.program import Program
 from shared.reload import reload_module  # noqa
+import json
+from run.shared.sb3.sweep_configuration import sweep_configuration
+from run.portfolio_allocation.thesis.train import Train
 
 
 class Robustness:
@@ -26,17 +31,42 @@ class Robustness:
         best_model_id = cumprod_returns_df.iloc[-1].idxmax()
         return best_model_id
 
-    def get_best_model_from_wandb(self):
+    def get_hyperparameters_best_model_from_wandb(self) -> Tuple[Dict, str]:
+        """
+        Get hyperparameters from the best model in wandb
+        :returns: hyperparameters: dict, algo: str
+        """
         id = self.find_the_best_model_id()
-        print(id)
+        wandb_api = wandb.Api()
+        run: wandb.apis.public.Run = wandb_api.run(
+            f"{self.program.args.wandb_entity}/{self.program.args.wandb_project}/{id}")
+        config = json.loads(run.json_config)
+        keys = config.keys() & sweep_configuration['parameters'].keys()
+        hyperparameters = {key: config[key]['value'] for key in keys}
+        return hyperparameters, config['algo']['value']
+
+    def get_dataset_best_model_from_wandb(self, type: str) -> Path | None:
+        id = self.find_the_best_model_id()
+        wandb_api = wandb.Api()
+        run: wandb.apis.public.Run = wandb_api.run(
+            f"{self.program.args.wandb_entity}/{self.program.args.wandb_project}/{id}")
+        for artifact in run.logged_artifacts():  # type: wandb.apis.public.Artifact
+            if artifact.type == type:
+                artifact_dir = artifact.download(root=self.program.args.wandb_dir.as_posix())
+                return Path(artifact_dir)
+        return None
+
+    def set_hyperparameters_to_program(self, hyperparameters: Dict):
+        for key, value in hyperparameters.items():
+            setattr(self.program.args, key, value)
 
     def call_training(self):
-        # get data from find_the_model
+        dataset_path = self.get_dataset_best_model_from_wandb(type="dataset")
+        hyperparameters, algorithm = self.get_hyperparameters_best_model_from_wandb()
+        self.set_hyperparameters_to_program(hyperparameters)
 
-        # Compare if all models have the same (similar) test/total_reward (trained
-        # on the same data, with same hyperparameters)
-
-        pass
+        # Train
+        Train(program=program, dataset_path=dataset_path, algorithm=algorithm).train()
 
     def test_model(self, model):
         # total_rewards = {}
@@ -73,7 +103,7 @@ def test():
 
 def main(program: Program):
     """Main function"""
-    return Robustness(program).find_the_best_model_id()
+    return Robustness(program).get_hyperparameters_best_model_from_wandb()
 
 
 if __name__ == "__main__":

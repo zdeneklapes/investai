@@ -19,7 +19,7 @@ from shared.program import Program
 from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 
 
-class WandbTrain:
+class Train:
     def __init__(self, program: Program, dataset_path: Path, algorithm: str):
         self.dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
         self.dataset.load_csv(file_path=dataset_path.as_posix())
@@ -167,7 +167,7 @@ def main(
     for dataset_path in program.args.dataset_paths:
         for algorithm in program.args.algorithms:
             if program.args.train:
-                wandb_train = WandbTrain(program=program, dataset_path=dataset_path, algorithm=algorithm)
+                wandb_train = Train(program=program, dataset_path=dataset_path, algorithm=algorithm)
                 if not program.args.wandb_sweep:
                     wandb_train.train()
                 else:
