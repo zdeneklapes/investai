@@ -12,7 +12,7 @@ from run.portfolio_allocation.thesis.dataset.stockfadailydataset import StockFaD
 from run.portfolio_allocation.thesis.test import Test
 from run.shared.callback.wandbcallbackextendmemory import WandbCallbackExtendMemory
 from run.shared.environmentinitializer import EnvironmentInitializer
-from run.shared.sb3.algorithms import ALGORITHM_SB3
+from run.shared.sb3.algorithms import ALGORITHM_SB3_STR2CLASS
 from run.shared.sb3.sweep_configuration import sweep_configuration
 from run.shared.tickers import DOW_30_TICKER
 from shared.program import Program
@@ -33,9 +33,9 @@ class WandbTrain:
         config = {}
 
         # Because __code__.co_varnames returns all variables inside function and I need only function parameters
-        algorithm_init_parameter_count: int = ALGORITHM_SB3[self.algorithm].__init__.__code__.co_argcount
+        algorithm_init_parameter_count: int = ALGORITHM_SB3_STR2CLASS[self.algorithm].__init__.__code__.co_argcount
         algorithm_init_parameters = set(
-            ALGORITHM_SB3[self.algorithm].__init__.__code__.co_varnames[:algorithm_init_parameter_count]
+            ALGORITHM_SB3_STR2CLASS[self.algorithm].__init__.__code__.co_varnames[:algorithm_init_parameter_count]
         )
 
         # Get parameter for Algo from Wandb sweep configuration
@@ -107,7 +107,7 @@ class WandbTrain:
         env.close()
 
     def _init_model(self, environment, callbacks):
-        model = ALGORITHM_SB3[self.algorithm](
+        model = ALGORITHM_SB3_STR2CLASS[self.algorithm](
             env=environment,
             **self._init_hyper_parameters(),
         )

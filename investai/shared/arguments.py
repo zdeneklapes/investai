@@ -73,7 +73,7 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
     def run_arguments(parser: argparse.ArgumentParser):
         parser.add_argument("--project-graph", help="Graph mode", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
         parser.add_argument("--project-debug", help="Debug mode", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
-        parser.add_argument("--project-test", help="Test mode", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
+        # parser.add_argument("--project-test", help="Test mode", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
         parser.add_argument("--project-verbose", help="Verbosity level 0: not output 1: info 2: debug, default: 0",
                             type=int, default=0)
         # parser.add_argument("--memory-path", "-mb", help="Baseline path", nargs="?", type=Path, default=None)

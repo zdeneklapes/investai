@@ -12,7 +12,7 @@ from pprint import pprint  # noqa
 
 from extra.math.finance.shared.baseline import Baseline
 from run.portfolio_allocation.thesis.dataset.stockfadailydataset import StockFaDailyDataset
-from run.shared.sb3.algorithms import ALGORITHM_SB3_TYPE
+from run.shared.sb3.algorithms import ALGORITHM_SB3_CLASS
 from run.shared.callback.wandb_util import wandb_summary
 from run.shared.environmentinitializer import EnvironmentInitializer
 from run.shared.memory import Memory
@@ -40,7 +40,7 @@ class Test:
         self.program.log.info("Deinit environment")
         env.close()
 
-    def test(self, model: ALGORITHM_SB3_TYPE, deterministic=True) -> None:
+    def test(self, model: ALGORITHM_SB3_CLASS, deterministic=True) -> None:
         # Environment
         environment: DummyVecEnv = EnvironmentInitializer(self.program, self.dataset).portfolio_allocation(
             self.dataset.test_dataset

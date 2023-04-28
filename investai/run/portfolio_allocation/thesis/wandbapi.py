@@ -79,7 +79,7 @@ class WandbAPI:
 
         #
         assert final_df.groupby(['id']).size().unique().size == 1, "All runs should have the same number of samples"
-        if not (self.program.args.project_test or self.program.args.project_debug):
+        if not (self.program.args.project_debug):
             final_df.to_csv(self.program.args.history_path.as_posix(), index=True)
             if self.program.args.project_verbose > 0:
                 self.program.log.info(f"History downloaded and saved to {self.program.args.history_path.as_posix()}")
@@ -111,7 +111,7 @@ def main(program: Program):
 
 if __name__ == "__main__":
     program = Program()
-    if program.args.project_test:  # Just to can run test from CLI
+    if program.args.project_debug:  # Just to can run test from CLI
         test()
     else:
         main(program)
