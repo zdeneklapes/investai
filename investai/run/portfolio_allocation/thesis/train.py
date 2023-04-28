@@ -3,6 +3,7 @@
 # TODO: Add to action +1 more action from 30 actions increase to 31 actions, because Agent can als decide for cash
 # TODO: next datasets
 # TODO: Put into dataset change of price form one index to another index: e.g. 10->15=0.5, 10->5=-0.5
+import os
 from copy import deepcopy  # noqa
 from pprint import pprint  # noqa
 from pathlib import Path
@@ -26,7 +27,8 @@ class Train:
         self.dataset_path: Path = dataset_path
         self.program: Program = program
         self.algorithm: str = algorithm.lower()
-        self.model_path = self.program.args.folder_model.joinpath(f"{self.algorithm}.zip")
+        self.model_path: Path = self.program.args.folder_model.joinpath(f"{self.algorithm}.zip")
+        if os.path.isfile(self.model_path.as_posix()): os.remove(self.model_path.as_posix())
 
     def _init_hyper_parameters(self) -> dict:
         """Hyperparameters for algorithm"""
@@ -53,6 +55,9 @@ class Train:
                 for key in algorithm_init_parameters
                 if key in self.program.args.__dict__
             }
+        if self.program.args.project_verbose > 1:
+            from pprint import pprint
+            pprint(config)
 
         config["tensorboard_log"] = self.program.args.folder_tensorboard.as_posix()
         return config

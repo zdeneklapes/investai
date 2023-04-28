@@ -161,6 +161,7 @@ class Report(Memory, WandbAPI):
         styler.apply(highlight_max, axis=1)
         styler.applymap_index(lambda v: "font-weight: bold;", axis="index")
         styler.applymap_index(lambda v: "font-weight: bold;", axis="columns")
+        styler.format(precision=3)
         latex = styler.to_latex(
             column_format="*{9}{|m{0.08\\linewidth}|}",
             caption="Performance metrics of the models vs. indexes and strategies",

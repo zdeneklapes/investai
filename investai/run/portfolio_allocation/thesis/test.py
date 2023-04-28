@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """TODO docstring"""
 import wandb
+import inspect
 from stable_baselines3.common.vec_env import DummyVecEnv
 from tqdm import trange
 import pandas as pd
@@ -44,6 +45,9 @@ class Test:
         env.close()
 
     def test(self, model_path: str, algorithm: str, deterministic=True) -> Memory:
+        if self.program.args.project_verbose:
+            self.program.log.info(f"START {inspect.currentframe().f_code.co_name}")
+            self.program.log.info(f"Loading model_path: {model_path}, algorithm: {algorithm}")
         model = ALGORITHM_SB3_STR2CLASS[algorithm].load(model_path)
         # Environment
         environment: DummyVecEnv = EnvironmentInitializer(self.program, self.dataset).portfolio_allocation(
@@ -52,14 +56,15 @@ class Test:
         env_unwrapped = environment.envs[0].env
 
         # Iteration: TODO: "-2" because we don't want to go till terminal state, because the environment will be reset
-        iterable = (
-            trange(len(env_unwrapped.dataset.index.unique()) - 2, desc="Test")
-            if self.program.args.project_verbose
-            else range(len(env_unwrapped.dataset.index.unique()) - 2)
-        )
+
         memory = Memory(self.program)
         for i in range(self.program.args.test):
             obs = environment.reset()
+            iterable = (
+                trange(len(env_unwrapped.dataset.index.unique()) - 2, desc="Test")
+                if self.program.args.project_verbose
+                else range(len(env_unwrapped.dataset.index.unique()) - 2)
+            )
             for _ in iterable:
                 action, _ = model.predict(obs, deterministic=deterministic)
                 environment.step(action)
@@ -67,11 +72,19 @@ class Test:
                     log_dict = {f"test/reward_{i}/model": env_unwrapped.memory.df.iloc[-1]["reward"], }
                     if i == 0: log_dict["date"] = env_unwrapped.memory.df.iloc[-1]["date"]
                     wandb.log(log_dict)
-            memory.df = memory.df.merge(env_unwrapped.memory.df, how='outer', on='date')
+
+            if memory.df.empty:
+                memory.df = env_unwrapped.memory.df[['date', 'reward']]
+                memory.df.rename(columns={'reward': f'reward_{i}'}, inplace=True)
+            else:
+                memory.df = memory.df.merge(env_unwrapped.memory.df[['date', 'reward']], how='outer', on='date')
+                memory.df.rename(columns={'reward': f'reward_{i}'}, inplace=True)
 
         if self.program.is_wandb_enabled():
             self.create_summary(env_unwrapped.memory, env_unwrapped.dataset)
 
+        if self.program.args.project_verbose:
+            self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
         return memory
 
     def create_summary(self, memory: Memory, dataset: pd.DataFrame):

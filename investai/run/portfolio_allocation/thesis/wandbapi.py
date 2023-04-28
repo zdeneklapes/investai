@@ -41,23 +41,8 @@ class WandbAPI:
         # Logics
         if self.program.args.project_verbose > 0:
             self.program.log.info(f"START {inspect.currentframe().f_code.co_name}")
-        if log_keys is None:
-            log_keys = [
-                "^DJI",
-                "^GSPC",
-                "^IXIC",
-                "^RUT",
-                "maximum_sharpe_0_1",
-                "minimum_variance_0_1",
-            ]
-        if groups is None:
-            groups = [
-                # "sweep-nasfit-2",
-                # "sweep-nasfit-3",
-                # "sweep-nasfit-4"
-                # "sweep-nasfit-5"
-                "sweep-nasfit-6"
-            ]
+        if log_keys is None: log_keys = ["^DJI", "^GSPC", "^IXIC", "^RUT", "maximum_sharpe_0_1", "minimum_variance_0_1"]
+        if groups is None: groups = ["sweep-nasfit-6", "run-nasfit-robust-1"]
 
         api = wandb.Api()
         runs = [
