@@ -10,6 +10,7 @@ from tqdm import tqdm
 
 from extra.math.finance.shared.baseline import Baseline
 from shared.program import Program
+from shared.reload import reload_module  # noqa
 
 
 class WandbAPI:
@@ -47,7 +48,6 @@ class WandbAPI:
                 "^IXIC",
                 "^RUT",
                 "maximum_sharpe_0_1",
-                "maximum_quadratic_utility_0_1",
                 "minimum_variance_0_1",
             ]
         if groups is None:
@@ -70,22 +70,26 @@ class WandbAPI:
         # Models
         runs_data = [get_run_model(run, "test/reward/model") for _, run in iterations if
                      run.state not in ["running", "failed"]]
-        final_df = pd.concat(runs_data)
+        df = pd.concat(runs_data)
 
         # Baselines
-        n_samples = final_df.groupby(['id']).size()[0]
-        final_dfs = [get_run_baseline(n_samples, log_key, "baseline") for log_key in tqdm(log_keys)]
-        final_df = pd.concat([final_df, *final_dfs])
+        n_samples = df.groupby(['id']).size()[0]
+        baseline_dfs = [get_run_baseline(n_samples, log_key, "baseline") for log_key in tqdm(log_keys)]
+        df = pd.concat([df, *baseline_dfs])
 
-        #
-        assert final_df.groupby(['id']).size().unique().size == 1, "All runs should have the same number of samples"
+        # set Index
+        df.index = df.groupby(['id']).cumcount()
+
+        # Check
+        assert df.groupby(['id']).size().unique().size == 1, "All runs should have the same number of samples"
+
         if not (self.program.args.project_debug):
-            final_df.to_csv(self.program.args.history_path.as_posix(), index=True)
+            df.to_csv(self.program.args.history_path.as_posix(), index=True)
             if self.program.args.project_verbose > 0:
                 self.program.log.info(f"History downloaded and saved to {self.program.args.history_path.as_posix()}")
         if self.program.args.project_verbose > 0:
             self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
-        return final_df
+        return df
 
 
 class TestWandbAPI:

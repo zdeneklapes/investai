@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-# This function reload the module
 def reload_module(module):
+    """Reloads a module"""
     import importlib
 
     importlib.reload(module)
