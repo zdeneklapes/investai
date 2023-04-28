@@ -73,9 +73,11 @@ class Robustness:
     def test_model(self, model):
         model_path = self.get_artifact_best_model_from_wandb(type="model")
         hyperparameters, algorithm = self.get_hyperparameters_best_model_from_wandb()
+        dataset_path = self.get_artifact_best_model_from_wandb(type="dataset")
 
         for i in range(self.program.args.test):
-            Test(program=self.program, dataset=self.dataset).test(model_path=model_path.as_posix(), algorithm=algorithm)
+            Test(program=self.program, dataset_path=dataset_path).test(model_path=model_path.as_posix(),
+                                                                       algorithm=algorithm)
 
 
 class TestRobustness:

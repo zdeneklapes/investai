@@ -32,7 +32,7 @@ class Report(Memory, WandbAPI):
         if self.program.args.project_verbose > 0: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
         self.load_csv(self.filepath)
-        self.returns_pivot_df = self.df.pivot(columns=['id'], values=['reward'])
+        self.returns_pivot_df = self.df.pivot(columns=["id"], values=["reward"])
         self.returns_pivot_df = pd.concat(
             [pd.DataFrame(data=[[0] * self.returns_pivot_df.columns.__len__()], columns=self.returns_pivot_df.columns),
              self.returns_pivot_df]).reset_index(
@@ -40,25 +40,19 @@ class Report(Memory, WandbAPI):
         self.cumprod_returns_df = (self.returns_pivot_df + 1).cumprod()
         self.baseline = Baseline(self.program)
         self.baseline.load_csv(self.program.args.baseline_path.as_posix())
-        self.returns_pivot_df.index = pd.to_datetime(self.baseline.df['date'].iloc[-self.returns_pivot_df.shape[0]:],
+        self.returns_pivot_df.index = pd.to_datetime(self.baseline.df["date"].iloc[-self.returns_pivot_df.shape[0]:],
                                                      format="%Y-%m-%d")
         self.cumprod_returns_df.index = pd.to_datetime(
-            self.baseline.df['date'].iloc[-self.cumprod_returns_df.shape[0]:],
+            self.baseline.df["date"].iloc[-self.cumprod_returns_df.shape[0]:],
             format="%Y-%m-%d"
         )
-        self.id_baseline = "fi9bu9a5"
-        self.baseline_columns = self.returns_pivot_df.filter(
-            regex="fi9bu9a5.*").columns.map(lambda x: x[1]).drop(
-            [self.id_baseline, f"{self.id_baseline}_maximum_quadratic_utility_0_1"]
-        )
-        b_columns = self.baseline_columns.append(pd.Index([f"{self.id_baseline}_maximum_quadratic_utility_0_1"]))
+        self.baseline_columns = ["^DJI", "^GSPC", "^IXIC", "^RUT", "maximum_sharpe_0_1", "minimum_variance_0_1", ]
         self.returns_pivot_df.columns = self.returns_pivot_df.columns.droplevel(0)
         self.cumprod_returns_df.columns = self.cumprod_returns_df.columns.droplevel(0)
-        self.cumprod_returns_df_without_baseline = self.cumprod_returns_df.drop(columns=b_columns)
-        self.idx_min = self.cumprod_returns_df_without_baseline.iloc[-1].argmin()
-        self.idx_max = self.cumprod_returns_df_without_baseline.iloc[-1].argmax()
-        self.id_min = self.cumprod_returns_df_without_baseline.iloc[-1].index[self.idx_min]
-        self.id_max = self.cumprod_returns_df_without_baseline.iloc[-1].index[self.idx_max]
+
+        self.id_min = self.cumprod_returns_df.drop(self.baseline_columns, axis=1).iloc[-1].idxmin()
+        self.id_max = self.cumprod_returns_df.drop(self.baseline_columns, axis=1).iloc[-1].idxmax()
+
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 
     def stats(self):
@@ -67,61 +61,61 @@ class Report(Memory, WandbAPI):
 
         # Min Stats
         min_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[self.id_min])
-        min_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_min],
-                                           self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        min_stats['Alpha'] = empyrical.alpha(self.returns_pivot_df[self.id_min],
-                                             self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+        min_stats["Beta"] = empyrical.beta(self.returns_pivot_df[self.id_min],
+                                           self.returns_pivot_df["^DJI"])
+        min_stats["Alpha"] = empyrical.alpha(self.returns_pivot_df[self.id_min],
+                                             self.returns_pivot_df["^DJI"])
 
         # Max Stats
         max_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[self.id_max])
-        max_stats['Beta'] = empyrical.beta(self.returns_pivot_df[self.id_max],
-                                           self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        max_stats['Alpha'] = empyrical.alpha(self.returns_pivot_df[self.id_max],
-                                             self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+        max_stats["Beta"] = empyrical.beta(self.returns_pivot_df[self.id_max],
+                                           self.returns_pivot_df["^DJI"])
+        max_stats["Alpha"] = empyrical.alpha(self.returns_pivot_df[self.id_max],
+                                             self.returns_pivot_df["^DJI"])
 
         # DJI Stats
-        dji_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        dji_stats['Beta'] = empyrical.beta(self.returns_pivot_df[f'{self.id_baseline}_^DJI'],
-                                           self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        dji_stats['Alpha'] = empyrical.alpha(self.returns_pivot_df[f'{self.id_baseline}_^DJI'],
-                                             self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+        dji_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df["^DJI"])
+        dji_stats["Beta"] = empyrical.beta(self.returns_pivot_df["^DJI"],
+                                           self.returns_pivot_df["^DJI"])
+        dji_stats["Alpha"] = empyrical.alpha(self.returns_pivot_df["^DJI"],
+                                             self.returns_pivot_df["^DJI"])
 
         # GSPC Stats
-        gspc_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[f'{self.id_baseline}_^GSPC'])
-        gspc_stats['Beta'] = empyrical.beta(self.returns_pivot_df[f"{self.id_baseline}_^GSPC"],
-                                            self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        gspc_stats['Alpha'] = empyrical.alpha(self.returns_pivot_df[f"{self.id_baseline}_^GSPC"],
-                                              self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+        gspc_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df["^GSPC"])
+        gspc_stats["Beta"] = empyrical.beta(self.returns_pivot_df["^GSPC"],
+                                            self.returns_pivot_df["^DJI"])
+        gspc_stats["Alpha"] = empyrical.alpha(self.returns_pivot_df["^GSPC"],
+                                              self.returns_pivot_df["^DJI"])
 
         # IXIC Stats
-        ixic_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[f'{self.id_baseline}_^IXIC'])
-        ixic_stats['Beta'] = empyrical.beta(self.returns_pivot_df[f"{self.id_baseline}_^IXIC"],
-                                            self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        ixic_stats['Alpha'] = empyrical.alpha(self.returns_pivot_df[f"{self.id_baseline}_^IXIC"],
-                                              self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+        ixic_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df["^IXIC"])
+        ixic_stats["Beta"] = empyrical.beta(self.returns_pivot_df["^IXIC"],
+                                            self.returns_pivot_df["^DJI"])
+        ixic_stats["Alpha"] = empyrical.alpha(self.returns_pivot_df["^IXIC"],
+                                              self.returns_pivot_df["^DJI"])
 
         # RUT Stats
-        rut_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df[f'{self.id_baseline}_^RUT'])
-        rut_stats['Beta'] = empyrical.beta(self.returns_pivot_df[f"{self.id_baseline}_^RUT"],
-                                           self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        rut_stats['Alpha'] = empyrical.alpha(self.returns_pivot_df[f"{self.id_baseline}_^RUT"],
-                                             self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+        rut_stats: pd.Series = pf.timeseries.perf_stats(self.returns_pivot_df["^RUT"])
+        rut_stats["Beta"] = empyrical.beta(self.returns_pivot_df["^RUT"],
+                                           self.returns_pivot_df["^DJI"])
+        rut_stats["Alpha"] = empyrical.alpha(self.returns_pivot_df["^RUT"],
+                                             self.returns_pivot_df["^DJI"])
 
         # Maximum Sharpe ratio
         max_sharpe_ratio: pd.Series = pf.timeseries.perf_stats(
-            self.returns_pivot_df[f'{self.id_baseline}_maximum_sharpe_0_1'])
-        max_sharpe_ratio['Beta'] = empyrical.beta(self.returns_pivot_df[f'{self.id_baseline}_maximum_sharpe_0_1'],
-                                                  self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        max_sharpe_ratio['Alpha'] = empyrical.alpha(self.returns_pivot_df[f'{self.id_baseline}_maximum_sharpe_0_1'],
-                                                    self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+            self.returns_pivot_df["maximum_sharpe_0_1"])
+        max_sharpe_ratio["Beta"] = empyrical.beta(self.returns_pivot_df["maximum_sharpe_0_1"],
+                                                  self.returns_pivot_df["^DJI"])
+        max_sharpe_ratio["Alpha"] = empyrical.alpha(self.returns_pivot_df["maximum_sharpe_0_1"],
+                                                    self.returns_pivot_df["^DJI"])
 
         # Minimum variance
         min_variance: pd.Series = pf.timeseries.perf_stats(
-            self.returns_pivot_df[f'{self.id_baseline}_minimum_variance_0_1'])
-        min_variance['Beta'] = empyrical.beta(self.returns_pivot_df[f'{self.id_baseline}_minimum_variance_0_1'],
-                                              self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
-        min_variance['Alpha'] = empyrical.alpha(self.returns_pivot_df[f'{self.id_baseline}_minimum_variance_0_1'],
-                                                self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+            self.returns_pivot_df["minimum_variance_0_1"])
+        min_variance["Beta"] = empyrical.beta(self.returns_pivot_df["minimum_variance_0_1"],
+                                              self.returns_pivot_df["^DJI"])
+        min_variance["Alpha"] = empyrical.alpha(self.returns_pivot_df["minimum_variance_0_1"],
+                                                self.returns_pivot_df["^DJI"])
 
         # AI4Finance Stats
         ai4finance_stats: pd.Series = pd.Series({  # noqa
@@ -143,25 +137,36 @@ class Report(Memory, WandbAPI):
         })
 
         # Stats All
-        stats = pd.concat([min_stats, max_stats, dji_stats, gspc_stats, ixic_stats, rut_stats,
-                           max_sharpe_ratio, min_variance], axis=1)
-        stats.columns = ['The lowest Total Reward', 'The highest Total Reward', '^DJI', '^GSPC', '^IXIC',
-                         '^RUT', 'Max Sharpe ratio', 'Min Variance']
-        stats.rename(index={'Cumulative returns': 'Cum. returns'}, inplace=True)
+        stats = pd.concat(
+            [min_stats, max_stats, dji_stats, gspc_stats, ixic_stats, rut_stats, max_sharpe_ratio, min_variance],
+            axis=1)
+        stats.columns = [self.id_min, self.id_max, "^DJI", "^GSPC", "^IXIC", "^RUT", "Max Sharpe Ratio", "Min Variance"]
+        stats.rename(index={"Cumulative returns": "Cum. returns"}, inplace=True)
         stats = stats.round(3)
         stats.to_csv(self.program.args.folder_figure.joinpath("stats.csv"))
 
+        # Remove duplicate values
+        for i, row in stats.iterrows():
+            duplicate_mask = row.duplicated()
+            if any(duplicate_mask):
+                stats.loc[i, duplicate_mask] += 0.001
+
         styler: pd.io.formats.style.Styler = stats.style
-        styler.highlight_max(axis=1, props='color:#00F000; font-weight: bold ;')
+
+        # styler.highlight_max(axis=1, props="color:#00F000; font-weight: bold ;")
+        def highlight_max(s: pd.Series):
+            val_max = s.max()
+            return ["color: #00F000; font-weight: bold" if v == val_max else "" for v in s.values]
+
+        styler.apply(highlight_max, axis=1)
         styler.applymap_index(lambda v: "font-weight: bold;", axis="index")
         styler.applymap_index(lambda v: "font-weight: bold;", axis="columns")
-        styler.format(precision=3)
         latex = styler.to_latex(
-            column_format='*{10}{|m{0.075\\linewidth}|}',
-            caption="Performance metrics of the models, indexes and strategies",
+            column_format="*{9}{|m{0.08\\linewidth}|}",
+            caption="Performance metrics of the models vs. indexes and strategies",
             hrules=True,
-            position='ht!',
-            position_float='centering',
+            position="ht!",
+            position_float="centering",
             convert_css=True,
             label="tab:stats",
         )
@@ -173,14 +178,14 @@ class Report(Memory, WandbAPI):
 
         # # Stats RL
         # stats = pd.concat([min_stats, max_stats, ai4finance_stats, ], axis=1)
-        # stats.columns = ['The lowest Total Reward', 'The highest Total Reward', 'AI4Finance']
-        # stats.rename(index={'Cumulative returns': 'Cum. returns'}, inplace=True)
+        # stats.columns = ["The lowest Total Reward", "The highest Total Reward", "AI4Finance"]
+        # stats.rename(index={"Cumulative returns": "Cum. returns"}, inplace=True)
         # stats.round(3).to_csv(self.program.args.folder_figure.joinpath("stats_models.csv"))
         #
         # # Stategies and indexes
         # stats = pd.concat([dji_stats, gspc_stats, ixic_stats, rut_stats, max_sharpe_ratio, min_variance], axis=1)
-        # stats.columns = ['^DJI', '^GSPC', '^IXIC', '^RUT', 'Max Sharpe Ratio', 'Min Variance']
-        # stats.rename(index={'Cumulative returns': 'Cum. returns'}, inplace=True)
+        # stats.columns = ["^DJI", "^GSPC", "^IXIC", "^RUT", "Max Sharpe Ratio", "Min Variance"]
+        # stats.rename(index={"Cumulative returns": "Cum. returns"}, inplace=True)
         # stats.round(3).to_csv(self.program.args.folder_figure.joinpath("stats_stategies.csv"))
 
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
@@ -278,13 +283,13 @@ class Report(Memory, WandbAPI):
         if self.program.args.project_verbose > 0: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
         # Min Rolling beta
-        pf.plot_rolling_beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+        pf.plot_rolling_beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("rolling_beta_min.png"))
         plt.clf()
         plt.cla()
 
         # Max Rolling beta
-        pf.plot_rolling_beta(self.returns_pivot_df[self.id_max], self.returns_pivot_df[f'{self.id_baseline}_^DJI'])
+        pf.plot_rolling_beta(self.returns_pivot_df[self.id_max], self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("rolling_beta_max.png"))
         plt.clf()
         plt.cla()
@@ -407,13 +412,13 @@ def main():
     if program.args.report_figure:
         report.initialize_stats()
         report.stats()
-        report.returns_figure()
-        report.annual_returns_figure()
-        report.monthly_return_heatmap_figure()
-        report.return_quantiles_figure()
-        report.rolling_beta_figure()
-        report.rolling_sharpe_figure()
-        report.drawdown_underwater_figure()
+        # report.returns_figure()
+        # report.annual_returns_figure()
+        # report.monthly_return_heatmap_figure()
+        # report.return_quantiles_figure()
+        # report.rolling_beta_figure()
+        # report.rolling_sharpe_figure()
+        # report.drawdown_underwater_figure()
         # wandbstats.drawdown_periods_figure() # TODO: Fix this
     if program.args.project_verbose > 0: program.log.info("End report")
     return None

@@ -76,7 +76,7 @@ class Train:
             force=True,  # True: User must be logged in to W&B, False: User can be logged in or not
             sync_tensorboard=True,
             monitor_gym=True,
-            save_code=True,
+            save_code=False,
         )
 
     def _init_callbacks(self):
@@ -145,8 +145,9 @@ class Train:
             self.log_artifact(self.algorithm, "model", self.model_path.as_posix())
 
         if self.program.args.test:
-            Test(program=self.program, dataset_path=self.dataset_path).test(model_path=self.model_path.as_posix(),
-                                                                            algorithm=self.algorithm)
+            Test(program=self.program,
+                 dataset_path=self.dataset_path).test(model_path=self.model_path.as_posix(),
+                                                      algorithm=self.algorithm)
 
         # Deinit
         self._deinit_environment(environment)
