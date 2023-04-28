@@ -9,10 +9,11 @@ import matplotlib.pyplot as plt  # noqa
 import seaborn as sns  # noqa
 import numpy as np  # noqa
 from pprint import pprint  # noqa
+from pathlib import Path  # noqa
 
 from extra.math.finance.shared.baseline import Baseline
 from run.portfolio_allocation.thesis.dataset.stockfadailydataset import StockFaDailyDataset
-from run.shared.sb3.algorithms import ALGORITHM_SB3_CLASS
+from run.shared.sb3.algorithms import ALGORITHM_SB3_STR2CLASS
 from run.shared.callback.wandb_util import wandb_summary
 from run.shared.environmentinitializer import EnvironmentInitializer
 from run.shared.memory import Memory
@@ -25,9 +26,11 @@ matplotlib.use('agg')  # because otherwise is not allowed to run in a not main t
 
 
 class Test:
-    def __init__(self, program: Program, dataset: StockFaDailyDataset):
+    def __init__(self, program: Program, dataset_path: Path):
         self.program: Program = program
-        self.dataset: StockFaDailyDataset = dataset
+        self.dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
+        self.dataset.load_csv(file_path=dataset_path.as_posix())
+        self.dataset_path = dataset_path
 
     @property
     def _baseline(self) -> Baseline:
@@ -40,7 +43,8 @@ class Test:
         self.program.log.info("Deinit environment")
         env.close()
 
-    def test(self, model: ALGORITHM_SB3_CLASS, deterministic=True) -> None:
+    def test(self, model_path: str, algorithm: str, deterministic=True) -> None:
+        model = ALGORITHM_SB3_STR2CLASS[algorithm].load(model_path)
         # Environment
         environment: DummyVecEnv = EnvironmentInitializer(self.program, self.dataset).portfolio_allocation(
             self.dataset.test_dataset
@@ -56,20 +60,21 @@ class Test:
         )
 
         # Testintock
-        for _ in iterable:
-            action, _ = model.predict(obs, deterministic=deterministic)
-            environment.step(action)
-            if self.program.is_wandb_enabled():
-                log_dict = {"test/reward/model": env_unwrapped.memory.df.iloc[-1]["reward"],
-                            "date": env_unwrapped.memory.df.iloc[-1]["date"], }
-                wandb.log(log_dict)
+        for i in range(self.program.args.test):
+            for _ in iterable:
+                action, _ = model.predict(obs, deterministic=deterministic)
+                environment.step(action)
+                if self.program.is_wandb_enabled():
+                    log_dict = {f"test/reward_{i}/model": env_unwrapped.memory.df.iloc[-1]["reward"], }
+                    if i == 0: log_dict["date"] = env_unwrapped.memory.df.iloc[-1]["date"]
+                    wandb.log(log_dict)
 
-                # Baseline
-                # select_binary = baseline.df['date'] == env_unwrapped.memory.df.iloc[-1]['date']
-                # baseline_data = baseline.df[select_binary].to_dict()
-                # del baseline_data['date']
-                # baseline_log_data = {f"test/reward/{k}": list(v.values())[0] for k, v in baseline_data.items()}
-                # wandb.log(baseline_log_data)
+                    # Baseline
+                    # select_binary = baseline.df['date'] == env_unwrapped.memory.df.iloc[-1]['date']
+                    # baseline_data = baseline.df[select_binary].to_dict()
+                    # del baseline_data['date']
+                    # baseline_log_data = {f"test/reward/{k}": list(v.values())[0] for k, v in baseline_data.items()}
+                    # wandb.log(baseline_log_data)
 
         # env_unwrapped.memory.save_json(self.program.args.folder_out.joinpath("test_memory.json").as_posix())
 

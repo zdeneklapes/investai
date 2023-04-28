@@ -134,9 +134,8 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
         parser.add_argument("--wandb-dir", help="Wandb directory", type=Path, default=os.environ.get("WANDB_DIR", None))
 
     def train_arguments(parser: argparse.ArgumentParser):
-        parser.add_argument("--train", help="Will train models based on hyper parameters",
-                            **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
-        parser.add_argument("--test", help="Will test trained models", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
+        parser.add_argument("--train", help="Will train models based on hyper parameters", type=int, default=0)
+        parser.add_argument("--test", help="Will test trained models", type=int, default=0)
         parser.add_argument("--algorithms", help="the algorithm to use", type=str, default=["ppo"],
                             choices=["ppo", "a2c", "sac", "td3", "dqn", "ddpg"], nargs="+", )
         parser.add_argument("--torch-deterministic", help="if toggled, `torch.backends.cudnn.deterministic=False`",

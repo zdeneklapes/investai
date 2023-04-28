@@ -9,7 +9,8 @@ from shared.program import Program
 from shared.reload import reload_module  # noqa
 import json
 from run.shared.sb3.sweep_configuration import sweep_configuration
-from run.portfolio_allocation.thesis.train import Train
+from run.portfolio_allocation.thesis.train import main as train_main
+from run.portfolio_allocation.thesis.test import Test
 
 
 class Robustness:
@@ -43,17 +44,18 @@ class Robustness:
         config = json.loads(run.json_config)
         keys = config.keys() & sweep_configuration['parameters'].keys()
         hyperparameters = {key: config[key]['value'] for key in keys}
+        hyperparameters['total_timesteps'] = config['_total_timesteps']['value']
         return hyperparameters, config['algo']['value']
 
-    def get_dataset_best_model_from_wandb(self, type: str) -> Path | None:
+    def get_artifact_best_model_from_wandb(self, type: str) -> Path | None:
         id = self.find_the_best_model_id()
         wandb_api = wandb.Api()
         run: wandb.apis.public.Run = wandb_api.run(
             f"{self.program.args.wandb_entity}/{self.program.args.wandb_project}/{id}")
         for artifact in run.logged_artifacts():  # type: wandb.apis.public.Artifact
             if artifact.type == type:
-                artifact_dir = artifact.download(root=self.program.args.wandb_dir.as_posix())
-                return Path(artifact_dir)
+                artifact_dir = artifact.download(root=self.program.args.folder_dataset.joinpath('artifacts').as_posix())
+                return Path(artifact_dir) / artifact.file().split('/')[-1]
         return None
 
     def set_hyperparameters_to_program(self, hyperparameters: Dict):
@@ -61,26 +63,19 @@ class Robustness:
             setattr(self.program.args, key, value)
 
     def call_training(self):
-        dataset_path = self.get_dataset_best_model_from_wandb(type="dataset")
         hyperparameters, algorithm = self.get_hyperparameters_best_model_from_wandb()
+        self.program.args.dataset_paths = [self.get_artifact_best_model_from_wandb(type="dataset")]
+        self.program.args.algorithms = [algorithm]
         self.set_hyperparameters_to_program(hyperparameters)
-
         # Train
-        Train(program=program, dataset_path=dataset_path, algorithm=algorithm).train()
+        train_main(self.program)
 
     def test_model(self, model):
-        # total_rewards = {}
-        for i in range(1000):
-            # Model test
-            # Store total reward
-            pass
+        model_path = self.get_artifact_best_model_from_wandb(type="model")
+        hyperparameters, algorithm = self.get_hyperparameters_best_model_from_wandb()
 
-    def test_robustness(self):
-        trained_models = self.call_training()
-
-        # Multiple times call testing period for each model
-        for model in trained_models:
-            self.test_model(model)
+        for i in range(self.program.args.test):
+            Test(program=self.program, dataset=self.dataset).test(model_path=model_path.as_posix(), algorithm=algorithm)
 
 
 class TestRobustness:
@@ -103,7 +98,7 @@ def test():
 
 def main(program: Program):
     """Main function"""
-    return Robustness(program).get_hyperparameters_best_model_from_wandb()
+    return Robustness(program).call_training()
 
 
 if __name__ == "__main__":

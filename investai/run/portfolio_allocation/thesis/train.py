@@ -21,11 +21,11 @@ from stable_baselines3.common.callbacks import CallbackList, ProgressBarCallback
 
 class Train:
     def __init__(self, program: Program, dataset_path: Path, algorithm: str):
-        self.dataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
+        self.dataset: StockFaDailyDataset = StockFaDailyDataset(program, DOW_30_TICKER, program.args.dataset_split_coef)
         self.dataset.load_csv(file_path=dataset_path.as_posix())
-        self.dataset_path = dataset_path
+        self.dataset_path: Path = dataset_path
         self.program: Program = program
-        self.algorithm: str = algorithm
+        self.algorithm: str = algorithm.lower()
         self.model_path = self.program.args.folder_model.joinpath(f"{self.algorithm}.zip")
 
     def _init_hyper_parameters(self) -> dict:
@@ -145,7 +145,8 @@ class Train:
             self.log_artifact(self.algorithm, "model", self.model_path.as_posix())
 
         if self.program.args.test:
-            Test(program=self.program, dataset=self.dataset).test(model=model)
+            Test(program=self.program, dataset_path=self.dataset_path).test(model_path=self.model_path.as_posix(),
+                                                                            algorithm=self.algorithm)
 
         # Deinit
         self._deinit_environment(environment)
@@ -166,7 +167,9 @@ def main(
     dataset_path: Path
     for dataset_path in program.args.dataset_paths:
         for algorithm in program.args.algorithms:
-            if program.args.train:
+            for i in range(program.args.train):
+                program.log.info(f"START {i}. Training {algorithm} algorithm.")
+                #
                 wandb_train = Train(program=program, dataset_path=dataset_path, algorithm=algorithm)
                 if not program.args.wandb_sweep:
                     wandb_train.train()
@@ -178,6 +181,8 @@ def main(
                         project=program.args.wandb_project,
                         count=program.args.wandb_sweep_count,
                     )
+                #
+                program.log.info(f"END {i}. Training {algorithm} algorithm.")
 
 
 if __name__ == "__main__":
