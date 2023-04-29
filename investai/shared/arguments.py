@@ -198,7 +198,7 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
         #     type=str,
         #     default="",
         # )
-        parser.add_argument("--seed", help="Random generator seed", type=int, default=0)
+        parser.add_argument("--seed", help="Random generator seed", type=int)
         parser.add_argument("--device", help="Device (cpu, cuda, auto)", type=str, default="auto")
         parser.add_argument("---init-setup-model",
                             help="Whether or not to setup the model with default hyperparameters",
@@ -208,12 +208,12 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
         parser.add_argument("--clip-range", help="Clipping parameter (policy loss)", type=float, default=0.2)
         parser.add_argument("--clip-range-vf", help="Clipping parameter (value loss)", type=float, default=None)
         parser.add_argument("--target-kl", help="Target KL divergence", type=float, default=None)
-        parser.add_argument("--buffer-size", help="Size of the replay buffer", type=int, default=50000)
+        parser.add_argument("--buffer-size", help="Size of the replay buffer", type=int, default=2000)
         parser.add_argument("--learning-starts", help="Number of steps before learning for the warm-up", type=int,
                             default=1000)
         parser.add_argument("--tau", help="Target smoothing coefficient (1-tau)", type=float, default=0.005)
         parser.add_argument("--train-freq", help="Update the model every ``train_freq`` steps", type=int, default=1)
-        parser.add_argument("--gradient-steps", help="How many gradient update after each step", type=int, default=-1)
+        parser.add_argument("--gradient-steps", help="How many gradient update after each step", type=int, default=1)
         parser.add_argument("--action-noise", help="Action noise type (None, normal, ou)", type=str, default=None)
         parser.add_argument("--replay-buffer-class", help="Replay buffer class", type=str, default=None)
         parser.add_argument("--replay-buffer-kwargs",

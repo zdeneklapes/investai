@@ -22,7 +22,8 @@ class EnvironmentInitializer:
     def portfolio_allocation(self, dataset: pd.DataFrame) -> DummyVecEnv:
         env = None
         if self.program.args.env_id == "0":
-            self.program.log.info(f"Init environment: {PortfolioAllocationEnv.__name__}")
+            if self.program.args.project_verbose:
+                self.program.log.info(f"Init environment: {PortfolioAllocationEnv.__name__}")
             env = PortfolioAllocationEnv(
                 dataset=dataset,
                 tickers=self.dataset.tickers,
@@ -30,10 +31,15 @@ class EnvironmentInitializer:
                 start_index=self.program.args.start_index,
             )
         elif self.program.args.env_id == "1":
-            self.program.log.info(f"Init environment: {PortfolioAllocation2Env.__name__}")
-            env = PortfolioAllocation2Env(self.program, dataset=dataset, tickers=self.dataset.tickers,
-                                          columns_to_drop_in_observation=["date", "tic"],
-                                          start_index=self.program.args.start_index)
+            if self.program.args.project_verbose:
+                self.program.log.info(f"Init environment: {PortfolioAllocation2Env.__name__}")
+            env = PortfolioAllocation2Env(
+                program=self.program,
+                dataset=dataset,
+                tickers=self.dataset.tickers,
+                columns_to_drop_in_observation=["date", "tic"],
+                start_index=self.program.args.start_index
+            )
         env = Monitor(
             env, Path(self.program.args.wandb_dir).as_posix(), allow_early_resets=True
         )  # stable_baselines3.common.monitor.Monitor

@@ -8,7 +8,7 @@ import seaborn as sns  # noqa
 import matplotlib.pyplot as plt  # noqa
 from matplotlib.axes._axes import Axes  # noqa
 from matplotlib.axis import Axis  # noqa
-import numpy as np  # noqa
+from typing import List
 
 from run.portfolio_allocation.thesis.wandbapi import WandbAPI
 from shared.program import Program
@@ -117,77 +117,109 @@ class Report(Memory, WandbAPI):
         min_variance["Alpha"] = empyrical.alpha(self.returns_pivot_df["minimum_variance_0_1"],
                                                 self.returns_pivot_df["^DJI"])
 
-        # AI4Finance Stats
-        ai4finance_stats: pd.Series = pd.Series({  # noqa
-            "Annual return": 0.09,
-            "Cumulative returns": None,
-            "Annual volatility": 0.232,
-            "Sharpe ratio": 0.49,
-            "Calmar ratio": 0.24,
-            "Stability": 0.04,
-            "Max drawdown": -0.375,
-            "Omega ratio": 1.14,
-            "Sortino ratio": 0.67,
-            "Skew": None,
-            "Kurtosis": None,
-            "Tail ratio": 1.03,
-            "Daily value at risk": -0.028,
-            "Alpha": 0.03,
-            "Beta": 0.68,
-        })
-
         # Stats All
-        stats = pd.concat(
+        def stats_all(stats: List[pd.Series], columns: List[str]):
+            stats = pd.concat(stats, axis=1)
+            stats.columns = columns
+            stats.rename(index={"Cumulative returns": "Cum. returns"}, inplace=True)
+            stats = stats.round(3)
+            stats.to_csv(self.program.args.folder_figure.joinpath("stats.csv"))
+            return stats
+
+        def print_stats_latex(stats: pd.DataFrame, columns: int, column_width: float, caption: str, label: str,
+                              file_path: str = None):
+            # Remove duplicate values
+            for i, row in stats.iterrows():
+                duplicate_mask = row.duplicated()
+                if any(duplicate_mask):
+                    stats.loc[i, duplicate_mask] += 0.001
+
+            styler: pd.io.formats.style.Styler = stats.style
+
+            def highlight_max(s: pd.Series):
+                val_max = s.max()
+                return ["color: #00F000; font-weight: bold" if v == val_max else "" for v in s.values]
+
+            styler.apply(highlight_max, axis=1)
+            styler.applymap_index(lambda v: "font-weight: bold;", axis="index")
+            styler.applymap_index(lambda v: "font-weight: bold;", axis="columns")
+            styler.format(precision=3)
+            latex = styler.to_latex(
+                column_format="*{%d}{|m{%.2f\\linewidth}|}" % (columns, column_width),
+                caption=caption,
+                hrules=True,
+                position="ht!",
+                position_float="centering",
+                convert_css=True,
+                label=label,
+            )
+            latex = latex.replace(r"\\", r"\\[0.5cm]")
+            latex = latex.replace(r"^", r"\^")
+
+            if file_path is not None:
+                with open(file_path, "w") as f:
+                    f.write(latex)
+            else:
+                print(latex)
+
+        stats = stats_all(
             [min_stats, max_stats, dji_stats, gspc_stats, ixic_stats, rut_stats, max_sharpe_ratio, min_variance],
-            axis=1)
-        stats.columns = [self.id_min, self.id_max, "^DJI", "^GSPC", "^IXIC", "^RUT", "Max Sharpe Ratio", "Min Variance"]
-        stats.rename(index={"Cumulative returns": "Cum. returns"}, inplace=True)
-        stats = stats.round(3)
-        stats.to_csv(self.program.args.folder_figure.joinpath("stats.csv"))
-
-        # Remove duplicate values
-        for i, row in stats.iterrows():
-            duplicate_mask = row.duplicated()
-            if any(duplicate_mask):
-                stats.loc[i, duplicate_mask] += 0.001
-
-        styler: pd.io.formats.style.Styler = stats.style
-
-        # styler.highlight_max(axis=1, props="color:#00F000; font-weight: bold ;")
-        def highlight_max(s: pd.Series):
-            val_max = s.max()
-            return ["color: #00F000; font-weight: bold" if v == val_max else "" for v in s.values]
-
-        styler.apply(highlight_max, axis=1)
-        styler.applymap_index(lambda v: "font-weight: bold;", axis="index")
-        styler.applymap_index(lambda v: "font-weight: bold;", axis="columns")
-        styler.format(precision=3)
-        latex = styler.to_latex(
-            column_format="*{9}{|m{0.08\\linewidth}|}",
-            caption="Performance metrics of the models vs. indexes and strategies",
-            hrules=True,
-            position="ht!",
-            position_float="centering",
-            convert_css=True,
-            label="tab:stats",
+            [self.id_min, self.id_max, "^DJI", "^GSPC", "^IXIC", "^RUT", "Max Sharpe Ratio", "Min Variance"]
         )
-        latex = latex.replace(r"\\", r"\\[0.5cm]")
-        latex = latex.replace(r"^", r"\^")
-        print(latex)
+
+        print_stats_latex(
+            stats,
+            columns=9,
+            column_width=0.08,
+            caption=f"Performance metrics of the models vs. indexes and strategies, "
+                    f"during the testing period of {self.returns_pivot_df.index[0].strftime('%Y-%m-%d')} "
+                    f"to {self.returns_pivot_df.index[-1].strftime('%Y-%m-%d')}.",
+            label="tab:stats",
+            file_path=self.program.args.folder_figure.joinpath("stats.tex"))
 
         # Stats RL vs. AI4Finance
+        ai4finance_stats: pd.Series = pd.Series({  # noqa
+            "Annual return": 0.29613,
+            "Cumulative returns": 0.41464,
+            "Annual volatility": 0.13961,
+            "Sharpe ratio": 1.93,
+            "Calmar ratio": 3.35,
+            "Stability": 0.92,
+            "Max drawdown": -0.08847,
+            "Omega ratio": 1.38,
+            "Sortino ratio": 2.94,
+            "Skew": -0.11,
+            "Kurtosis": 1.45,
+            "Tail ratio": 1.10,
+            "Daily value at risk": -0.01652,
+            "Alpha": 0.02,
+            "Beta": 0.98,
+        })
+        date_start = "2020-07-01"
+        date_end = "2021-10-29"
 
-        # # Stats RL
-        # stats = pd.concat([min_stats, max_stats, ai4finance_stats, ], axis=1)
-        # stats.columns = ["The lowest Total Reward", "The highest Total Reward", "AI4Finance"]
-        # stats.rename(index={"Cumulative returns": "Cum. returns"}, inplace=True)
-        # stats.round(3).to_csv(self.program.args.folder_figure.joinpath("stats_models.csv"))
-        #
-        # # Stategies and indexes
-        # stats = pd.concat([dji_stats, gspc_stats, ixic_stats, rut_stats, max_sharpe_ratio, min_variance], axis=1)
-        # stats.columns = ["^DJI", "^GSPC", "^IXIC", "^RUT", "Max Sharpe Ratio", "Min Variance"]
-        # stats.rename(index={"Cumulative returns": "Cum. returns"}, inplace=True)
-        # stats.round(3).to_csv(self.program.args.folder_figure.joinpath("stats_stategies.csv"))
+        # Min Stats
+        data_for_min_model = self.returns_pivot_df.loc[date_start:date_end][self.id_min]
+        min_stats: pd.Series = pf.timeseries.perf_stats(data_for_min_model)
+        min_stats["Beta"] = empyrical.beta(data_for_min_model, self.returns_pivot_df["^DJI"])
+        min_stats["Alpha"] = empyrical.alpha(data_for_min_model, self.returns_pivot_df["^DJI"])
+
+        # Max Stats
+        data_for_max_model = self.returns_pivot_df.loc[date_start:date_end][self.id_max]
+        max_stats: pd.Series = pf.timeseries.perf_stats(data_for_max_model)
+        max_stats["Beta"] = empyrical.beta(data_for_max_model, self.returns_pivot_df["^DJI"])
+        max_stats["Alpha"] = empyrical.alpha(data_for_max_model, self.returns_pivot_df["^DJI"])
+
+        # Stats All
+        stats = stats_all([min_stats, max_stats, ai4finance_stats, ], [self.id_min, self.id_max, "AI4Finance"])
+        print_stats_latex(
+            stats,
+            columns=4,
+            column_width=0.2,
+            caption=f"Performance metrics of the models vs. AI4Finance model, "
+                    f"during the testing period of {date_start} to {date_end}.",
+            label="tab:stats2",
+            file_path=self.program.args.folder_figure.joinpath("stats2.tex"))
 
         if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
 

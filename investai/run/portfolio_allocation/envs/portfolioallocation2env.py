@@ -3,7 +3,7 @@
 # TODO Dataset: TA + FA
 # TODO: action +1 more action from 30 actions increase to 31 actions, because Agent can also decide for cash
 # TODO: make it more reusable, so change self.features to self.not_include_in_observation_columns
-from typing import Any, Dict, Final, List, Optional
+from typing import Any, Dict, Final, List
 
 # FIXME: Stable-baselines3 requires gym.spaces not gymnasium.spaces
 import gym
@@ -104,9 +104,9 @@ class PortfolioAllocation2Env(gym.Env):
 
     def reset(
         self,
-        *,
-        seed: Optional[int] = None,
-        options: Optional[Dict[str, Any]] = None,
+        # *,
+        # seed: Optional[int] = None,
+        # options: Optional[Dict[str, Any]] = None,
     ):
         self.__reinit()
         if self.program.args.train_verbose > 0:
@@ -116,6 +116,12 @@ class PortfolioAllocation2Env(gym.Env):
     def render(self, mode="human"):
         return self._current_observation
 
+    def seed(self, seed=None):
+        seed = self._seed(seed)
+        if self.program.args.project_debug: self.program.log.debug(f"Seed: {seed}")
+        return seed
+
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
+        if self.program.args.project_debug: self.program.log.debug(f"Seed: {seed}, np_random: {self.np_random}")
         return [seed]

@@ -10,8 +10,6 @@ from shared.reload import reload_module  # noqa
 import json
 from run.shared.sb3.sweep_configuration import sweep_configuration
 from run.portfolio_allocation.thesis.train import main as train_main
-from run.portfolio_allocation.thesis.test import Test
-from run.shared.memory import Memory
 
 
 class Robustness:
@@ -50,6 +48,7 @@ class Robustness:
         keys = config.keys() & sweep_configuration["parameters"].keys()
         hyperparameters = {key: config[key]["value"] for key in keys}
         hyperparameters["total_timesteps"] = config["_total_timesteps"]["value"]
+        hyperparameters["seed"] = config["seed"]["value"]
         return hyperparameters, config["algo"]["value"]
 
     def get_artifact_best_model_from_wandb(self, type: str) -> Path | None:
@@ -83,14 +82,6 @@ class Robustness:
         best_model_id = cumprod_returns_df.iloc[-1]
         return best_model_id
 
-    def test_multiple_times_one_best_model(self):
-        model_path = self.get_artifact_best_model_from_wandb(type="model")
-        hyperparameters, algorithm = self.get_hyperparameters_best_model_from_wandb()
-        dataset_path = self.get_artifact_best_model_from_wandb(type="dataset")
-        memory: Memory = Test(program=self.program, dataset_path=dataset_path).test(model_path=model_path.as_posix(),
-                                                                                    algorithm=algorithm)
-        # TODO: Evaluate memory
-
 
 class TestRobustness:
     def __init__(self, program: Program = Program()):
@@ -112,7 +103,7 @@ def test():
 
 def main(program: Program):
     """Main function"""
-    return Robustness(program).test_best_models()
+    return Robustness(program).call_training()
 
 
 if __name__ == "__main__":

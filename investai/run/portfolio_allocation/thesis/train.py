@@ -9,6 +9,7 @@ from pprint import pprint  # noqa
 from pathlib import Path
 
 import wandb
+
 from run.portfolio_allocation.thesis.dataset.stockfadailydataset import StockFaDailyDataset
 from run.portfolio_allocation.thesis.test import Test
 from run.shared.callback.wandbcallbackextendmemory import WandbCallbackExtendMemory
@@ -56,7 +57,6 @@ class Train:
                 if key in self.program.args.__dict__
             }
         if self.program.args.project_verbose > 1:
-            from pprint import pprint
             pprint(config)
 
         config["tensorboard_log"] = self.program.args.folder_tensorboard.as_posix()
@@ -136,9 +136,8 @@ class Train:
     def train_run(self):
         self.program.log.info(f"START Training {self.algorithm} algorithm.")
         # Initialize
-        environment = EnvironmentInitializer(self.program, self.dataset).portfolio_allocation(
-            self.dataset.train_dataset
-        )
+        environment = EnvironmentInitializer(self.program,
+                                             self.dataset).portfolio_allocation(self.dataset.train_dataset)
         callbacks = self._init_callbacks()
 
         # Model training

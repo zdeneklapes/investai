@@ -50,9 +50,8 @@ class Test:
             self.program.log.info(f"Loading model_path: {model_path}, algorithm: {algorithm}")
         model = ALGORITHM_SB3_STR2CLASS[algorithm].load(model_path)
         # Environment
-        environment: DummyVecEnv = EnvironmentInitializer(self.program, self.dataset).portfolio_allocation(
-            self.dataset.test_dataset
-        )
+        environment: DummyVecEnv = EnvironmentInitializer(self.program,
+                                                          self.dataset).portfolio_allocation(self.dataset.test_dataset)
         env_unwrapped = environment.envs[0].env
 
         # Iteration: TODO: "-2" because we don't want to go till terminal state, because the environment will be reset

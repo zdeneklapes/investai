@@ -43,10 +43,8 @@ class WandbCallbackExtendMemory(WandbCallback):
             "train/total_reward": (memory.df["reward"] + 1).cumprod().iloc[-1],
             # TODO: reward annualized
             # Dates
-            "train/dataset_start_date": dataset["date"].unique()[0],
-            "train/dataset_end_date": dataset["date"].unique()[-1],
             "train/start_date": dataset["date"].unique()[0],
-            "train/end_date": memory.df["date"].iloc[-1],
+            "train/end_date": dataset["date"].unique()[-1],
             # Ratios
             "train/sharpe_ratio": calculate_sharpe_ratio(memory.df["reward"]),
             # TODO: Calmar ratio
