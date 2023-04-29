@@ -155,6 +155,8 @@ class Report(Memory, WandbAPI):
             )
             latex = latex.replace(r"\\", r"\\[0.5cm]")
             latex = latex.replace(r"^", r"\^")
+            latex = latex.replace(r"\begin{tabular}", r"{\footnotesize\begin{tabular}")
+            latex = latex.replace(r"\end{tabular}", r"\end{tabular}}")
 
             if file_path is not None:
                 with open(file_path, "w") as f:
