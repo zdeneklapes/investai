@@ -49,7 +49,8 @@ WORKDIR /home/ubuntu
 COPY requirements.txt /home/ubuntu/
 RUN python3 -m venv /home/ubuntu/venv \
     && /home/ubuntu/venv/bin/pip install --upgrade pip  \
-    && for i in $(cat requirements.txt);do /home/ubuntu/venv/bin/pip install ${i};done
+    && /home/ubuntu/venv/bin/pip install -r requirements.txt
+#    && for i in $(cat requirements.txt);do /home/ubuntu/venv/bin/pip install ${i};done
 
 # Setup SSH: username=user:password=user
 RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 user

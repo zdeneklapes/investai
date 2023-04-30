@@ -65,7 +65,8 @@ class WandbAPI:
             for group in [
                 "run-nasfit-robust-1",
                 "run-nasfit-robust-2",
-                "run-nasfit-robust-3"
+                "run-nasfit-robust-3",
+                "sweep-nasfit-7",
             ]
         ]
         iterations = tqdm(enumerate(list(chain(*runs))))

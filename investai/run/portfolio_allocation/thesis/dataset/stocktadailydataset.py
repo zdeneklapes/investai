@@ -23,9 +23,9 @@ from finta import TA
 # For Debugging
 from shared.reload import reload_module  # noqa
 from tqdm import tqdm
-from tvDatafeed import Interval, TvDatafeed
 from run.shared.memory import Memory
 from shared.utils import log_artifact
+from raw_data.tvdatafeed import Interval, TvDatafeed
 
 
 class StockTaDailyDataset(Memory):
@@ -99,7 +99,7 @@ class StockTaDailyDataset(Memory):
     def get_stock_dataset(self) -> pd.DataFrame:
         df = pd.DataFrame()
 
-        iterable = tqdm(self.tickers, leave=False) if "i" in self.program.args.project_verbose else self.tickers
+        iterable = tqdm(self.tickers) if "i" in self.program.args.project_verbose else self.tickers
         for tic in iterable:
             if isinstance(iterable, tqdm): iterable.set_description(f"Processing {tic}")
             # Load tickers raw_data
@@ -199,9 +199,10 @@ class StockTaDailyDataset(Memory):
         #     iterable = tqdm(dict(TA.__dict__).items())
         #     # iterable = tqdm(dict(VORTEX=TA.VORTEX).items())
         # else:
-        iterable = (tqdm(self.TA_functions.items(), leave=False) if "i" in self.program.args.project_verbose
-                    else self.TA_functions.items())
 
+        iterable = (tqdm(self.TA_functions.items(), leave=False)
+                    if "i" in self.program.args.project_verbose
+                    else self.TA_functions.items())
         for name, func in iterable:
             if isinstance(iterable, tqdm): iterable.set_description(f"Calculating indicator: {name}")
             if callable(func):  # TODO: remove this if statement
@@ -213,7 +214,7 @@ class StockTaDailyDataset(Memory):
                         ta_indicator = func(df, period=30)
                     else:
                         ta_indicator = func(df)
-                except (NotImplementedError, TypeError):
+                except (NotImplementedError, TypeError, AttributeError):
                     self.program.log.info(f"Skipping {name} indicator")
                     continue
 
@@ -324,8 +325,7 @@ def main():
 
     # Save to wandb
     if program.args.wandb:
-        log_artifact(program.args, program.args.baseline_path.as_posix(), file_path.name.split('.')[0], "dataset",
-                     {"path": file_path.as_posix()})
+        log_artifact(program.args, file_path, file_path.name.split('.')[0], "dataset", {"path": file_path.as_posix()})
 
 
 if __name__ == "__main__":

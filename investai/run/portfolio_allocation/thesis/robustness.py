@@ -82,19 +82,8 @@ class Robustness:
             [pd.DataFrame(data=[[0] * returns_pivot_df.columns.__len__()], columns=returns_pivot_df.columns),
              returns_pivot_df]
         ).reset_index(drop=True)
-
         groups_df = returns_pivot_df["run-nasfit-robust-3"]
         return groups_df
-        # return returns_pivot_df
-        # dataset_path: Path = self.get_artifact_best_model_from_wandb(type="dataset")
-        # model_path: Path = self.get_artifact_best_model_from_wandb(type="model")
-        # hyperparameters, algorithm = self.get_hyperparameters_best_model_from_wandb()
-        # memory: Memory = Test(program=self.program,
-        #                       dataset_path=dataset_path).test(model_path=model_path.as_posix(),
-        #                                                       algorithm=algorithm)
-        # memory.df.index = memory.df['date']
-        # memory.df = memory.df.drop(columns=['date'])
-        # return memory.df
 
 
 class TestRobustness:

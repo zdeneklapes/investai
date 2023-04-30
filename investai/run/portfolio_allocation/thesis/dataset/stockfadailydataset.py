@@ -7,20 +7,19 @@ from typing import Dict, List
 
 import numpy as np
 import pandas as pd
-from extra.math.finance.ticker.ticker import Ticker
 from finta import TA
 from IPython.display import display  # noqa
+from tqdm import tqdm
+
 from run.shared.dataset.candlestickengineer import CandlestickEngineer as CSE
 from run.shared.dataset.dataengineer import DataEngineer as DE
 from run.shared.tickers import DOW_30_TICKER
-from shared.program import Program
-
-# For Debugging
-from shared.reload import reload_module  # noqa
-from tqdm import tqdm
-from tvDatafeed import Interval, TvDatafeed
 from run.shared.memory import Memory
+from shared.program import Program
+from shared.reload import reload_module  # noqa
 from shared.utils import log_artifact
+from raw_data.tvdatafeed import Interval, TvDatafeed
+from extra.math.finance.ticker.ticker import Ticker
 
 
 class StockFaDailyDataset(Memory):
@@ -211,8 +210,7 @@ def main():
 
     # Save to wandb
     if program.args.wandb:
-        log_artifact(program.args, program.args.baseline_path.as_posix(), file_path.name.split('.')[0], "dataset",
-                     {"path": file_path.as_posix()})
+        log_artifact(program.args, file_path, file_path.name.split('.')[0], "dataset", {"path": file_path.as_posix()})
 
 
 if __name__ == "__main__":
