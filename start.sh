@@ -186,6 +186,10 @@ function install() {
     pip3 install pyfolio
 }
 
+function foo() {
+    docker build -t investai -f Dockerfile .
+}
+
 ##### PARSE CLI-ARGS
 [[ "$#" -eq 0 ]] && usage && exit 0
 while [ "$#" -gt 0 ]; do
