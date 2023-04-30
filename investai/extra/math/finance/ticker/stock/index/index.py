@@ -18,7 +18,7 @@ class Index:
         table[0].to_csv(SP500.joinpath("info.csv"))
         table[1].to_csv(SP500.joinpath("history.csv"))
 
-    def nasdaq100_tickers():
+    def nasdaq100_tickers(self):
         pass
 
     def hsi50_tickers(self):
