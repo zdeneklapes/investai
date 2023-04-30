@@ -82,7 +82,7 @@ class Baseline(Memory):
         dates = dataset["date"].unique()
         del dataset["date"]
 
-        iterable = (trange(4, dates.size - 1) if self.program.args.project_verbose else range(4, dates.size - 1))
+        iterable = (trange(4, dates.size - 1) if "i" in self.program.args.project_verbose else range(4, dates.size - 1))
         for i in iterable:
             frequency = 252 if dataset.iloc[:i].shape[0] > 252 else dataset.iloc[:i].shape[0]
             mean_return = mean_historical_return(dataset.iloc[:i], frequency=frequency, compounding=True)
@@ -136,7 +136,7 @@ class Baseline(Memory):
 class TestBaseline:
     def __init__(self):
         self.program = Program()
-        self.program.args.project_verbose = 1
+        "i" in self.program.args.project_verbose
         self.program.args.dataset_paths = self.program.args.folder_dataset.joinpath(
             "stockfadailydataset.csv").as_posix()
         self.program.args.baseline_path = self.program.args.folder_baseline.joinpath("baseline.csv").as_posix()

@@ -4,6 +4,7 @@
 # TODO: next datasets
 # TODO: Put into dataset change of price form one index to another index: e.g. 10->15=0.5, 10->5=-0.5
 import os
+import time
 from copy import deepcopy  # noqa
 from pprint import pprint  # noqa
 from pathlib import Path
@@ -56,10 +57,10 @@ class Train:
                 for key in algorithm_init_parameters
                 if key in self.program.args.__dict__
             }
-        if self.program.args.project_verbose > 1:
-            pprint(config)
+        if "d" in self.program.args.project_verbose: pprint(config)
 
         config["tensorboard_log"] = self.program.args.folder_tensorboard.as_posix()
+        if not hasattr(config, "seed"): config["seed"] = int(time.time())
         return config
 
     def _init_wandb(self):
@@ -122,7 +123,7 @@ class Train:
         return model
 
     def log_artifact(self, name: str, _type: str, path: str):
-        if self.program.args.project_verbose > 0:
+        if "i" in self.program.args.project_verbose:
             self.program.log.info(f"Log artifact {name=}, {_type=}, {path=}")
         # Log dataset
         artifact = wandb.Artifact(name, type=_type, metadata={"path": path})
@@ -158,7 +159,7 @@ class Train:
         self.program.log.info(f"END Training {self.algorithm} algorithm.")
 
     def train(self):
-        if self.program.is_wandb_enabled():
+        if self.program.is_wandb_enabled(check_init=False):
             self._init_wandb()
             self.train_run()
             self._deinit_wandb()

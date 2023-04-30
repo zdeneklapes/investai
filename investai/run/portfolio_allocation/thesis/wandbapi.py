@@ -39,23 +39,41 @@ class WandbAPI:
             return df
 
         # Logics
-        if self.program.args.project_verbose > 0:
+        if "i" in self.program.args.project_verbose:
             self.program.log.info(f"START {inspect.currentframe().f_code.co_name}")
         if log_keys is None: log_keys = ["^DJI", "^GSPC", "^IXIC", "^RUT", "maximum_sharpe_0_1", "minimum_variance_0_1"]
-        if groups is None: groups = ["sweep-nasfit-6", "run-nasfit-robust-1"]
 
+        # Models 1
         api = wandb.Api()
         runs = [
             api.runs(self.program.args.wandb_entity + "/" + self.program.args.wandb_project, filters={"group": group})
-            for group in groups
+            for group in [
+                "sweep-nasfit-6",
+            ]
         ]
-
         iterations = tqdm(enumerate(list(chain(*runs))))
-
-        # Models
-        runs_data = [get_run_model(run, "test/reward/model") for _, run in iterations if
-                     run.state not in ["running", "failed"]]
+        runs_data = []
+        for idx, run in iterations:
+            if run.state not in ["running", "failed"]:
+                runs_data.append(get_run_model(run, "test/reward/model"))
         df = pd.concat(runs_data)
+
+        # Models 2
+        api = wandb.Api()
+        runs = [
+            api.runs(self.program.args.wandb_entity + "/" + self.program.args.wandb_project, filters={"group": group})
+            for group in [
+                "run-nasfit-robust-1",
+                "run-nasfit-robust-2",
+                "run-nasfit-robust-3"
+            ]
+        ]
+        iterations = tqdm(enumerate(list(chain(*runs))))
+        runs_data = []
+        for idx, run in iterations:
+            if run.state not in ["running", "failed"]:
+                runs_data.append(get_run_model(run, "test/reward_1/model"))
+        df = pd.concat([df, *runs_data])
 
         # Baselines
         n_samples = df.groupby(['id']).size()[0]
@@ -68,12 +86,11 @@ class WandbAPI:
         # Check
         assert df.groupby(['id']).size().unique().size == 1, "All runs should have the same number of samples"
 
-        if not (self.program.args.project_debug):
-            df.to_csv(self.program.args.history_path.as_posix(), index=True)
-            if self.program.args.project_verbose > 0:
-                self.program.log.info(f"History downloaded and saved to {self.program.args.history_path.as_posix()}")
-        if self.program.args.project_verbose > 0:
-            self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        df.to_csv(self.program.args.history_path.as_posix(), index=True)
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"History downloaded and saved to {self.program.args.history_path.as_posix()}")
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"END {inspect.currentframe().f_code.co_name}")
         return df
 
 
@@ -86,6 +103,7 @@ class TestWandbAPI:
 
     def test_main(self):
         self.program.args.baseline_path = Path("out/baseline/baseline.csv")
+        self.program.args.project_verbose = "id"
         self.program.args.project_debug = True
         return main(self.program)
 
@@ -100,7 +118,7 @@ def main(program: Program):
 
 if __name__ == "__main__":
     program = Program()
-    if program.args.project_debug:  # Just to can run test from CLI
+    if program.args.project_verbose:
         test()
     else:
         main(program)

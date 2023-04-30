@@ -31,8 +31,8 @@ class Robustness:
 
     def find_the_best_model_id(self) -> str:
         cumprod_returns_df = self.history_to_pivot(self.program.args.history_path.as_posix())
-        # ID
         best_model_id = cumprod_returns_df.iloc[-1].idxmax()
+        if "i" in self.program.args.project_verbose: self.program.log.info(f"Best model id: {best_model_id}")
         return best_model_id
 
     def get_hyperparameters_best_model_from_wandb(self) -> Tuple[Dict, str]:
@@ -48,7 +48,6 @@ class Robustness:
         keys = config.keys() & sweep_configuration["parameters"].keys()
         hyperparameters = {key: config[key]["value"] for key in keys}
         hyperparameters["total_timesteps"] = config["_total_timesteps"]["value"]
-        hyperparameters["seed"] = config["seed"]["value"]
         return hyperparameters, config["algo"]["value"]
 
     def get_artifact_best_model_from_wandb(self, type: str) -> Path | None:
@@ -75,12 +74,27 @@ class Robustness:
         train_main(self.program)
 
     def test_best_models(self):
-        history_df = pd.read_csv(self.program.args.history_path.as_posix(), index_col=0)
+        history_df = pd.read_csv(self.program.args.history_path, index_col=0)
         returns_pivot_df = history_df.pivot(columns=["group", "id"], values=["reward"])
         returns_pivot_df.columns = returns_pivot_df.columns.droplevel(0)
-        cumprod_returns_df = (returns_pivot_df[("run-nasfit-robust-1")] + 1).cumprod()
-        best_model_id = cumprod_returns_df.iloc[-1]
-        return best_model_id
+        # Set first rows on 0
+        returns_pivot_df = pd.concat(
+            [pd.DataFrame(data=[[0] * returns_pivot_df.columns.__len__()], columns=returns_pivot_df.columns),
+             returns_pivot_df]
+        ).reset_index(drop=True)
+
+        groups_df = returns_pivot_df["run-nasfit-robust-3"]
+        return groups_df
+        # return returns_pivot_df
+        # dataset_path: Path = self.get_artifact_best_model_from_wandb(type="dataset")
+        # model_path: Path = self.get_artifact_best_model_from_wandb(type="model")
+        # hyperparameters, algorithm = self.get_hyperparameters_best_model_from_wandb()
+        # memory: Memory = Test(program=self.program,
+        #                       dataset_path=dataset_path).test(model_path=model_path.as_posix(),
+        #                                                       algorithm=algorithm)
+        # memory.df.index = memory.df['date']
+        # memory.df = memory.df.drop(columns=['date'])
+        # return memory.df
 
 
 class TestRobustness:
@@ -92,7 +106,8 @@ class TestRobustness:
 
     def test_main(self):
         self.program.args.history_path = Path("out/model/history.csv")
-        self.program.args.project_debug = True
+        self.program.args.project_verbose = "id"
+        self.program.args.test = 5
         return main(self.program)
 
 
@@ -103,7 +118,7 @@ def test():
 
 def main(program: Program):
     """Main function"""
-    return Robustness(program).call_training()
+    return Robustness(program).test_best_models()
 
 
 if __name__ == "__main__":

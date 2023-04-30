@@ -8,6 +8,7 @@ from argparse import Namespace
 from distutils.util import strtobool  # noqa
 from pathlib import Path
 from pprint import pprint  # noqa
+import time
 
 from shared.utils import find_git_root
 
@@ -72,10 +73,12 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
 
     def run_arguments(parser: argparse.ArgumentParser):
         parser.add_argument("--project-graph", help="Graph mode", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
+        parser.add_argument(
+            "--project-verbose",
+            help="i: info, d: debug, w: warning, e: error, c: critical; example: iwc (info, warning, critical)",
+            type=str,
+            default="")
         parser.add_argument("--project-debug", help="Debug mode", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
-        # parser.add_argument("--project-test", help="Test mode", **BOOL_AS_STR_ARGUMENTS_for_parser_add_argument)
-        parser.add_argument("--project-verbose", help="Verbosity level 0: not output 1: info 2: debug, default: 0",
-                            type=int, default=0)
         # parser.add_argument("--memory-path", "-mb", help="Baseline path", nargs="?", type=Path, default=None)
         # parser.add_argument("--config-file", help="Configuration file", type=open, action=_LoadArgumentsFromFile)
 
@@ -198,7 +201,7 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
         #     type=str,
         #     default="",
         # )
-        parser.add_argument("--seed", help="Random generator seed", type=int)
+        parser.add_argument("--seed", help="Random generator seed", type=int, default=int(time.time()))
         parser.add_argument("--device", help="Device (cpu, cuda, auto)", type=str, default="auto")
         parser.add_argument("---init-setup-model",
                             help="Whether or not to setup the model with default hyperparameters",

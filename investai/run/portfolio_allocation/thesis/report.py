@@ -29,7 +29,7 @@ class Report(Memory, WandbAPI):
         self.filepath = self.program.args.history_path.as_posix()
 
     def initialize_stats(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(
+        if "i" in self.program.args.project_verbose: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
         self.load_csv(self.filepath)
         self.returns_pivot_df = self.df.pivot(columns=["id"], values=["reward"])
@@ -53,10 +53,11 @@ class Report(Memory, WandbAPI):
         self.id_min = self.cumprod_returns_df.drop(self.baseline_columns, axis=1).iloc[-1].idxmin()
         self.id_max = self.cumprod_returns_df.drop(self.baseline_columns, axis=1).iloc[-1].idxmax()
 
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"END {inspect.currentframe().f_code.co_name}")
 
     def stats(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(
+        if "i" in self.program.args.project_verbose: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
 
         # Min Stats
@@ -166,13 +167,14 @@ class Report(Memory, WandbAPI):
 
         stats = stats_all(
             [min_stats, max_stats, dji_stats, gspc_stats, ixic_stats, rut_stats, max_sharpe_ratio, min_variance],
-            [self.id_min, self.id_max, "^DJI", "^GSPC", "^IXIC", "^RUT", "Max Sharpe Ratio", "Min Variance"]
+            [self.id_min, self.id_max, "^DJI", "^GSPC", "^IXIC", "^RUT", "Max Sharpe Ratio Portfolio",
+             "Min Variance Portfolio"]
         )
 
         print_stats_latex(
             stats,
-            columns=9,
-            column_width=0.08,
+            columns=stats.shape[1] + 1,
+            column_width=0.075,
             caption=f"Performance metrics of the models vs. indexes and strategies, "
                     f"during the testing period of {self.returns_pivot_df.index[0].strftime('%Y-%m-%d')} "
                     f"to {self.returns_pivot_df.index[-1].strftime('%Y-%m-%d')}.",
@@ -216,17 +218,18 @@ class Report(Memory, WandbAPI):
         stats = stats_all([min_stats, max_stats, ai4finance_stats, ], [self.id_min, self.id_max, "AI4Finance"])
         print_stats_latex(
             stats,
-            columns=4,
+            columns=stats.shape[1] + 1,
             column_width=0.2,
             caption=f"Performance metrics of the models vs. AI4Finance model, "
                     f"during the testing period of {date_start} to {date_end}.",
             label="tab:stats2",
             file_path=self.program.args.folder_figure.joinpath("stats2.tex"))
 
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"END {inspect.currentframe().f_code.co_name}")
 
     def returns_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(
+        if "i" in self.program.args.project_verbose: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
         baselines_df = self.cumprod_returns_df[self.baseline_columns]
 
@@ -237,10 +240,11 @@ class Report(Memory, WandbAPI):
         _: Axes = sns.lineplot(data=plot_df)
         plt.savefig(self.program.args.folder_figure.joinpath("returns.png"))
         plt.clf()  # Clear the current figure
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"END {inspect.currentframe().f_code.co_name}")
 
     def annual_returns_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(
+        if "i" in self.program.args.project_verbose: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
         # Min Annual returns
         pf.plot_annual_returns(self.returns_pivot_df[self.id_min])
@@ -262,10 +266,11 @@ class Report(Memory, WandbAPI):
         plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_ixic.png"))
         plt.clf()
 
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"END {inspect.currentframe().f_code.co_name}")
 
     def monthly_return_heatmap_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(
+        if "i" in self.program.args.project_verbose: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
         # Min Monthly returns heatmap
         pf.plot_monthly_returns_heatmap(self.returns_pivot_df[self.id_min])
@@ -290,10 +295,11 @@ class Report(Memory, WandbAPI):
         plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_ixic.png"))
         plt.clf()
         plt.cla()
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"END {inspect.currentframe().f_code.co_name}")
 
     def return_quantiles_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(
+        if "i" in self.program.args.project_verbose: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
         # Min Return quantiles
         pf.plot_return_quantiles(self.returns_pivot_df[self.id_min])
@@ -312,10 +318,11 @@ class Report(Memory, WandbAPI):
         plt.savefig(self.program.args.folder_figure.joinpath("return_quantiles_dji.png"))
         plt.clf()
         plt.cla()
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"END {inspect.currentframe().f_code.co_name}")
 
     def rolling_beta_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(
+        if "i" in self.program.args.project_verbose: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
         # Min Rolling beta
         pf.plot_rolling_beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
@@ -329,10 +336,11 @@ class Report(Memory, WandbAPI):
         plt.clf()
         plt.cla()
 
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"END {inspect.currentframe().f_code.co_name}")
 
     def rolling_sharpe_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(
+        if "i" in self.program.args.project_verbose: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
         # Min Rolling sharpe
         pf.plot_rolling_sharpe(self.returns_pivot_df[self.id_min])
@@ -351,10 +359,11 @@ class Report(Memory, WandbAPI):
         plt.savefig(self.program.args.folder_figure.joinpath("rolling_sharpe_dji.png"))
         plt.gcf()
         plt.cla()
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"END {inspect.currentframe().f_code.co_name}")
 
     def drawdown_underwater_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(
+        if "i" in self.program.args.project_verbose: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
 
         # Min Drawdown underwater
@@ -380,10 +389,11 @@ class Report(Memory, WandbAPI):
         plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_ixic.png"))
         plt.clf()
         plt.cla()
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"END {inspect.currentframe().f_code.co_name}")
 
     def drawdown_periods_figure(self):
-        if self.program.args.project_verbose > 0: self.program.log.info(
+        if "i" in self.program.args.project_verbose: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
 
         # Min Drawdown periods
@@ -403,7 +413,8 @@ class Report(Memory, WandbAPI):
         plt.savefig(self.program.args.folder_figure.joinpath("drawdown_periods_dji.png"))
         plt.clf()
         plt.cla()
-        if self.program.args.project_verbose > 0: self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if "i" in self.program.args.project_verbose: self.program.log.info(
+            f"END {inspect.currentframe().f_code.co_name}")
 
 
 class ReportTest:

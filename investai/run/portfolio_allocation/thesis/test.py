@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 """TODO docstring"""
+import time
+
 import wandb
 import inspect
 from stable_baselines3.common.vec_env import DummyVecEnv
@@ -45,10 +47,10 @@ class Test:
         env.close()
 
     def test(self, model_path: str, algorithm: str, deterministic=True) -> Memory:
-        if self.program.args.project_verbose:
+        if "i" in self.program.args.project_verbose:
             self.program.log.info(f"START {inspect.currentframe().f_code.co_name}")
             self.program.log.info(f"Loading model_path: {model_path}, algorithm: {algorithm}")
-        model = ALGORITHM_SB3_STR2CLASS[algorithm].load(model_path)
+        model = ALGORITHM_SB3_STR2CLASS[algorithm.lower()].load(model_path)
         # Environment
         environment: DummyVecEnv = EnvironmentInitializer(self.program,
                                                           self.dataset).portfolio_allocation(self.dataset.test_dataset)
@@ -57,11 +59,16 @@ class Test:
         # Iteration: TODO: "-2" because we don't want to go till terminal state, because the environment will be reset
 
         memory = Memory(self.program)
-        for i in range(self.program.args.test):
+        iterable1 = [(i, int(time.time() // i)) for i in range(1, self.program.args.test + 1)]
+        for i, seed in iterable1:
+            if "d" in self.program.args.project_verbose: self.program.log.info(model.seed)
+            model.set_random_seed(seed)
+            if "d" in self.program.args.project_verbose: self.program.log.info(model.seed)
+            if self.program.is_wandb_enabled(check_init=True): wandb.config[f"seed_test_{i}"] = seed
             obs = environment.reset()
             iterable = (
                 trange(len(env_unwrapped.dataset.index.unique()) - 2, desc="Test")
-                if self.program.args.project_verbose
+                if "i" in self.program.args.project_verbose
                 else range(len(env_unwrapped.dataset.index.unique()) - 2)
             )
             for _ in iterable:
@@ -80,27 +87,26 @@ class Test:
                 memory.df.rename(columns={'reward': f'reward_{i}'}, inplace=True)
 
         if self.program.is_wandb_enabled():
-            self.create_summary(env_unwrapped.memory, env_unwrapped.dataset)
+            self.create_summary(memory, env_unwrapped.dataset)
 
-        if self.program.args.project_verbose:
+        if "i" in self.program.args.project_verbose:
             self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
         return memory
 
     def create_summary(self, memory: Memory, dataset: pd.DataFrame):
+        rewards = {f"test/total_reward_{i}": (memory.df[f"reward_{i}"] + 1).cumprod().iloc[-1]
+                   for i in range(1, self.program.args.test + 1)}
         info = {
-            # Rewards
-            "test/total_reward": (memory.df["reward"] + 1).cumprod().iloc[-1],
-            # TODO: reward annualized
             # Dates
             "test/dataset_start_date": str(dataset["date"].unique()[0]),
             "test/dataset_end_date": str(dataset["date"].unique()[-1]),
             "test/start_date": str(dataset["date"].unique()[0]),
             "test/end_date": memory.df["date"].iloc[-1],
-            # Ratios
-            "test/sharpe_ratio": calculate_sharpe_ratio(memory.df["reward"]),
-            # TODO: Calmar ratio
         }
-        wandb_summary(info)
+        ratios = {f"test/sharpe_ratio_{i}": calculate_sharpe_ratio(memory.df[f"reward_{i}"])
+                  for i in range(1, self.program.args.test + 1)}
+        summary_dict = {**rewards, **info, **ratios}
+        wandb_summary(summary_dict)
 
     def create_baseline_chart(self, memory_env: Memory):
         memory_env.df['date'] = pd.to_datetime(memory_env.df['date'], format='%Y-%m-%d')

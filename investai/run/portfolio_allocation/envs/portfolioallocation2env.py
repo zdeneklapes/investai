@@ -118,10 +118,11 @@ class PortfolioAllocation2Env(gym.Env):
 
     def seed(self, seed=None):
         seed = self._seed(seed)
-        if self.program.args.project_debug: self.program.log.debug(f"Seed: {seed}")
+        if "d" in self.program.args.project_verbose: self.program.log.debug(f"Seed: {seed}")
         return seed
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
-        if self.program.args.project_debug: self.program.log.debug(f"Seed: {seed}, np_random: {self.np_random}")
+        if "d" in self.program.args.project_verbose: self.program.log.debug(
+            f"Seed: {seed}, np_random: {self.np_random}")
         return [seed]

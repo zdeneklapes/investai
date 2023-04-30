@@ -59,7 +59,7 @@ class StockFaDailyDataset(Memory):
     @property
     def train_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
-        if self.program.args.project_verbose > 0:
+        if "i" in self.program.args.project_verbose:
             self.program.log.info(
                 f"Train dataset from {self.df['date'].iloc[0]} to {DE.get_split_date(self.df, self.dataset_split_coef)}"
                 # noqa
@@ -88,7 +88,7 @@ class StockFaDailyDataset(Memory):
     def get_stock_dataset(self) -> pd.DataFrame:
         df = pd.DataFrame()
 
-        iterable = tqdm(self.tickers) if self.program.args.project_verbose > 0 else self.tickers
+        iterable = tqdm(self.tickers) if "i" in self.program.args.project_verbose else self.tickers
         for tic in iterable:
             if isinstance(iterable, tqdm):
                 iterable.set_description(f"Processing {tic}")

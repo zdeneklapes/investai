@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from argparse import Namespace
 from typing import List
+import wandb
 
 from loguru import logger
 from shared.arguments import parse_arguments, ArgumentOption
@@ -32,5 +33,8 @@ class Program:
             "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key} |{value}|" for key, value in vars(self.args).items()])),
         )
 
-    def is_wandb_enabled(self):
-        return self.args.wandb or self.args.wandb_sweep
+    def is_wandb_enabled(self, check_init: bool = True):
+        if check_init:
+            return (self.args.wandb or self.args.wandb_sweep) and wandb.run is not None
+        else:
+            return self.args.wandb or self.args.wandb_sweep

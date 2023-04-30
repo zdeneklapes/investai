@@ -70,7 +70,7 @@ class StockTaDailyDataset(Memory):
     @property
     def train_dataset(self) -> pd.DataFrame:
         """Split dataset into train and test"""
-        if self.program.args.project_verbose > 0:
+        if "i" in self.program.args.project_verbose:
             self.program.log.info(
                 f"Train dataset from {self.df['date'].iloc[0]} to {DE.get_split_date(self.df, self.dataset_split_coef)}"
                 # noqa
@@ -99,7 +99,7 @@ class StockTaDailyDataset(Memory):
     def get_stock_dataset(self) -> pd.DataFrame:
         df = pd.DataFrame()
 
-        iterable = tqdm(self.tickers, leave=False) if self.program.args.project_verbose > 0 else self.tickers
+        iterable = tqdm(self.tickers, leave=False) if "i" in self.program.args.project_verbose else self.tickers
         for tic in iterable:
             if isinstance(iterable, tqdm): iterable.set_description(f"Processing {tic}")
             # Load tickers raw_data
@@ -199,7 +199,7 @@ class StockTaDailyDataset(Memory):
         #     iterable = tqdm(dict(TA.__dict__).items())
         #     # iterable = tqdm(dict(VORTEX=TA.VORTEX).items())
         # else:
-        iterable = (tqdm(self.TA_functions.items(), leave=False) if self.program.args.project_verbose > 0
+        iterable = (tqdm(self.TA_functions.items(), leave=False) if "i" in self.program.args.project_verbose
                     else self.TA_functions.items())
 
         for name, func in iterable:
@@ -255,7 +255,7 @@ class StockTaDailyDataset(Memory):
 class TestStockTaDailyDataset:
     def __init__(self):
         self.program: Program = Program()
-        self.program.args.project_verbose = 1
+        "i" in self.program.args.project_verbose
         self.program.args.debug = 1
 
     def t1(self) -> Dict:
