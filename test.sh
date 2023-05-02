@@ -1,5 +1,15 @@
 function prepare_all_files() {
+    rm -rf out
+    mkdir -p out/baseline out/dataset out/model
+    wandb artifact get investai/portfolio-allocation/stockfadailydataset:latest --root out/dataset
+    wandb artifact get investai/portfolio-allocation/stocktadailydataset:latest --root out/dataset
+    wandb artifact get investai/portfolio-allocation/stockcombineddailydataset:latest --root out/dataset
 
+    # Baseline
+    wandb artifact get investai/portfolio-allocation/baseline:latest --root out/baseline
+
+    # History
+    wandb artifact get investai/portfolio-allocation/history:latest --root out/model
 }
 
 function test_all() {
@@ -97,7 +107,7 @@ function test_all() {
     )
 
     #    for cmd in "${cmds[@]}"; do
-    for cmd in 1 2 3; do
+    for cmd in "${cmds[@]}"; do
         echo "Running: ${cmd}"
         eval "${cmd}"
         if [ $? -eq 0 ]; then OK_SCRIPTS+=("${cmd}"); else ERROR_SCRIPTS+=("${cmd}"); fi
@@ -108,4 +118,11 @@ function test_all() {
     for error_script in "${ERROR_SCRIPTS[@]}"; do echo "${error_script}"; done
 }
 
-test_all
+[[ "$#" -eq 0 ]] && usage && exit 0
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+    '--prepare-files') prepare_all_files ;;
+    '--test') test_all ;;
+    esac
+    shift
+done
