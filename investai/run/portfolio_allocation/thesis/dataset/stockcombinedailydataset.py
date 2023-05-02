@@ -38,7 +38,7 @@ def main():
     dataset.save_csv(file_path.as_posix())
 
     # Save to wandb
-    if program.args.wandb:
+    if program.is_wandb_enabled():
         log_artifact(program.args, file_path.as_posix(), file_path.name.split('.')[0], "dataset",
                      {"path": file_path.as_posix()})
 

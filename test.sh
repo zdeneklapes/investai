@@ -1,3 +1,7 @@
+function prepare_all_files() {
+
+}
+
 function test_all() {
     source venv3.10/bin/activate
     OK_SCRIPTS=()
@@ -7,18 +11,18 @@ function test_all() {
         # train.py: Run
         "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/train.py  \
             --dataset-paths out/dataset/stockfadailydataset.csv \
-            --wandb=1 \
-            --wandb-sweep=0 \
-            --wandb-sweep-count=1 \
             --algorithms sac \
             --project-verbose=1 \
             --train-verbose=1 \
-            --wandb-verbose=1 \
             --total-timesteps=1000 \
             --train=1 \
             --test=1 \
             --env-id=1 \
-            --wandb-run-group='test-1' '
+            --wandb=1 \
+            --wandb-sweep=0 \
+            --wandb-sweep-count=1 \
+            --wandb-run-group='test-1' \
+            --wandb-verbose=1 \
             --baseline-path=out/baseline/baseline.csv"
 
         # train.py: Sweep
@@ -31,7 +35,7 @@ function test_all() {
             --project-verbose='id' \
             --train-verbose=1 \
             --wandb-verbose=1 \
-            --total-timesteps=100000 \
+            --total-timesteps=1000 \
             --train=1 \
             --test=1 \
             --env-id=1 \

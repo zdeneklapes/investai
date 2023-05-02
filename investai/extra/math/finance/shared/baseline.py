@@ -121,7 +121,7 @@ class Baseline(Memory):
         self.merge_with_df(rewards)
 
     def merge_with_df(self, rewards: pd.DataFrame, date_format: str = "%Y-%m-%d") -> NoReturn:
-        rewards['date'] = pd.to_datetime(rewards["date"], format=date_format)
+        rewards["date"] = rewards['date'].apply(lambda x: np.datetime64(x, "D"))
         if self.df.empty:
             self.df = rewards
         else:
@@ -233,10 +233,9 @@ def main():
     baseline.save_csv(file_path=program.args.baseline_path.as_posix())
 
     # Save to wandb
-    if program.args.wandb:
+    if program.is_wandb_enabled():
         log_artifact(program.args, program.args.baseline_path.as_posix(), program.args.baseline_path.name.split('.')[0],
-                     "baseline",
-                     {"path": program.args.baseline_path.as_posix()})
+                     "baseline", {"path": program.args.baseline_path.as_posix()})
 
 
 if __name__ == "__main__":

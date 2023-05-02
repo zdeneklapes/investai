@@ -324,7 +324,7 @@ def main():
     dataset.save_csv(file_path)
 
     # Save to wandb
-    if program.args.wandb:
+    if program.is_wandb_enabled():
         log_artifact(program.args, file_path, file_path.name.split('.')[0], "dataset", {"path": file_path.as_posix()})
 
 
