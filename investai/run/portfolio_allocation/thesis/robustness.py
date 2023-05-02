@@ -10,6 +10,7 @@ from shared.reload import reload_module  # noqa
 import json
 from run.shared.sb3.sweep_configuration import sweep_configuration
 from run.portfolio_allocation.thesis.train import main as train_main
+from run.portfolio_allocation.thesis.report import print_stats_latex
 
 
 class Robustness:
@@ -75,6 +76,7 @@ class Robustness:
 
     def test_best_models(self):
         history_df = pd.read_csv(self.program.args.history_path, index_col=0)
+        id = self.find_the_best_model_id()
         returns_pivot_df = history_df.pivot(columns=["group", "id"], values=["reward"])
         returns_pivot_df.columns = returns_pivot_df.columns.droplevel(0)
         # Set first rows on 0
@@ -83,7 +85,24 @@ class Robustness:
              returns_pivot_df]
         ).reset_index(drop=True)
         groups_df = returns_pivot_df["run-nasfit-robust-3"]
-        return groups_df
+        cumprod_returns_df = (groups_df + 1).cumprod()
+        returns_robust_df: pd.Series = cumprod_returns_df.iloc[-1]
+        best_model_return = (returns_pivot_df['sweep-nasfit-6', id] + 1).cumprod().iloc[-1]
+        returns_robust_df[id] = best_model_return
+        df = returns_robust_df.to_frame()
+        df.columns = ["test/total_reward"]
+        mean = df["test/total_reward"].mean().round(3)
+        print_stats_latex(
+            df,
+            2,
+            0.2,
+            f"Robust Test: Trained models using hyperparameters from the best model trained using sweep. "
+            f"The mean is {mean} and the spead between the highest and the lowest is reward "
+            f"is {(df['test/total_reward'].max() - df['test/total_reward'].min()).round(3)}.",
+            "tab:robust",
+            file_path=self.program.args.folder_figure.joinpath("robust.tex"),
+            highlight=False,
+            vspace="0cm")
 
 
 class TestRobustness:
