@@ -22,6 +22,45 @@ MARKET_OPEN_DAYS = 252
 # TODO: Add comparison in the exact same date as AI4Finance
 # TODO: Training and testing with the best data
 
+def print_stats_latex(stats: pd.DataFrame, columns: int, column_width: float, caption: str, label: str,
+                      file_path: str = None, highlight: bool = True, vspace="0.5cm"):
+    # Remove duplicate values
+    for i, row in stats.iterrows():
+        duplicate_mask = row.duplicated()
+        if any(duplicate_mask):
+            stats.loc[i, duplicate_mask] += 0.001
+
+    styler: pd.io.formats.style.Styler = stats.style
+
+    def highlight_max(s: pd.Series):
+        val_max = s.max()
+        return ["color: #00F000; font-weight: bold" if v == val_max else "" for v in s.values]
+
+    if highlight: styler.apply(highlight_max, axis=1)
+    styler.applymap_index(lambda v: "font-weight: bold;", axis="index")
+    styler.applymap_index(lambda v: "font-weight: bold;", axis="columns")
+    styler.format(precision=3)
+    latex = styler.to_latex(
+        column_format="*{%d}{|m{%.2f\\linewidth}|}" % (columns, column_width),
+        caption=caption,
+        hrules=True,
+        position="ht!",
+        position_float="centering",
+        convert_css=True,
+        label=label,
+    )
+    latex = latex.replace(r"\\", r"\\[%s]" % vspace)
+    latex = latex.replace(r"^", r"\^")
+    latex = latex.replace(r"\begin{tabular}", r"{\footnotesize\begin{tabular}")
+    latex = latex.replace(r"\end{tabular}", r"\end{tabular}}")
+    latex = latex.replace(r"_", r"\_")
+
+    if file_path is not None:
+        with open(file_path, "w") as f:
+            f.write(latex)
+    else:
+        print(latex)
+
 
 class Report(Memory, WandbAPI):
     def __init__(self, program: Program):
@@ -127,44 +166,6 @@ class Report(Memory, WandbAPI):
             stats.to_csv(self.program.args.folder_figure.joinpath("stats.csv"))
             return stats
 
-        def print_stats_latex(stats: pd.DataFrame, columns: int, column_width: float, caption: str, label: str,
-                              file_path: str = None):
-            # Remove duplicate values
-            for i, row in stats.iterrows():
-                duplicate_mask = row.duplicated()
-                if any(duplicate_mask):
-                    stats.loc[i, duplicate_mask] += 0.001
-
-            styler: pd.io.formats.style.Styler = stats.style
-
-            def highlight_max(s: pd.Series):
-                val_max = s.max()
-                return ["color: #00F000; font-weight: bold" if v == val_max else "" for v in s.values]
-
-            styler.apply(highlight_max, axis=1)
-            styler.applymap_index(lambda v: "font-weight: bold;", axis="index")
-            styler.applymap_index(lambda v: "font-weight: bold;", axis="columns")
-            styler.format(precision=3)
-            latex = styler.to_latex(
-                column_format="*{%d}{|m{%.2f\\linewidth}|}" % (columns, column_width),
-                caption=caption,
-                hrules=True,
-                position="ht!",
-                position_float="centering",
-                convert_css=True,
-                label=label,
-            )
-            latex = latex.replace(r"\\", r"\\[0.5cm]")
-            latex = latex.replace(r"^", r"\^")
-            latex = latex.replace(r"\begin{tabular}", r"{\footnotesize\begin{tabular}")
-            latex = latex.replace(r"\end{tabular}", r"\end{tabular}}")
-
-            if file_path is not None:
-                with open(file_path, "w") as f:
-                    f.write(latex)
-            else:
-                print(latex)
-
         stats = stats_all(
             [min_stats, max_stats, dji_stats, gspc_stats, ixic_stats, rut_stats, max_sharpe_ratio, min_variance],
             [self.id_min, self.id_max, "^DJI", "^GSPC", "^IXIC", "^RUT", "Max Sharpe Ratio Portfolio",
@@ -175,7 +176,7 @@ class Report(Memory, WandbAPI):
             stats,
             columns=stats.shape[1] + 1,
             column_width=0.075,
-            caption=f"Performance metrics of the models vs. indexes and strategies, "
+            caption="Performance metrics of the models vs. indexes and strategies, "
                     f"during the testing period of {self.returns_pivot_df.index[0].strftime('%Y-%m-%d')} "
                     f"to {self.returns_pivot_df.index[-1].strftime('%Y-%m-%d')}.",
             label="tab:stats",
@@ -257,12 +258,12 @@ class Report(Memory, WandbAPI):
         plt.clf()
 
         # DJI Annual returns
-        pf.plot_annual_returns(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        pf.plot_annual_returns(self.returns_pivot_df["^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_dji.png"))
         plt.clf()
 
         # IXIC Annual returns
-        pf.plot_annual_returns(self.returns_pivot_df[f"{self.id_baseline}_^IXIC"])
+        pf.plot_annual_returns(self.returns_pivot_df["^IXIC"])
         plt.savefig(self.program.args.folder_figure.joinpath("annual_returns_ixic.png"))
         plt.clf()
 
@@ -285,13 +286,13 @@ class Report(Memory, WandbAPI):
         plt.cla()
 
         # DJI Monthly returns heatmap
-        pf.plot_monthly_returns_heatmap(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        pf.plot_monthly_returns_heatmap(self.returns_pivot_df["^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_dji.png"))
         plt.clf()
         plt.cla()
 
         # IXIC Monthly returns heatmap
-        pf.plot_monthly_returns_heatmap(self.returns_pivot_df[f"{self.id_baseline}_^IXIC"])
+        pf.plot_monthly_returns_heatmap(self.returns_pivot_df["^IXIC"])
         plt.savefig(self.program.args.folder_figure.joinpath("monthly_returns_heatmap_ixic.png"))
         plt.clf()
         plt.cla()
@@ -314,7 +315,7 @@ class Report(Memory, WandbAPI):
         plt.cla()
 
         # DJI Return quantiles
-        pf.plot_return_quantiles(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        pf.plot_return_quantiles(self.returns_pivot_df["^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("return_quantiles_dji.png"))
         plt.clf()
         plt.cla()
@@ -325,13 +326,13 @@ class Report(Memory, WandbAPI):
         if "i" in self.program.args.project_verbose: self.program.log.info(
             f"START {inspect.currentframe().f_code.co_name}")
         # Min Rolling beta
-        pf.plot_rolling_beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        pf.plot_rolling_beta(self.returns_pivot_df[self.id_min], self.returns_pivot_df["^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("rolling_beta_min.png"))
         plt.clf()
         plt.cla()
 
         # Max Rolling beta
-        pf.plot_rolling_beta(self.returns_pivot_df[self.id_max], self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        pf.plot_rolling_beta(self.returns_pivot_df[self.id_max], self.returns_pivot_df["^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("rolling_beta_max.png"))
         plt.clf()
         plt.cla()
@@ -355,7 +356,7 @@ class Report(Memory, WandbAPI):
         plt.cla()
 
         # DJI Rolling sharpe
-        pf.plot_rolling_sharpe(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        pf.plot_rolling_sharpe(self.returns_pivot_df["^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("rolling_sharpe_dji.png"))
         plt.gcf()
         plt.cla()
@@ -379,13 +380,13 @@ class Report(Memory, WandbAPI):
         plt.cla()
 
         # DJI Drawdown underwater
-        pf.plot_drawdown_underwater(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        pf.plot_drawdown_underwater(self.returns_pivot_df["^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_dji.png"))
         plt.clf()
         plt.cla()
 
         # GSPC
-        pf.plot_drawdown_underwater(self.returns_pivot_df[f"{self.id_baseline}_^IXIC"])
+        pf.plot_drawdown_underwater(self.returns_pivot_df["^IXIC"])
         plt.savefig(self.program.args.folder_figure.joinpath("drawdown_underwater_ixic.png"))
         plt.clf()
         plt.cla()
@@ -409,7 +410,7 @@ class Report(Memory, WandbAPI):
         plt.cla()
 
         # DJI Drawdown periods
-        pf.plot_drawdown_periods(self.returns_pivot_df[f"{self.id_baseline}_^DJI"])
+        pf.plot_drawdown_periods(self.returns_pivot_df["^DJI"])
         plt.savefig(self.program.args.folder_figure.joinpath("drawdown_periods_dji.png"))
         plt.clf()
         plt.cla()
@@ -446,27 +447,26 @@ class ReportTest:
 
 def t():
     report_test = ReportTest()
-    report_test.drawdown_periods_test()
+    report_test.stats_test()
     return report_test
 
 
 def main():
     program: Program = Program()
-    if program.args.project_verbose > 0: program.log.info("Start report")
+    if "i" in program.args.project_verbose: program.log.info("Start report")
     report: Report = Report(program=program)
     if program.args.report_download_history: report.download_test_history()
     if program.args.report_figure:
         report.initialize_stats()
         report.stats()
-        # report.returns_figure()
-        # report.annual_returns_figure()
-        # report.monthly_return_heatmap_figure()
-        # report.return_quantiles_figure()
-        # report.rolling_beta_figure()
-        # report.rolling_sharpe_figure()
-        # report.drawdown_underwater_figure()
-        # wandbstats.drawdown_periods_figure() # TODO: Fix this
-    if program.args.project_verbose > 0: program.log.info("End report")
+        report.returns_figure()
+        report.annual_returns_figure()
+        report.monthly_return_heatmap_figure()
+        report.return_quantiles_figure()
+        report.rolling_beta_figure()
+        report.rolling_sharpe_figure()
+        report.drawdown_underwater_figure()
+    if "i" in program.args.project_verbose: program.log.info("End report")
     return None
 
 
