@@ -8,6 +8,35 @@ function test_all() {
     ERROR_SCRIPTS=()
 
     cmds=(
+        # stockfadailydataset.py
+        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/dataset/stockfadailydataset.py \
+        --project-verbose='i' \
+        --dataset-paths=out/dataset/stockfadailydataset.csv \
+        --wandb=1"
+
+        # stocktadailydataset.py
+        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/dataset/stocktadailydataset.py \
+            --project-verbose='i' \
+            --dataset-paths=out/dataset/stocktadailydataset.csv \
+            --wandb=1"
+        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/dataset/stocktadailydataset.py --project-verbose='i' -dp=out/dataset/stocktadailydataset_1.csv --wandb=1"
+
+        # stockcombineddailydataset.py
+        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/train.py \
+            --project-verbose='id'"
+
+        # baseline.py
+        "PYTHONPATH=$PWD/investai python3 investai/extra/math/finance/shared/baseline.py \
+            --project-verbose='i' \
+            --dataset-paths out/dataset/stockfadailydataset.csv \
+            --baseline-path=out/baseline/baseline.csv"
+
+        # wandbapi.py
+        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/wandbapi.py \
+            --project-verbose=1 \
+            --baseline-path=out/baseline/baseline.csv \
+            --history-path=out/model/history.csv"
+
         # train.py: Run
         "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/train.py  \
             --dataset-paths out/dataset/stockfadailydataset.csv \
@@ -28,18 +57,18 @@ function test_all() {
         # train.py: Sweep
         "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/train.py \
             --dataset-paths out/dataset/stockfadailydataset.csv out/dataset/stocktadailydataset.csv out/dataset/stockcombineddailydataset.csv \
-            --wandb=1 \
-            --wandb-sweep=1 \
-            --wandb-sweep-count=1 \
-            --algorithms ppo a2c td3 sac dqn ddpg \
+            --algorithms ppo a2c \
             --project-verbose='id' \
             --train-verbose=1 \
-            --wandb-verbose=1 \
             --total-timesteps=1000 \
             --train=1 \
             --test=1 \
             --env-id=1 \
+            --wandb=1 \
+            --wandb-sweep=1 \
+            --wandb-sweep-count=1 \
             --wandb-run-group='test-sweep-1' \
+            --wandb-verbose=1 \
             --baseline-path=out/baseline/baseline.csv"
 
         # report.py
@@ -50,49 +79,21 @@ function test_all() {
             --report-figure"
 
         # robustness.py
-        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/robustness.py \
-            --dataset-paths out/dataset/stockfadailydataset.csv \
-            --wandb=1 \
-            --wandb-sweep=0 \
-            --wandb-sweep-count=1 \
-            --project-verbose='id' \
-            --train-verbose=1 \
-            --wandb-verbose=1 \
-            --train=1 \
-            --test=1 \
-            --env-id=1 \
-            --wandb-run-group='run-robust-1' \
-            --baseline-path=out/baseline/baseline.csv \
-            --history-path=out/model/history.csv"
+        #        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/robustness.py \
+        #            --dataset-paths out/dataset/stockfadailydataset.csv \
+        #            --wandb=1 \
+        #            --wandb-sweep=0 \
+        #            --wandb-sweep-count=1 \
+        #            --project-verbose='id' \
+        #            --train-verbose=1 \
+        #            --wandb-verbose=1 \
+        #            --train=1 \
+        #            --test=1 \
+        #            --env-id=1 \
+        #            --wandb-run-group='run-robust-1' \
+        #            --baseline-path=out/baseline/baseline.csv \
+        #            --history-path=out/model/history.csv"
 
-        # baseline.py
-        "PYTHONPATH=$PWD/investai python3 investai/extra/math/finance/shared/baseline.py \
-            --project-verbose='i' \
-            --dataset-paths out/dataset/stockfadailydataset.csv \
-            --baseline-path=out/baseline/baseline.csv"
-
-        # stockfadailydataset.py
-        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/dataset/stockfadailydataset.py \
-        --project-verbose='i' \
-        --dataset-paths=out/dataset/stockfadailydataset.csv \
-        --wandb=1"
-
-        # stocktadailydataset.py
-        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/dataset/stocktadailydataset.py \
-            --project-verbose='i' \
-            --dataset-paths=out/dataset/stocktadailydataset.csv \
-            --wandb=1"
-        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/dataset/stocktadailydataset.py --project-verbose='i' -dp=out/dataset/stocktadailydataset_1.csv --wandb=1"
-
-        # stockcombineddailydataset.py
-        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/train.py \
-            --project-verbose='id'"
-
-        # wandbapi.py
-        "PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/thesis/wandbapi.py \
-            --project-verbose=1 \
-            --baseline-path=out/baseline/baseline.csv \
-            --history-path=out/model/history.csv"
     )
 
     #    for cmd in "${cmds[@]}"; do

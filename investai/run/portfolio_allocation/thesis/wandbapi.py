@@ -11,6 +11,7 @@ from tqdm import tqdm
 from extra.math.finance.shared.baseline import Baseline
 from shared.program import Program
 from shared.reload import reload_module  # noqa
+from shared.utils import log_artifact
 
 
 class WandbAPI:
@@ -88,10 +89,16 @@ class WandbAPI:
         assert df.groupby(['id']).size().unique().size == 1, "All runs should have the same number of samples"
 
         df.to_csv(self.program.args.history_path.as_posix(), index=True)
-        if "i" in self.program.args.project_verbose: self.program.log.info(
-            f"History downloaded and saved to {self.program.args.history_path.as_posix()}")
-        if "i" in self.program.args.project_verbose: self.program.log.info(
-            f"END {inspect.currentframe().f_code.co_name}")
+        if "i" in self.program.args.project_verbose:
+            self.program.log.info(f"History saved to {self.program.args.history_path.as_posix()}")
+        if "i" in self.program.args.project_verbose:
+            self.program.log.info(f"END {inspect.currentframe().f_code.co_name}")
+        if self.program.is_wandb_enabled(check_init=False):
+            log_artifact(self.program.args,
+                         self.program.args.history_path.as_posix(),
+                         self.program.args.history_path.name.split('.')[0],
+                         "history",
+                         {"path": self.program.args.history_path.as_posix()})
         return df
 
 
