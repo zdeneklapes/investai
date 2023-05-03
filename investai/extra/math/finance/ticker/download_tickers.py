@@ -23,8 +23,9 @@ problem_tickers = []
 
 
 def get_dir_path(program: Program) -> Path:
-    return program.args.folder_data.joinpath(
-        'test_ticker') if program.args.project_debug else program.args.folder_data.joinpath("ticker")
+    return program.args.folder_data.joinpath('test_ticker') \
+        if program.args.project_debug \
+        else program.args.folder_data.joinpath("ticker")
 
 
 def config(program: Program):
