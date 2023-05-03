@@ -50,6 +50,7 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
         def create_dirs(args):
             args.folder_ticker.mkdir(parents=True, exist_ok=True)
             args.folder_out.mkdir(parents=True, exist_ok=True)
+            args.folder_data.mkdir(parents=True, exist_ok=True)
             args.folder_dataset.mkdir(parents=True, exist_ok=True)
             args.folder_figure.mkdir(parents=True, exist_ok=True)
             args.folder_baseline.mkdir(parents=True, exist_ok=True)
@@ -60,6 +61,7 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
 
         if args.folder_ticker is None: args.folder_ticker = args.folder_root.joinpath("data/ticker")
         if args.folder_out is None: args.folder_out: Path = args.folder_root.joinpath("out")
+        if args.folder_data is None: args.folder_data: Path = args.folder_out.joinpath("data")
         if args.folder_dataset is None: args.folder_dataset: Path = args.folder_out.joinpath("dataset")
         if args.folder_figure is None: args.folder_figure: Path = args.folder_out.joinpath("figure")
         if args.folder_baseline is None: args.folder_baseline: Path = args.folder_out.joinpath("baseline")
@@ -102,6 +104,8 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
                             default=find_git_root(Path(__file__).parent))
         parser.add_argument("--folder-ticker", help="Path to ticker data folder", nargs="?", type=Path, default=None)
         parser.add_argument("--folder-out", help="Path to output data folder", nargs="?", type=Path, default=None)
+        parser.add_argument("--folder-data", help="Path to data folder", nargs="?", type=Path,
+                            default=find_git_root(Path(__file__).parent).joinpath("data"))
         parser.add_argument("--folder-dataset", help="Path to datasets folder", nargs="?", type=Path, default=None)
         parser.add_argument("--folder-figure", help="Path to figures folder", nargs="?", type=Path, default=None)
         parser.add_argument("--folder-baseline", help="Path to baselines folder", nargs="?", type=Path, default=None)

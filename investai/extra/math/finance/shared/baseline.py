@@ -22,9 +22,6 @@ import yfinance as yf
 from shared.utils import log_artifact
 
 
-# TODO: add baseline S@P500
-# TODO: add baseline DJI30
-
 class Baseline(Memory):
     def __init__(self, program: Program, df: pd.DataFrame = pd.DataFrame()):
         super().__init__(program, df)
@@ -54,7 +51,7 @@ class Baseline(Memory):
         cleaned_weights_max_quadratic_utility = ef.clean_weights()
         assert sum(cleaned_weights_max_quadratic_utility.values()) <= 1 + round_float_correction
         ef = EfficientFrontier(mean, s, weight_bounds=bounds)
-        ef.max_sharpe(risk_free_rate=-10.0)  # FIXME: -10.0 is a hack, should be ?, but it works
+        ef.max_sharpe(risk_free_rate=-10.0)  # FIXME: -10.0 is a hack (but it works). What should it be?
         cleaned_weights_max_sharpe = ef.clean_weights()
         assert sum(cleaned_weights_max_sharpe.values()) <= 1 + round_float_correction
         return {
@@ -229,7 +226,8 @@ def main():
     baseline.pypfopt_returns(dataset=df, bounds=(0, 1))
     baseline.indexes_returns()
     baseline.df.reset_index(inplace=True, drop=True)
-    # TODO: add baseline Warren Buffet; NOTE: dataset_path needn't be defined
+    # TODO: add baseline Warren Buffet
+    # NOTE: dataset_path needn't be defined
     baseline.save_csv(file_path=program.args.baseline_path.as_posix())
 
     # Save to wandb

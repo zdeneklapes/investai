@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-# TODO Dataset: TA
-# TODO Dataset: TA + FA
-# TODO: action +1 more action from 30 actions increase to 31 actions, because Agent can also decide for cash
-# TODO: make it more reusable, so change self.features to self.not_include_in_observation_columns
 from typing import Any, Dict, Final, List
 
-# FIXME: Stable-baselines3 requires gym.spaces not gymnasium.spaces
+# TODO: Stable-baselines3 requires gym.spaces not gymnasium.spaces (change it in future)
 import gym
 import numpy as np
 import pandas as pd
@@ -79,11 +75,9 @@ class PortfolioAllocation2Env(gym.Env):
     @property
     def _terminal(self) -> bool:
         """Check if the episode is terminated"""
-        # TODO: portfolio_value <= 0
         return self._time >= len(self.dataset.index.unique()) - 1
 
     def step(self, action: np.ndarray):
-        # TODO: Why is softmax used here?
         self._time += 1  # Go to next raw_data (State & Observation Space)
         normalized_actions: np.ndarray = softmax(action)  # action are the tickers weight in the portfolio
 

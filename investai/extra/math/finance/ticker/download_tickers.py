@@ -1,56 +1,38 @@
 # -*- coding: utf-8 -*-
-from rl.data.CompanyInfo import CompanyInfo
-from common.utils import now_time
-from configuration.settings import ProjectDir
-import os
-import sys
-import copy
-import warnings
+from shared.utils import now_time
 import concurrent.futures
-from typing import Dict, List, Optional
+import copy
 import dataclasses
-from pathlib import Path
+import os
+import warnings
 from datetime import datetime
+from pathlib import Path
+from typing import Dict, List
+
+import fundamentalanalysis as fa
+import matplotlib
 
 import pandas as pd
-import matplotlib
 import tqdm
-import fundamentalanalysis as fa
 from dotenv import load_dotenv
-
-sys.path.append("./src/")
-sys.path.append("./")
-sys.path.append("../")
-sys.path.append("../../")
-sys.path.append("../../../")
-
+from shared.ticker import Ticker  # Previously CompanyInfo # noqa
+from shared.program import Program
 
 tickers_type = List[Dict[str, pd.DataFrame]]
 problem_tickers = []
 
 
-@dataclasses.dataclass
-class Program:
-    prj_dir: ProjectDir
-    api_key: Optional[str] = None
-    DEBUG: bool = False
-
-
 def get_dir_path(program: Program) -> Path:
-    return program.prj_dir.data.test_tickers if program.DEBUG else program.prj_dir.data.tickers
+    return program.args.folder_data.joinpath(
+        'test_ticker') if program.args.project_debug else program.args.folder_data.joinpath("ticker")
 
 
 def config(program: Program):
-    ##
-    warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
+    warnings.filterwarnings("ignore", category=UserWarning)  # NOTE: zipline warnings
     warnings.filterwarnings("ignore", category=DeprecationWarning)
     warnings.filterwarnings("ignore", category=FutureWarning)
     warnings.filterwarnings("ignore", category=RuntimeWarning)
-
-    ##
     matplotlib.use("Agg")
-
-    ##
     load_dotenv(program.prj_dir.root.joinpath("env/.env"))
     try:
         os.getenv("FINANCIAL_MODELING_PREP_API")
@@ -67,29 +49,29 @@ def download(symbols: list, api_key: str, period: str = "quarter") -> tickers_ty
         problem = False
 
         key_cb = {
-            CompanyInfo.Names.profile.value: fa.profile,
-            CompanyInfo.Names.quotes.value: fa.quote,
-            CompanyInfo.Names.enterprise_value.value: fa.enterprise,
-            CompanyInfo.Names.data_detailed.value: fa.stock_data_detailed,
-            CompanyInfo.Names.dividends.value: fa.stock_dividend,
-            CompanyInfo.Names.ratings.value: fa.rating,
+            Ticker.Names.profile.value: fa.profile,
+            Ticker.Names.quotes.value: fa.quote,
+            Ticker.Names.enterprise_value.value: fa.enterprise,
+            Ticker.Names.data_detailed.value: fa.stock_data_detailed,
+            Ticker.Names.dividends.value: fa.stock_dividend,
+            Ticker.Names.ratings.value: fa.rating,
         }
         key_cb_period = {
-            CompanyInfo.Names.balance_sheet.value: fa.balance_sheet_statement,
-            CompanyInfo.Names.income.value: fa.income_statement,
-            CompanyInfo.Names.cash_flow.value: fa.cash_flow_statement,
-            CompanyInfo.Names.key_metrics.value: fa.key_metrics,
-            CompanyInfo.Names.financial_ratios.value: fa.financial_ratios,
-            CompanyInfo.Names.growth.value: fa.financial_statement_growth,
-            CompanyInfo.Names.dcf.value: fa.discounted_cash_flow,
+            Ticker.Names.balance_sheet.value: fa.balance_sheet_statement,
+            Ticker.Names.income.value: fa.income_statement,
+            Ticker.Names.cash_flow.value: fa.cash_flow_statement,
+            Ticker.Names.key_metrics.value: fa.key_metrics,
+            Ticker.Names.financial_ratios.value: fa.financial_ratios,
+            Ticker.Names.growth.value: fa.financial_statement_growth,
+            Ticker.Names.dcf.value: fa.discounted_cash_flow,
         }
 
-        # TODO: Make it multi-threaded od multi-process
+        # TODO: Make it multi-threaded or multi-processed
         # with concurrent.futures.ProcessPoolExecutor() as executor:
         #     result = {k: executor.submit(cb, symbol, api_key) for k, cb in key_cb.items()}
         #     for k in concurrent.futures.as_completed(result):
         #         try:
-        #             data[k] = result[k].result()
+        #             raw_data[k] = result[k].result()
         #         except Exception:
         #             problem = True
         #
@@ -97,7 +79,7 @@ def download(symbols: list, api_key: str, period: str = "quarter") -> tickers_ty
         #     result = {k: executor.submit(cb, symbol, api_key, period=period) for k, cb in key_cb_period.items()}
         #     for k in concurrent.futures.as_completed(result):
         #         try:
-        #             data[k] = result[k].result()
+        #             raw_data[k] = result[k].result()
         #         except Exception:
         #             problem = True
 
@@ -126,6 +108,8 @@ def download(symbols: list, api_key: str, period: str = "quarter") -> tickers_ty
 
 def download_subprocess(companies_lists: List[List], program: Program) -> tickers_type:
     all_symbols: tickers_type = []
+
+    ##
     with concurrent.futures.ProcessPoolExecutor() as executor:
         result = [executor.submit(download, symbols, program.api_key) for symbols in companies_lists]
         for i in concurrent.futures.as_completed(result):
@@ -133,6 +117,8 @@ def download_subprocess(companies_lists: List[List], program: Program) -> ticker
                 all_symbols.extend(i.result())
             except Exception as e:
                 print(e)
+
+    ##
     return all_symbols
 
 
@@ -170,10 +156,10 @@ class SaveData:
             raise ValueError(f"ERROR: {e} ({self.filepath})") from e
 
     def update_symbol_data(self):
-        # Create new data
+        # Create new raw_data
         new_data = self._update_data()
 
-        # Save new data
+        # Save new raw_data
         new_path = copy.deepcopy(self.filepath)
 
         # Handle old path
@@ -213,11 +199,11 @@ def remove_already_downloaded_tickers(tickers: List[List[str]], program: Program
     return [ticker for ticker in tickers if not directory.joinpath(ticker).exists()]
 
 
+# ######################################################################################################################
+# Main
+# ######################################################################################################################
 if __name__ == "__main__":
-    program = Program(
-        prj_dir=ProjectDir(root=Path(__file__).parent.parent.parent.parent.parent),
-        DEBUG=False,
-    )
+    program = Program()
 
     if program.prj_dir.root.name != "ai-investing":
         raise Exception(f"Wrong project directory {program.prj_dir.root}")
@@ -242,7 +228,6 @@ if __name__ == "__main__":
         _start = i
         _stop = i + step
         _step = step // processes
-
         bunches = [(i, i + _step) for i in range(_start, _stop, _step)]
         current_time = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
         print(current_time, bunches)
