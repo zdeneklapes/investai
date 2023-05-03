@@ -1,6 +1,7 @@
 function prepare_all_files() {
     rm -rf out
     mkdir -p out/baseline out/dataset out/model
+    source venv/bin/activate
     wandb artifact get investai/portfolio-allocation/stockfadailydataset:latest --root out/dataset
     wandb artifact get investai/portfolio-allocation/stocktadailydataset:latest --root out/dataset
     wandb artifact get investai/portfolio-allocation/stockcombineddailydataset:latest --root out/dataset
@@ -13,7 +14,7 @@ function prepare_all_files() {
 }
 
 function test_all() {
-    source venv3.10/bin/activate
+    source venv/bin/activate
     OK_SCRIPTS=()
     ERROR_SCRIPTS=()
 

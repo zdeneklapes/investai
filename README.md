@@ -54,7 +54,7 @@ WANDB_DIR='${PWD}/out/model'
 
 
 # CUDA - for TensorRT to find CUDA libraries
-LD_LIBRARY_PATH='${LD_LIBRARY_PATH}:${HOME}/venv3.10/lib/python3.10/site-packages/nvidia/cuda_runtime/lib/:${HOME}/venv3.10/lib/python3.10/site-packages/tensorrt/'
+LD_LIBRARY_PATH='${LD_LIBRARY_PATH}:${HOME}/venv/lib/python3.10/site-packages/nvidia/cuda_runtime/lib/:${HOME}/venv/lib/python3.10/site-packages/tensorrt/'
 ```
 
 ### 3. Run in Local (from root directory)

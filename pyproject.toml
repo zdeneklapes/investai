@@ -80,7 +80,6 @@ norecursedirs = [
     ".pytest_cache",
     ".tox",
     "venv",
-    "venv3.10",
     ".cache",
     "models",
     "mdp_models",

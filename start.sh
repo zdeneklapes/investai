@@ -24,7 +24,7 @@ function project_clean() {
     ${RM} *.zip
 
     # Folders
-    for folder in "venv" "venv3.10" "__pycache__" "migrations"; do
+    for folder in "venv" "__pycache__" "migrations"; do
         find . -type d -iname "${folder}" | xargs "${RM}"
     done
 
@@ -157,19 +157,19 @@ function docker_clean_all() {
 
 function requirement_for_workflow() {
     # Because "tvdatafeed" is not available on PyPi for Python 3.10
-    #    source venv3.10/bin/activate && pip-chill >requirements.txt
+    #    source venv/bin/activate && pip-chill >requirements.txt
     file_name="requirements_for_workflows.txt"
     cat requirements.txt | grep --invert-match "tvdatafeed\|finrl-meta\|pyfolio" >${file_name}
     git add ${file_name}
 }
 
 function run_test() {
-    #    source venv3.10/bin/activate &&
+    #    source venv/bin/activate &&
     PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/wandb_train.py --dataset-path=out/datasets/stockfadailydataset.csv --wandb-project="investai_exp_1" --wandb-job-type="train" --wandb=1 --wandb-sweep=0 --wandb-sweep-count=2 --algorithms ppo --project-verbose=1 --total-timesteps=1000
 }
 
 function run_sweep() {
-    #    source venv3.10/bin/activate &&
+    #    source venv/bin/activate &&
     PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/wandb_train.py --dataset-path=out/datasets/stockfadailydataset.csv --wandb-project="investai_sweep_1" --wandb-job-type="train" --wandb=0 --wandb-sweep=1 --wandb-sweep-count=100 --algorithms ppo a2c sac td3 dqn ddpg --project-verbose=1 --total-timesteps=400000
 }
 
@@ -178,12 +178,11 @@ function copy_figures_to_ibt_thesis() {
 }
 
 function install() {
+    mkdir -p out/baseline out/dataset out/model
     VENV_NAME="venv"
     python3 -m venv ${VENV_NAME}
     source ${VENV_NAME}/bin/activate
-    pip3 install -r requirements_for_workflows.txt
-    pip3 install git+https://github.com/StreamAlpha/tvdatafeed.git@a7034f04509b67224618917c29272796e4fff858I
-    pip3 install pyfolio
+    for i in $(cat requirements.txt | cut -d '=' -f1 | grep --invert-match "^#"); do pip3 install $i; done
 }
 
 function foo() {

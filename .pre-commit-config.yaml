@@ -43,7 +43,7 @@ repos:
                 stages: [ commit ]
                 name: Create requirements_for_workflows.txt
                 # "if" just to make sure that on the GitHub we don't run this hook
-                entry: bash -c "if [ -d venv3.10 ]; then ./start.sh -prfw; fi"
+                entry: bash -c "if [ -d venv ]; then ./start.sh -prfw; fi"
                 language: system
                 pass_filenames: false
                 always_run: true
