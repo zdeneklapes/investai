@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Get history about runs from wandb."""
 import inspect
 from itertools import chain
 from typing import List

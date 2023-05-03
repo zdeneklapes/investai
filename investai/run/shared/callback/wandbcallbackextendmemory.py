@@ -11,6 +11,8 @@ from wandb.integration.sb3 import WandbCallback
 
 
 class WandbCallbackExtendMemory(WandbCallback):
+    """Custom WandbCallback that logs more information than the original one."""
+
     def __init__(
         self,
         verbose: int = 0,

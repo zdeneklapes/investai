@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-# TODO: wandb_test , How to test wandb_train
-# TODO: Add to action +1 more action from 30 actions increase to 31 actions, because Agent can als decide for cash
-# TODO: next datasets
-# TODO: Put into dataset change of price form one index to another index: e.g. 10->15=0.5, 10->5=-0.5
+"""Train a model with Stable Baselines3"""
 import os
 import time
 from copy import deepcopy  # noqa

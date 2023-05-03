@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""TODO docstring"""
+"""Test model after being trained"""
 import time
 
 import wandb

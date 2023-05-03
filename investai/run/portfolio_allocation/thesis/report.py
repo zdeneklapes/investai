@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Create a LaTeX table from a pandas DataFrame from experiment results."""
 import inspect
 
 import pandas as pd

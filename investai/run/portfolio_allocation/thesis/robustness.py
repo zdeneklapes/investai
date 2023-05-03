@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Test robustness of the trained model."""
 import pandas as pd
 from pathlib import Path
 from typing import Dict, Tuple

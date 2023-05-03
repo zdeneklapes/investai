@@ -3,11 +3,9 @@ import cProfile
 from argparse import Namespace
 import wandb
 import pstats
-import warnings
 from pathlib import Path
 from typing import Literal
 
-import matplotlib
 import numpy as np
 import pandas as pd
 
@@ -58,14 +56,6 @@ def cProfile_decorator(sort_by: str):
     return decorator
 
 
-def config():
-    warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    warnings.filterwarnings("ignore", category=FutureWarning)
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
-    matplotlib.use("Agg")
-
-
 def data_split(df, start, end, target_date_col="date"):
     """
     split the dataset into training or testing using date
@@ -94,13 +84,6 @@ def get_start_end(df: pd.DataFrame) -> dict:
     start = df.dataset["date"].min()
     end = df.dataset["date"].max()
     return {"start": start, "end": end}
-
-
-def ignore_warnings():
-    warnings.filterwarnings("ignore", category=UserWarning)  # TODO: zipline problem
-    warnings.filterwarnings("ignore", category=DeprecationWarning)
-    warnings.filterwarnings("ignore", category=FutureWarning)
-    warnings.filterwarnings("ignore", category=RuntimeWarning)
 
 
 def find_git_root(path) -> Path:
@@ -134,7 +117,6 @@ def calculate_return_from_weights(t_now: np.array, t_prev: np.array, weights: np
 
 
 def calculate_sharpe_ratio(returns: np.ndarray):
-    # TODO: check correctness
     if returns.std() != 0:
         sharpe = (252 ** 0.5) * returns.mean() / returns.std()
         return sharpe

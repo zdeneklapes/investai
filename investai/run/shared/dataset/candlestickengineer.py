@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# TODO: Test this
+"""Candlestick engineer"""
 from functools import wraps
 
 import numpy as np

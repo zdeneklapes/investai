@@ -23,6 +23,8 @@ from shared.utils import log_artifact
 
 
 class Baseline(Memory):
+    """Class for create baseline returns for portfolio allocation"""
+
     def __init__(self, program: Program, df: pd.DataFrame = pd.DataFrame()):
         super().__init__(program, df)
 
@@ -149,8 +151,6 @@ class TestBaseline:
         d.update({tic: d_tics[d_tics["tic"] == tic]["close"] for tic in d_tics["tic"].unique()})
         df = pd.DataFrame(d)
 
-        #
-        # baseline.get_returns()
         return {
             "dataset": dataset,
             "d_tics": d_tics,

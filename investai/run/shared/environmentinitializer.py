@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-"""TODO docstring"""
 from pathlib import Path
 from typing import Union
 
@@ -15,6 +14,8 @@ ENVIRONMENT_TYPE = Union[PortfolioAllocationEnv, PortfolioAllocation2Env]
 
 
 class EnvironmentInitializer:
+    """Initialize the environment."""
+
     def __init__(self, program: Program, dataset: StockFaDailyDataset):
         self.program = program
         self.dataset = dataset

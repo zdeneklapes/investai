@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""TODO add docstring"""
+"""Argument parser"""
 import argparse
 import enum
 import os

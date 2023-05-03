@@ -18,7 +18,7 @@ from shared.program import Program
 
 
 class PortfolioAllocation2Env(gym.Env):
-    """Portfolio Allocation Environment using OpenAI gym"""
+    """Portfolio Allocation Environment"""
 
     metadata = {"render.modes": ["human"]}
 

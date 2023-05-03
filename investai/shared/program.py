@@ -10,6 +10,8 @@ from torch.utils.tensorboard import SummaryWriter
 
 
 class Program:
+    """This class is used to initialize the program. This is commonly the starting point of the each script."""
+
     def __init__(self, args_choice: List[ArgumentOption] = [ArgumentOption.ALL]):
         from dotenv import load_dotenv
 

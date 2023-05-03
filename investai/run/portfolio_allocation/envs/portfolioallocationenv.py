@@ -17,7 +17,7 @@ from shared.utils import calculate_return_from_weights
 
 
 class PortfolioAllocationEnv(gym.Env):
-    """Portfolio Allocation Environment using OpenAI gym"""
+    """Portfolio Allocation Environment"""
 
     metadata = {"render.modes": ["human"]}
 
