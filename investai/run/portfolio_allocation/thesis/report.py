@@ -222,7 +222,7 @@ class Report(Memory, WandbAPI):
             stats,
             columns=stats.shape[1] + 1,
             column_width=0.2,
-            caption=f"Performance metrics of the models vs. AI4Finance model, "
+            caption=f"Comparison of Model Performance between Models Developed by Us and State-of-the-Art AI4Finance, "
                     f"during the testing period of {date_start} to {date_end}.",
             label="tab:stats2",
             file_path=self.program.args.folder_figure.joinpath("stats2.tex"))

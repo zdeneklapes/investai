@@ -25,8 +25,12 @@ RUN apt-get update \
         autoconf \
         automake \
         valgrind \
-    \
         software-properties-common \
+    \
+        rsync \
+        tar \
+        tree \
+        wget \
     && apt-get clean
 #        ninja-build \
 #        neovim \
@@ -35,11 +39,7 @@ RUN apt-get update \
 #        locales-all \
 #        dos2unix \
 #    \
-#        rsync \
-#        tar \
 #        doxygen \
-#        tree \
-#        wget \
 #        fish \
 
 WORKDIR /home/ubuntu
@@ -54,7 +54,7 @@ RUN sudo python3 -m venv /home/ubuntu/venv \
 
 # Setup SSH: username=user:password=user
 RUN useradd -rm -d /home/ubuntu -s /bin/bash -g root -G sudo -u 1000 user
-RUN  echo 'user:user' | chpasswd
+RUN echo 'user:user' | chpasswd
 RUN service ssh start
 
 # Port to expose and Entrypoint

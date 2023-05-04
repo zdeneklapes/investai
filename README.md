@@ -6,25 +6,6 @@
 
 - Zdeněk Lapeš <lapes.zdenek@gmail.com>
 
-## DEPENDENCIES
-
-- swig
-- ta-lib
-
-## CONTRIBUTING
-
-### Before pull request
-
-```bash
-# Pre-commit
-pre-commit install              # Run all before commit)
-pre-commit install -t pre-push  # Run all before push)
-pre-commit run --all-files      # Run all checks manually
-
-# Run tests
-pytest
-```
-
 ## INSTALLATION
 
 ### 1. Install dependencies
@@ -65,7 +46,3 @@ PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/train.p
 # Examples:
 PYTHONPATH=$PWD/investai python3 investai/run/portfolio_allocation/train/train.py --dataset-path out/dataset/stockfadailydataset.csv --wandb=1 --algorithms ppo --project-verbose=1 --train-verbose=1 --wandb-verbose=1 --total-timesteps=1000 --train=1 --test=1 --portfolio-allocation-env=1 --wandb-run-group="exp-run-1" --baseline-path=out/baseline/baseline.csv
 ```
-
-## NOTES
-
-- [MATERIALS](./MATERIALS.md)
