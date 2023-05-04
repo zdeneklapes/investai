@@ -216,7 +216,7 @@ class Report(Memory, WandbAPI):
         max_stats["Beta"] = empyrical.beta(data_for_max_model, self.returns_pivot_df["^DJI"])
         max_stats["Alpha"] = empyrical.alpha(data_for_max_model, self.returns_pivot_df["^DJI"])
 
-        # Stats All
+        # Stats us vs. AI4Finance
         stats = stats_all([min_stats, max_stats, ai4finance_stats, ], [self.id_min, self.id_max, "AI4Finance"])
         print_stats_latex(
             stats,
