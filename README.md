@@ -6,6 +6,13 @@
 
 - Zdeněk Lapeš <lapes.zdenek@gmail.com>
 
+## Supervisor
+
+- Milan Češka <ceskam@fit.vut.cz>
+
+## ABOUT
+
+
 ## INSTALLATION
 
 ### 1. Install dependencies
