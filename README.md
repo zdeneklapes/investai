@@ -54,6 +54,7 @@ Out folder is created when whatever script is run. It contains:
 
 ```shell
 # venv
+mkdir -p out/baseline out/dataset out/model
 python3 -m venv venv
 source venv/bin/activate
 pip3 install -r requirements.txt
