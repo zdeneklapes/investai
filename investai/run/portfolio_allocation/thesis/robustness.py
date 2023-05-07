@@ -18,8 +18,9 @@ class Robustness:
     def __init__(self, program: Program = Program()):
         self.program = program
 
-    def history_to_pivot(self, history_path: str):
+    def history_to_pivot(self, history_path: str, group: str = None) -> pd.DataFrame:
         history_df = pd.read_csv(history_path, index_col=0)
+        if group is not None: history_df = history_df[history_df["group"] == group]
         returns_pivot_df = history_df.pivot(columns=["id"], values=["reward"])
         returns_pivot_df.columns = returns_pivot_df.columns.droplevel(0)
         # Set first rows on 0
@@ -31,8 +32,8 @@ class Robustness:
         cumprod_returns_df = (returns_pivot_df + 1).cumprod()
         return cumprod_returns_df
 
-    def find_the_best_model_id(self) -> str:
-        cumprod_returns_df = self.history_to_pivot(self.program.args.history_path.as_posix())
+    def find_the_best_model_id(self, group: str = None) -> str:
+        cumprod_returns_df = self.history_to_pivot(self.program.args.history_path.as_posix(), group=group)
         best_model_id = cumprod_returns_df.iloc[-1].idxmax()
         if "i" in self.program.args.project_verbose: self.program.log.info(f"Best model id: {best_model_id}")
         return best_model_id
@@ -77,7 +78,8 @@ class Robustness:
 
     def test_best_models(self):
         history_df = pd.read_csv(self.program.args.history_path, index_col=0)
-        id = self.find_the_best_model_id()
+        group = 'sweep-nasfit-6'
+        id = self.find_the_best_model_id(group)
         returns_pivot_df = history_df.pivot(columns=["group", "id"], values=["reward"])
         returns_pivot_df.columns = returns_pivot_df.columns.droplevel(0)
         # Set first rows on 0
@@ -88,7 +90,7 @@ class Robustness:
         groups_df = returns_pivot_df["run-nasfit-robust-3"]
         cumprod_returns_df = (groups_df + 1).cumprod()
         returns_robust_df: pd.Series = cumprod_returns_df.iloc[-1]
-        best_model_return = (returns_pivot_df['sweep-nasfit-6', id] + 1).cumprod().iloc[-1]
+        best_model_return = (returns_pivot_df[group, id] + 1).cumprod().iloc[-1]
         returns_robust_df[id] = best_model_return
         df = returns_robust_df.to_frame()
         df.columns = ["test/total_reward"]
