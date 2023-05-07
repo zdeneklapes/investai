@@ -86,7 +86,8 @@ LD_LIBRARY_PATH='${LD_LIBRARY_PATH}:${HOME}/venv/lib/python3.10/site-packages/nv
 
 ```shell
 ./test.sh --prepare-files # Remove out folder, and download datasets from W&B (You must be logged in/API key set)
-./test.sh --test # Run all scripts and tests if any fail
+./test.sh --test-dataset # Test dataset creation (this will not work without raw data in './data/' folder)
+./test.sh --test-other # Test other scripts: train, test, baseline, ...
 ```
 
 #### Print help

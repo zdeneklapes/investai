@@ -73,14 +73,14 @@ function project_pack() {
         Dockerfile \
         requirements.txt \
         start.sh \
+        test.sh \
         README.md \
-        MATERIALS.md \
         .pre-commit-config.yaml \
+        .editorconfig \
         pyproject.toml \
+
         \
-        -x **run/trading** \
-        **run/binary_option** \
-        **run/numerai** \
+        -x \
         **__pycache__** \
         **pytest_cache** \
         **.DS_Store** \
