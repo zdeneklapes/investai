@@ -138,7 +138,13 @@ def parse_arguments(args_choice: List[ArgumentOption]) -> Namespace:
         parser.add_argument("--wandb-run-group", help="Wandb run group",
                             default=os.environ.get("WANDB_RUN_GROUP", None))
         parser.add_argument("--wandb-mode", help="Wandb mode", default=os.environ.get("WANDB_MODE", None))
-        parser.add_argument("--wandb-dir", help="Wandb directory", type=Path, default=os.environ.get("WANDB_DIR", None))
+        parser.add_argument(
+            "--wandb-dir",
+            help="Wandb directory",
+            type=Path,
+            default=os.environ.get(
+                "WANDB_DIR",
+                "out/model/"))
 
     def train_arguments(parser: argparse.ArgumentParser):
         parser.add_argument("--train", help="Will train models based on hyper parameters", type=int, default=0)

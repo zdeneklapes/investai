@@ -67,8 +67,31 @@ function usage() {
 }
 
 function project_pack() {
-    #    DD=$(find . -maxdepth 3 | grep --invert-match "${EXCLUDED_REGEX}" | cut -d'/' -f2- | sed "1d")
-    #    echo "${DD}"
+    zip -r "${LOGIN}.zip" \
+        investai \
+        Dockerfile \
+        requirements.txt \
+        start.sh \
+        test.sh \
+        README.md \
+        .pre-commit-config.yaml \
+        .editorconfig \
+        pyproject.toml \
+        .git/.gitkeep \
+        \
+        -x \
+        **__pycache__** \
+        **pytest_cache** \
+        **.DS_Store** \
+        **.ruff_cache** \
+        **.vscode** \
+        **tags**
+    mv "${LOGIN}.zip" "${HOME}/Downloads/"
+    unzip -d "${HOME}/Downloads/${LOGIN}" "${HOME}/Downloads/${LOGIN}.zip"
+    open "${HOME}/Downloads/${LOGIN}"
+}
+
+function project_pack_all() {
     zip -r "${LOGIN}.zip" \
         out/dataset \
         out/baseline \
@@ -82,7 +105,7 @@ function project_pack() {
         .pre-commit-config.yaml \
         .editorconfig \
         pyproject.toml \
-
+        .git/.gitkeep \
         \
         -x \
         **__pycache__** \
@@ -199,6 +222,7 @@ while [ "$#" -gt 0 ]; do
     # "-p.*" prefix all project commands
     '-pc' | '--project-clean') project_clean ;;
     '-pp' | '--project-pack') project_pack ;;
+    '-pp' | '--project-pack-all') project_pack_all ;;
     '-prfw' | '--project-requirements-for-workflow') requirement_for_workflow ;;
     '-pf' | '--project-figures') copy_figures_to_ibt_thesis ;;
     '-pi' | '--project-install') install ;;

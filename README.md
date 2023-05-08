@@ -6,7 +6,8 @@
 
 ## AUTHOR
 
-- **Zdeněk Lapeš** <lapes.zdenek@gmail.com>
+- - **Zdeněk Lapeš** (xlapes02) <lapes.zdenek@gmail.com>
+
 
 ## Supervisor
 
