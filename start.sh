@@ -69,7 +69,11 @@ function usage() {
 function project_pack() {
     #    DD=$(find . -maxdepth 3 | grep --invert-match "${EXCLUDED_REGEX}" | cut -d'/' -f2- | sed "1d")
     #    echo "${DD}"
-    zip -r "${LOGIN}.zip" investai \
+    zip -r "${LOGIN}.zip" \
+        out/dataset \
+        out/baseline \
+        out/model/history.csv \
+        investai \
         Dockerfile \
         requirements.txt \
         start.sh \
@@ -84,7 +88,6 @@ function project_pack() {
         **__pycache__** \
         **pytest_cache** \
         **.DS_Store** \
-        **out** \
         **.ruff_cache** \
         **.vscode** \
         **tags**

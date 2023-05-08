@@ -6,22 +6,22 @@
 
 ## AUTHOR
 
-- Zdeněk Lapeš <lapes.zdenek@gmail.com>
+- **Zdeněk Lapeš** <lapes.zdenek@gmail.com>
 
 ## Supervisor
 
-- Milan Češka <ceskam@fit.vut.cz>
+- **Milan Češka** <ceskam@fit.vut.cz>
 
 ## ABOUT
 
-#### This project implements:
+### This project implements:
 
 - training and testing pipeline of reinforcement learning algorithms for portfolio allocation with connection to W&B
 - dataset creation from stock data
 - baseline creation from stock data
 - creating report for thesis
 
-#### Folder structure `investai/`:
+### Folder structure `investai/`:
 
 - **investai**: Whole thesis code is here
 - **investai/shared**: Shared code throughout the project
@@ -36,9 +36,8 @@
 - **investai/run/shared/sb3**: Sweep configuration for Stable Baselines3 and algorithms of Stable Baselines3
 - **investai/run/shared/dataset**: Shared code for dataset creation
 - **investai/run/shared/callback**: Callbacks for training
--
 
-#### Folder structure `out/`:
+### Folder structure `out/`:
 
 Out folder is created when whatever script is run. It contains:
 
