@@ -6,14 +6,14 @@
 
 ## AUTHOR
 
-- - **Zdeněk Lapeš** (xlapes02) <lapes.zdenek@gmail.com>
+- **Zdeněk Lapeš** (xlapes02) <lapes.zdenek@gmail.com>
 
 
 ## Supervisor
 
 - **Milan Češka** <ceskam@fit.vut.cz>
 
-## ABOUT
+## DESCRIPTION
 
 ### This project implements:
 

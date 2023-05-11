@@ -9,7 +9,7 @@ GREEN='\033[0;32m'
 AUTHOR='Zdenek Lapes'
 EMAIL='lapes.zdenek@gmail.com'
 
-LOGIN="xlapes02"
+LOGIN="implementation"
 
 ################################################################################
 # Functions
@@ -24,7 +24,7 @@ function project_clean() {
     ${RM} *.zip
 
     # Folders
-    for folder in "venv" "__pycache__" "migrations"; do
+    for folder in "__pycache__"; do
         find . -type d -iname "${folder}" | xargs "${RM}"
     done
 
@@ -88,7 +88,7 @@ function project_pack() {
         **tags**
     mv "${LOGIN}.zip" "${HOME}/Downloads/"
     unzip -d "${HOME}/Downloads/${LOGIN}" "${HOME}/Downloads/${LOGIN}.zip"
-    open "${HOME}/Downloads/${LOGIN}"
+#    open "${HOME}/Downloads/${LOGIN}"
 }
 
 function project_pack_all() {
